@@ -1,28 +1,60 @@
 package com.example.notificationservice.model;
 
+import jakarta.persistence.*;
+import java.sql.Timestamp;
+
+@Entity
 public class Notification {
-    
-    private String notificationName;
-    private String notificationDescription;
 
-    public Notification(String notificationName, String notificationDescription) {
-        this.notificationName = notificationName;
-        this.notificationDescription = notificationDescription;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long notificationId;
+
+    private Long userId;
+
+    private String notificationMessage;
+
+    private Timestamp createdAt;
+
+    private Timestamp sentAt;
+
+    // Getters and Setters
+    public Long getNotificationId() {
+        return notificationId;
     }
 
-    public String getNotificationName() {
-        return notificationName;
+    public void setNotificationId(Long notificationId) {
+        this.notificationId = notificationId;
     }
 
-    public void setNotificationName(String notificationName) {
-        this.notificationName = notificationName;
+    public Long getUserId() {
+        return userId;
     }
 
-    public String getNotificationDescription() {
-        return notificationDescription;
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+    public String getNotificationMessage() {
+        return notificationMessage;
     }
 
-    public void setNotificationDescription(String notificationDescription) {
-        this.notificationDescription = notificationDescription;
+    public void setNotificationMessage(String notificationMessage) {
+        this.notificationMessage = notificationMessage;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Timestamp getSentAt() {
+        return sentAt;
+    }
+
+    public void setSentAt(Timestamp sentAt) {
+        this.sentAt = sentAt;
     }
 }

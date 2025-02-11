@@ -1,23 +1,29 @@
 package com.example.coursemanagement.controller;
 
+import com.example.coursemanagement.model.Course;
+import com.example.coursemanagement.repository.CourseRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/courses")
 public class CourseManagementController {
 
-    @GetMapping("/getCourse")
-    public String getCourse(@RequestParam String courseName) {
-        return "Getting course details for: " + courseName;
+    @Autowired
+    private CourseRepository courseRepository;
+
+    // Get all Courses
+    @GetMapping
+    public List<Course> getCourses() {
+        return courseRepository.findAll();
     }
-    
-    @GetMapping("/getCourses")
-    public String getCourses() {
-        return "Getting list of courses";
-    }   
-    
+
+    // Get course by course code code
+    @GetMapping("/{courseCode}")
+    public List<Course> getCourse(@PathVariable String courseCode) {
+        return courseRepository.findByCourseCode(courseCode);
+    }
 }
 

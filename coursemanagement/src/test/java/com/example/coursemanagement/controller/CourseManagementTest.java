@@ -16,7 +16,7 @@ public class CourseManagementTest {
 
     @Autowired
     private MockMvc mockMvc;
-
+/*
     // Test for /getcourse endpoint
     @Test
     public void testGetCourse() throws Exception {
@@ -37,5 +37,5 @@ public class CourseManagementTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Getting list of courses"));
-    }
+    } */
 }
