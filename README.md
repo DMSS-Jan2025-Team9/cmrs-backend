@@ -32,3 +32,8 @@ Modify `application.properties` to match your MySQL credentials:
 ```properties
 spring.datasource.username=root
 spring.datasource.password=your_password
+```
+
+## Swagger UI
+To access:
+`http://localhost:<port>/swagger-ui/index.html`
