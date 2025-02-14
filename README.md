@@ -1,6 +1,6 @@
 # Backend
 
-This is a **Maven Project** using **Java 21** and **Spring Boot 3.4.2**.
+This is a **Maven Project** using **Java 21**,  **Maven 3.9.9** and **Spring Boot 3.4.2**.
 
 ## Running the Microservices
 To start a microservice, navigate to its folder and run:
