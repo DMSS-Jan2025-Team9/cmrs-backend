@@ -55,3 +55,37 @@ INSERT INTO program_course (program_id, course_id) VALUES
 (2, 6), -- Master of Data Science -> Cloud Computing Basics
 (3, 7); -- Bachelor of Cybersecurity -> Cybersecurity Fundamentals
 
+-- Class Table: Each entry represents a recurring class schedule for a course.
+CREATE TABLE class (
+    class_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NOT NULL,
+    day_of_week VARCHAR(10) NOT NULL,      -- e.g., 'Monday'
+    start_time TIME NOT NULL,              -- e.g., '08:00:00'
+    end_time TIME NOT NULL,                -- e.g., '09:00:00'
+    max_capacity INT NOT NULL,
+    vacancy INT NOT NULL,
+    FOREIGN KEY (course_id) REFERENCES course(course_id)
+);
+
+-- Sample data for Class Table
+
+-- For "Introduction to Computer Science" (course_id = 1), a recurring class every Monday 8:00-9:00 AM
+INSERT INTO class (course_id, day_of_week, start_time, end_time, max_capacity, vacancy)
+VALUES
+(1, 'Monday', '08:00:00', '09:00:00', 50, 50);
+
+-- For "Advanced Database Systems" (course_id = 2), a recurring class every Wednesday 2:00-4:00 PM
+INSERT INTO class (course_id, day_of_week, start_time, end_time, max_capacity, vacancy)
+VALUES
+(2, 'Wednesday', '14:00:00', '16:00:00', 25, 25);
+
+-- For "Machine Learning with Python" (course_id = 4), a recurring class every Friday 1:00-3:00 PM
+INSERT INTO class (course_id, day_of_week, start_time, end_time, max_capacity, vacancy)
+VALUES
+(4, 'Friday', '13:00:00', '15:00:00', 30, 30);
+
+-- For "Cybersecurity Fundamentals" (course_id = 7), a recurring class every Tuesday 10:00-12:00 PM
+INSERT INTO class (course_id, day_of_week, start_time, end_time, max_capacity, vacancy)
+VALUES
+(7, 'Tuesday', '10:00:00', '12:00:00', 45, 45);
+
