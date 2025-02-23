@@ -1,6 +1,5 @@
 package com.example.usermanagement.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.util.Set;
 
@@ -15,7 +14,6 @@ public class Permission {
 
     private String description;
 
-    @JsonBackReference(value = "role-permission")
     @ManyToMany(mappedBy = "permissions")
     private Set<Role> roles;
 
