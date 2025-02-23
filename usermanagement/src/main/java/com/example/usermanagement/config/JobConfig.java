@@ -1,10 +1,15 @@
 package com.example.usermanagement.config;
 
+import com.example.usermanagement.listener.StudentJobCompletionListener;
 import com.example.usermanagement.model.Student;
 import com.example.usermanagement.repository.StudentRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.data.RepositoryItemWriter;
 import org.springframework.batch.item.file.FlatFileItemReader;
@@ -15,6 +20,12 @@ import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableBatchProcessing
@@ -25,7 +36,12 @@ public class JobConfig {
 
     private StepBuilder stepBuilder;
 
+    private JobRepository jobRepository;
+    private PlatformTransactionManager transactionManager;
+
     private StudentRepository studentRepository;
+
+    private final StudentJobCompletionListener studentJobCompletionListener;
 
     // Read information from the source, CSV file
     @Bean
@@ -71,6 +87,33 @@ public class JobConfig {
         return writer;
     }
 
-    
+    // Step configuration
+    @Bean
+    public Step step1(){
+        return new StepBuilder("csv-step", jobRepository)
+                .<Student, Student>chunk(10, transactionManager)
+                .reader(reader())
+                .processor(processor())
+                .writer(writer())
+                .taskExecutor(taskExecutor())
+                .build();
+    }
+
+    // Job configuration
+    @Bean
+    public Job runJob(){
+        return new JobBuilder("importStudents", jobRepository)
+                .listener(studentJobCompletionListener) // add listener here
+                .flow(step1())
+                .end().build();
+    }
+
+    // Task Executor to run the steps asynchronously
+    @Bean
+    public TaskExecutor taskExecutor(){
+        SimpleAsyncTaskExecutor asyncTaskExecutor = new SimpleAsyncTaskExecutor();
+        asyncTaskExecutor.setConcurrencyLimit(10);
+        return asyncTaskExecutor;
+    }
 
 }
