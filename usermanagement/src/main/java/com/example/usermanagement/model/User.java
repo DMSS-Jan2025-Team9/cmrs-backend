@@ -1,5 +1,6 @@
 package com.example.usermanagement.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.Date;
 import java.util.Set;
@@ -23,6 +24,7 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
+    @JsonManagedReference(value = "user-role")
     @ManyToMany
     @JoinTable(
         name = "user_role",
