@@ -1,4 +1,11 @@
 package com.example.usermanagement.config;
 
-public class StudentProcessor {
+import com.example.usermanagement.model.Student;
+import org.springframework.batch.item.ItemProcessor;
+
+public class StudentProcessor implements ItemProcessor<Student, Student> {
+    @Override
+    public Student process(Student student) throws Exception {
+        return student;
+    }
 }
