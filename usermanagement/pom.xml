@@ -84,6 +84,10 @@
 			<artifactId>spring-batch-core</artifactId>
 			<version>5.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

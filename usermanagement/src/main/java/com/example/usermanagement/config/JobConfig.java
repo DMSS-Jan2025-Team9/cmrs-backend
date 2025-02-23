@@ -17,6 +17,7 @@ import org.springframework.batch.item.file.LineMapper;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
@@ -28,16 +29,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 
 @Configuration
-@EnableBatchProcessing
 @AllArgsConstructor
 public class JobConfig {
-
-    private JobBuilder jobBuilder;
-
-    private StepBuilder stepBuilder;
-
-    private JobRepository jobRepository;
-    private PlatformTransactionManager transactionManager;
 
     private StudentRepository studentRepository;
 
@@ -89,7 +82,7 @@ public class JobConfig {
 
     // Step configuration
     @Bean
-    public Step step1(){
+    public Step step1(JobRepository jobRepository, PlatformTransactionManager transactionManager){
         return new StepBuilder("csv-step", jobRepository)
                 .<Student, Student>chunk(10, transactionManager)
                 .reader(reader())
@@ -101,10 +94,10 @@ public class JobConfig {
 
     // Job configuration
     @Bean
-    public Job runJob(){
+    public Job runJob(JobRepository jobRepository, PlatformTransactionManager transactionManager){
         return new JobBuilder("importStudents", jobRepository)
                 .listener(studentJobCompletionListener) // add listener here
-                .flow(step1())
+                .flow(step1(jobRepository,transactionManager))
                 .end().build();
     }
 
