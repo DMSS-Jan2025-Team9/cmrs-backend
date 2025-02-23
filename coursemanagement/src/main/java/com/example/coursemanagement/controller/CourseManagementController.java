@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/api/courses")
@@ -40,5 +43,12 @@ public class CourseManagementController {
 		CourseDTO courseDTO = modelMapper.map(course, CourseDTO.class);
         return ResponseEntity.ok().body(courseDTO);
     }
+
+    @GetMapping("/searchCourses")
+    public List<CourseDTO> searchCourses(@RequestParam String courseCode, @RequestParam String courseName) {
+        return courseService.searchCourse(courseCode, courseName).stream().map(course -> modelMapper.map(course, CourseDTO.class))
+                .collect(Collectors.toList());
+    }
+    
 }
 

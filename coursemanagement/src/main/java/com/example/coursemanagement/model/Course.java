@@ -27,6 +27,9 @@ public class Course {
 
     private String courseDesc;  
 
+    public Course(){
+    }; // Default constructor
+
     public Course(Long courseId, String courseName, String courseCode, Date registrationStart, 
         Date registrationEnd, int maxCapacity, String status, String courseDesc) {
     this.courseId = courseId;

@@ -9,4 +9,5 @@ public interface CourseService {
 
     List<Course> getAllCourses();
     Course getCourse(String courseCode);
+    List<Course> searchCourse(String courseCode, String courseName);
 } 

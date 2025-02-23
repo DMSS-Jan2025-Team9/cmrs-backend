@@ -6,6 +6,9 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface CourseRepository extends JpaRepository<Course, Long> {
-     @Query("SELECT c FROM Course c WHERE c.courseCode = :courseCode")
+    @Query("SELECT c FROM Course c WHERE c.courseCode = :courseCode")
     Course getCourse(String courseCode);
+
+    @Query("SELECT c FROM Course c WHERE c.courseCode LIKE %:courseCode% AND c.courseName LIKE %:courseName%")
+    List<Course> searchCourse(String courseCode, String courseName);
 }

@@ -35,5 +35,11 @@ public class CourseServiceImpl implements CourseService{
 			throw new ResourceNotFoundException("Course", "courseCode", courseCode);
 		}
     }
+
+    @Override
+    public List<Course> searchCourse(String courseCode, String courseName) {
+        return courseRepository.searchCourse(courseCode, courseName);
+
+    }
     
 }
