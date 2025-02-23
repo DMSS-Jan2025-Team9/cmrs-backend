@@ -1,44 +1,33 @@
-package com.example.coursemanagement.model;
+package com.example.coursemanagement.dto;
 
-import jakarta.persistence.*;
 import java.util.Date;
 
-@Entity
-public class Course {
+public class CourseDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long courseId;
-
     private String courseName;
-    
-    @Column(unique = true)
     private String courseCode;
-
-    @Temporal(TemporalType.TIMESTAMP)
     private Date registrationStart;
-
-    @Temporal(TemporalType.TIMESTAMP)
     private Date registrationEnd;
-
     private int maxCapacity;
-
     private String status;
+    private String courseDesc;
 
-    private String courseDesc;  
-
-    public Course(Long courseId, String courseName, String courseCode, Date registrationStart, 
-        Date registrationEnd, int maxCapacity, String status, String courseDesc) {
-    this.courseId = courseId;
-    this.courseName = courseName;
-    this.courseCode = courseCode;
-    this.registrationStart = registrationStart;
-    this.registrationEnd = registrationEnd;
-    this.maxCapacity = maxCapacity;
-    this.status = status;
-    this.courseDesc = courseDesc;
+    // Constructor
+     public CourseDTO() {
     }
 
+    public CourseDTO(Long courseId, String courseName, String courseCode, Date registrationStart, 
+                     Date registrationEnd, int maxCapacity, String status, String courseDesc) {
+        this.courseId = courseId;
+        this.courseName = courseName;
+        this.courseCode = courseCode;
+        this.registrationStart = registrationStart;
+        this.registrationEnd = registrationEnd;
+        this.maxCapacity = maxCapacity;
+        this.status = status;
+        this.courseDesc = courseDesc;
+    }
 
     // Getters and Setters
     public Long getCourseId() {
