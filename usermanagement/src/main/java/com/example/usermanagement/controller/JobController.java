@@ -17,10 +17,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/jobs")
 public class JobController {
 
-    @Autowired
+
     private JobLauncher jobLauncher;
-    @Autowired
+
     private Job job;
+
+    // Constructor Injection (Best Practice)
+    public JobController(JobLauncher jobLauncher, Job job) {
+        this.jobLauncher = jobLauncher;
+        this.job = job;
+    }
+
 
     @PostMapping("/importStudents")
     public void importCsvToDBJob() {

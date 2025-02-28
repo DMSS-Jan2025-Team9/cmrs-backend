@@ -1,8 +1,10 @@
 package com.example.usermanagement.config;
 
 import com.example.usermanagement.listener.StudentJobCompletionListener;
+import com.example.usermanagement.mapper.StudentFieldSetMapper;
 import com.example.usermanagement.model.Student;
 import com.example.usermanagement.repository.StudentRepository;
+import com.example.usermanagement.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -27,14 +29,23 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+import java.text.SimpleDateFormat;
 
 @Configuration
-@AllArgsConstructor
 public class JobConfig {
 
-    private StudentRepository studentRepository;
+    private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
 
     private final StudentJobCompletionListener studentJobCompletionListener;
+
+    // Explicit Constructor Injection
+    public JobConfig(StudentRepository studentRepository, StudentJobCompletionListener listener, UserRepository userRepository) {
+        this.studentRepository = studentRepository;
+        this.userRepository = userRepository;
+        this.studentJobCompletionListener = listener;
+    }
+
 
     // Read information from the source, CSV file
     @Bean
@@ -55,10 +66,13 @@ public class JobConfig {
         DelimitedLineTokenizer lineTokenizer = new DelimitedLineTokenizer();
         lineTokenizer.setDelimiter(",");
         lineTokenizer.setStrict(false);
-        lineTokenizer.setNames("First Name","Last Name","Program Id","Program Name","Enrolled At");
+        lineTokenizer.setNames("programId", "name", "enrolledAt");
 
-        BeanWrapperFieldSetMapper<Student> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
-        fieldSetMapper.setTargetType(Student.class);
+//        BeanWrapperFieldSetMapper<Student> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
+//        fieldSetMapper.setTargetType(Student.class);
+
+        // Use the custom field set mapper with User repository lookup
+        StudentFieldSetMapper fieldSetMapper = new StudentFieldSetMapper(userRepository);
 
         lineMapper.setLineTokenizer(lineTokenizer);
         lineMapper.setFieldSetMapper(fieldSetMapper);
@@ -68,6 +82,7 @@ public class JobConfig {
     // Processor for student data
     @Bean
     public StudentProcessor processor(){
+
         return new StudentProcessor();
     }
 
