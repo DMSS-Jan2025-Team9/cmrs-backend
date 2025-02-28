@@ -6,9 +6,12 @@ import com.example.usermanagement.model.Student;
 import com.example.usermanagement.repository.StudentRepository;
 import com.example.usermanagement.repository.UserRepository;
 import lombok.AllArgsConstructor;
+//import lombok.Value;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
@@ -49,9 +52,11 @@ public class JobConfig {
 
     // Read information from the source, CSV file
     @Bean
-    public FlatFileItemReader<Student> reader(){
+    @StepScope
+    public FlatFileItemReader<Student> reader(@Value("#{jobParameters['csvFile']}") String csvFilePath){
         FlatFileItemReader<Student> csvReader = new FlatFileItemReader<>();
-        csvReader.setResource(new FileSystemResource("src/main/resources/student_enrollment_2025.csv"));
+        //csvReader.setResource(new FileSystemResource("src/main/resources/student_enrollment_2025.csv"));
+        csvReader.setResource(new FileSystemResource(csvFilePath));
         csvReader.setName("studentEnrollmentReader");
         csvReader.setLinesToSkip(1);
         csvReader.setLineMapper(lineMapper());
@@ -100,7 +105,7 @@ public class JobConfig {
     public Step step1(JobRepository jobRepository, PlatformTransactionManager transactionManager){
         return new StepBuilder("csv-step", jobRepository)
                 .<Student, Student>chunk(10, transactionManager)
-                .reader(reader())
+                .reader(reader(null))
                 .processor(processor())
                 .writer(writer())
                 .taskExecutor(taskExecutor())
