@@ -8,7 +8,7 @@ public class Course {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long courseId;
+    private Integer courseId;
 
     private String courseName;
     
@@ -27,10 +27,9 @@ public class Course {
 
     private String courseDesc;  
 
-    public Course(){
-    }; // Default constructor
+    public Course(){} // Default constructor
 
-    public Course(Long courseId, String courseName, String courseCode, Date registrationStart, 
+    public Course(Integer courseId, String courseName, String courseCode, Date registrationStart, 
         Date registrationEnd, int maxCapacity, String status, String courseDesc) {
     this.courseId = courseId;
     this.courseName = courseName;
@@ -44,11 +43,11 @@ public class Course {
 
 
     // Getters and Setters
-    public Long getCourseId() {
+    public Integer getCourseId() {
         return courseId;
     }
 
-    public void setCourseId(Long courseId) {
+    public void setCourseId(Integer courseId) {
         this.courseId = courseId;
     }
 

@@ -4,7 +4,7 @@ import java.util.Date;
 
 public class CourseDTO {
 
-    private Long courseId;
+    private Integer courseId;
     private String courseName;
     private String courseCode;
     private Date registrationStart;
@@ -17,7 +17,7 @@ public class CourseDTO {
      public CourseDTO() {
     }
 
-    public CourseDTO(Long courseId, String courseName, String courseCode, Date registrationStart, 
+    public CourseDTO(Integer courseId, String courseName, String courseCode, Date registrationStart, 
                      Date registrationEnd, int maxCapacity, String status, String courseDesc) {
         this.courseId = courseId;
         this.courseName = courseName;
@@ -30,11 +30,11 @@ public class CourseDTO {
     }
 
     // Getters and Setters
-    public Long getCourseId() {
+    public Integer getCourseId() {
         return courseId;
     }
 
-    public void setCourseId(Long courseId) {
+    public void setCourseId(Integer courseId) {
         this.courseId = courseId;
     }
 
