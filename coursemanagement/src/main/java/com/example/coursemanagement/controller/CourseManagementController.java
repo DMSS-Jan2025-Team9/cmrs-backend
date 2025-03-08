@@ -58,7 +58,6 @@ public class CourseManagementController {
     @PostMapping("/addCourse")
     public ResponseEntity<CourseDTO> addCourse(@RequestBody CourseDTO courseDTO) {
         Course course = modelMapper.map(courseDTO, Course.class); // Map DTO to entity
-        System.out.println("Mapped course: " + course);
         Course newCourse = courseService.addCourse(course); // Save course
         CourseDTO newCourseDTO = modelMapper.map(newCourse, CourseDTO.class); // Map entity to DTO
         return ResponseEntity.status(HttpStatus.CREATED).body(newCourseDTO); // Return DTO with status 201
