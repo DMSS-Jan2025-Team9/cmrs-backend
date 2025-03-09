@@ -20,6 +20,10 @@ public class Student {
 
     private Date enrolledAt;
 
+    private String firstName;
+
+    private String lastName;
+
     // Getters and Setters
     public Long getStudentId() {
         return studentId;
@@ -61,10 +65,28 @@ public class Student {
         this.enrolledAt = enrolledAt;
     }
 
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
     @Override
     public String toString() {
         return "Student{" +
                 "programId='" + programId + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
                 ", name='" + name + '\'' +
                 ", enrolledAt='" + enrolledAt + '\'' +
                 '}';

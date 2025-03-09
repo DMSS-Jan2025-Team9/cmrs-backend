@@ -71,7 +71,7 @@ public class JobConfig {
         DelimitedLineTokenizer lineTokenizer = new DelimitedLineTokenizer();
         lineTokenizer.setDelimiter(",");
         lineTokenizer.setStrict(false);
-        lineTokenizer.setNames("programId", "name", "enrolledAt");
+        lineTokenizer.setNames("programId", "firstName", "lastName","enrolledAt");
 
 //        BeanWrapperFieldSetMapper<Student> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
 //        fieldSetMapper.setTargetType(Student.class);

@@ -1,4 +1,4 @@
-﻿programId,name,enrolledAt
-1,John Doe,2025-01-01
-2,Jane Smith,2025-01-15
-3,Michael Johnson,2025-02-01
+﻿programId,firstName,lastName,enrolledAt
+1,John73  ,Doe,2025-01-01
+2,Jane73,Smith   ,2025-01-15
+3,Michael73,Johnson#2,2025-02-01

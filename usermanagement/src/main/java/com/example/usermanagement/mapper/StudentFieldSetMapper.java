@@ -25,7 +25,8 @@ public class StudentFieldSetMapper implements FieldSetMapper<Student> {
         // Convert fields from the CSV to Student object
         Student student = new Student();
         student.setProgramId(fieldSet.readLong("programId"));
-        student.setName(fieldSet.readString("name"));
+        student.setFirstName(fieldSet.readString("firstName"));
+        student.setLastName(fieldSet.readString("lastName"));
 
         // Parse the date
         String dateString = fieldSet.readString("enrolledAt");
