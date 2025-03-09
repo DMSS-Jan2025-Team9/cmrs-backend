@@ -1,6 +1,10 @@
 package com.example.usermanagement.config;
 
 import com.example.usermanagement.model.Student;
+import com.example.usermanagement.strategy.CapitalizeNameStrategy;
+import com.example.usermanagement.strategy.CompositeNameCleaningStrategy;
+import com.example.usermanagement.strategy.NameCleaningStrategy;
+import com.example.usermanagement.strategy.RemoveSpecialCharsStrategy;
 import com.example.usermanagement.validation.FirstNameValidator;
 import com.example.usermanagement.validation.LastNameValidator;
 import com.example.usermanagement.validation.StudentValidationChain;
@@ -33,11 +37,17 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
 
     private final StudentValidationChain validationChain;
 
-    public StudentProcessor() {
+    private final NameCleaningStrategy nameCleaningStrategy; // Name cleaning strategy
+
+    // Constructor to initialize the validation chain and name cleaning strategy
+    public StudentProcessor(NameCleaningStrategy nameCleaningStrategy) {
         // Initialize the validation chain with validators
         this.validationChain = new StudentValidationChain()
                 .addHandler(new FirstNameValidator())
                 .addHandler(new LastNameValidator());
+
+        // Initialize the name cleaning strategy
+        this.nameCleaningStrategy = nameCleaningStrategy;
     }
 
     @Override
@@ -48,11 +58,21 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
         // Validate using the chain
         validationChain.validate(student);
 
+        // Clean and capitalize first and last names
+        if (student.getFirstName() != null) {
+            student.setFirstName(nameCleaningStrategy.clean(student.getFirstName())); // Clean and capitalize first name
+        }
 
+        if (student.getLastName() != null) {
+            student.setLastName(nameCleaningStrategy.clean(student.getLastName())); // Clean and capitalize last name
+        }
+
+        // Combine cleaned names if both are present
         if (!student.getFirstName().trim().isEmpty() && !student.getLastName().trim().isEmpty()) {
             student.setName(student.getFirstName().trim() + " " + student.getLastName().trim());
         }
 
+        // Log the student details after processing
         System.out.println("After processing student: " + student);
 
 

@@ -5,6 +5,10 @@ import com.example.usermanagement.mapper.StudentFieldSetMapper;
 import com.example.usermanagement.model.Student;
 import com.example.usermanagement.repository.StudentRepository;
 import com.example.usermanagement.repository.UserRepository;
+import com.example.usermanagement.strategy.CapitalizeNameStrategy;
+import com.example.usermanagement.strategy.CompositeNameCleaningStrategy;
+import com.example.usermanagement.strategy.NameCleaningStrategy;
+import com.example.usermanagement.strategy.RemoveSpecialCharsStrategy;
 import lombok.AllArgsConstructor;
 //import lombok.Value;
 import org.springframework.beans.factory.annotation.Value;
@@ -85,11 +89,25 @@ public class JobConfig {
     }
 
     // Processor for student data
-    @Bean
-    public StudentProcessor processor(){
+//    @Bean
+//    public StudentProcessor processor(){
+//
+//        return new StudentProcessor();
+//    }
 
-        return new StudentProcessor();
+    @Bean
+    public StudentProcessor processor() {
+        // Initialize both strategies and pass them to the composite strategy
+        NameCleaningStrategy removeSpecialCharsStrategy = new RemoveSpecialCharsStrategy();
+        NameCleaningStrategy capitalizeNameStrategy = new CapitalizeNameStrategy();
+
+        // Create the composite strategy
+        NameCleaningStrategy compositeStrategy = new CompositeNameCleaningStrategy(removeSpecialCharsStrategy, capitalizeNameStrategy);
+
+        // Pass the composite strategy to the StudentProcessor
+        return new StudentProcessor(compositeStrategy);
     }
+
 
     // Writer for saving processed data
     @Bean

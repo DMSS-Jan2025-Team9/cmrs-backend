@@ -12,7 +12,7 @@ class StudentProcessorTest {
 
     @BeforeEach
     void setUp() {
-        processor = new StudentProcessor();  // Instantiate the processor
+        //processor = new StudentProcessor();  // Instantiate the processor
     }
 
     @Test
