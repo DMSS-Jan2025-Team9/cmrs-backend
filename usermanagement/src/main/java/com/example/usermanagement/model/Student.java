@@ -60,4 +60,13 @@ public class Student {
     public void setEnrolledAt(Date enrolledAt) {
         this.enrolledAt = enrolledAt;
     }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "programId='" + programId + '\'' +
+                ", name='" + name + '\'' +
+                ", enrolledAt='" + enrolledAt + '\'' +
+                '}';
+    }
 }
