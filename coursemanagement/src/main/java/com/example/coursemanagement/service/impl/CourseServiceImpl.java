@@ -2,7 +2,7 @@ package com.example.coursemanagement.service.impl;
 
 import java.util.List;
 
-import com.example.coursemanagement.exception.DuplicateCourseCodeException;
+import com.example.coursemanagement.exception.DuplicateIDException;
 import com.example.coursemanagement.exception.InvalidCapacityException;
 import com.example.coursemanagement.exception.InvalidDateException;
 import com.example.coursemanagement.exception.ResourceNotFoundException;
@@ -57,7 +57,7 @@ public class CourseServiceImpl implements CourseService{
     @Override
     public Course addCourse(Course course) {
         if (courseRepository.existsByCourseCode(course.getCourseCode())) {
-            throw new DuplicateCourseCodeException("Course code already exists");
+            throw new DuplicateIDException("Course code already exists");
         }
         
         if (course.getMaxCapacity() <= 0) {
@@ -78,7 +78,7 @@ public class CourseServiceImpl implements CourseService{
             throw new ResourceNotFoundException(COURSE, "courseId", course.getCourseId().toString());
         }
         if (courseRepository.existsByCourseCode(course.getCourseCode())) {
-            throw new DuplicateCourseCodeException("Course code already exists");
+            throw new DuplicateIDException("Course code already exists");
         }
         
         if (course.getMaxCapacity() <= 0) {

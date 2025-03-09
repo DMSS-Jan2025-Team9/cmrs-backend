@@ -2,7 +2,7 @@ package com.example.coursemanagement.controller;
 
 import com.example.coursemanagement.dto.CourseDTO;
 import com.example.coursemanagement.dto.ErrorResponse;
-import com.example.coursemanagement.exception.DuplicateCourseCodeException;
+import com.example.coursemanagement.exception.DuplicateIDException;
 import com.example.coursemanagement.exception.InvalidCapacityException;
 import com.example.coursemanagement.exception.InvalidDateException;
 import com.example.coursemanagement.model.Course;
@@ -72,7 +72,7 @@ public class CourseManagementController {
             Course newCourse = courseService.addCourse(course); // Save course
             CourseDTO newCourseDTO = modelMapper.map(newCourse, CourseDTO.class); // Map entity to DTO
             return ResponseEntity.status(HttpStatus.CREATED).body(newCourseDTO); // Return DTO with status 201
-        } catch (DuplicateCourseCodeException e) {
+        } catch (DuplicateIDException e) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body(new ErrorResponse("Course with this code already exists", e.getMessage()));
@@ -98,7 +98,7 @@ public class CourseManagementController {
             Course updatedCourse = courseService.editCourse(existingCourse); // Update course
             CourseDTO updatedCourseDTO = modelMapper.map(updatedCourse, CourseDTO.class); // Map entity to DTO
             return ResponseEntity.ok().body(updatedCourseDTO); // Return updated DTO
-        } catch (DuplicateCourseCodeException e) {
+        } catch (DuplicateIDException e) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body(new ErrorResponse("Course with this code already exists", e.getMessage()));

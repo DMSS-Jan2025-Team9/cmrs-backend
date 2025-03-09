@@ -1,7 +1,7 @@
 package com.example.coursemanagement.controller;
 
 import com.example.coursemanagement.dto.CourseDTO;
-import com.example.coursemanagement.exception.DuplicateCourseCodeException;
+import com.example.coursemanagement.exception.DuplicateIDException;
 import com.example.coursemanagement.exception.InvalidCapacityException;
 import com.example.coursemanagement.exception.InvalidDateException;
 import com.example.coursemanagement.model.Course;
@@ -113,7 +113,7 @@ class CourseManagementTest {
 
     // Test for /getCourses endpoint 
     @Test
-    void testGetCourse() throws Exception {
+    void testGetCourseByCode() throws Exception {
 
         when(courseService.getCourse("CS501")).thenReturn(course3);
         when(modelMapper.map(course3, CourseDTO.class)).thenReturn(courseDTO3);
@@ -355,7 +355,7 @@ class CourseManagementTest {
         
         when(modelMapper.map(any(CourseDTO.class), eq(Course.class))).thenReturn(newCourse);
         // Simulate the service throwing an exception for duplicate code
-        when(courseService.addCourse(any(Course.class))).thenThrow(new DuplicateCourseCodeException("Course code already exists"));
+        when(courseService.addCourse(any(Course.class))).thenThrow(new DuplicateIDException("Course code already exists"));
         
         mockMvc.perform(post("/api/courses/addCourse")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -366,44 +366,44 @@ class CourseManagementTest {
         verify(courseService).addCourse(any(Course.class));
     }
 
-@Test
-void testAddCourseWithInvalidCapacity() throws Exception {
-    // Test adding a course with invalid capacity (negative)
-    CourseDTO invalidCourseDTO = new CourseDTO(
-        6, 
-        "Invalid Capacity Course", 
-        "CS999", 
-        new Date(), 
-        new Date(), 
-        -10, // Invalid capacity
-        "Open", 
-        "Test Invalid Capacity"
-    );
-    
-    Course invalidCourse = new Course(
-        6, 
-        "Invalid Capacity Course", 
-        "CS999", 
-        new Date(), 
-        new Date(), 
-        -10, 
-        "Open", 
-        "Test Invalid Capacity"
-    );
-    
-    // Mock the modelMapper to return your course entity
-    when(modelMapper.map(any(CourseDTO.class), eq(Course.class))).thenReturn(invalidCourse);
-    
-    // Mock the service to throw InvalidCapacityException
-    when(courseService.addCourse(any(Course.class))).thenThrow(new InvalidCapacityException("Capacity must be a positive number"));
-    
-    mockMvc.perform(post("/api/courses/addCourse")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(invalidCourseDTO)))
-            .andExpect(status().isBadRequest());
-            
-    verify(courseService).addCourse(any(Course.class));
-}
+    @Test
+    void testAddCourseWithInvalidCapacity() throws Exception {
+        // Test adding a course with invalid capacity (negative)
+        CourseDTO invalidCourseDTO = new CourseDTO(
+            6, 
+            "Invalid Capacity Course", 
+            "CS999", 
+            new Date(), 
+            new Date(), 
+            -10, // Invalid capacity
+            "Open", 
+            "Test Invalid Capacity"
+        );
+        
+        Course invalidCourse = new Course(
+            6, 
+            "Invalid Capacity Course", 
+            "CS999", 
+            new Date(), 
+            new Date(), 
+            -10, 
+            "Open", 
+            "Test Invalid Capacity"
+        );
+        
+        // Mock the modelMapper to return your course entity
+        when(modelMapper.map(any(CourseDTO.class), eq(Course.class))).thenReturn(invalidCourse);
+        
+        // Mock the service to throw InvalidCapacityException
+        when(courseService.addCourse(any(Course.class))).thenThrow(new InvalidCapacityException("Capacity must be a positive number"));
+        
+        mockMvc.perform(post("/api/courses/addCourse")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidCourseDTO)))
+                .andExpect(status().isBadRequest());
+                
+        verify(courseService).addCourse(any(Course.class));
+    }
 
     @Test
     void editCourse() throws Exception {
