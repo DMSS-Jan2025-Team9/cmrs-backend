@@ -47,10 +47,10 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
 
     @Override
     public ClassSchedule addClassSchedule(ClassSchedule classSchedule) {
-        if(classScheduleRepository.existsByCourseIdAndDayOfWeekAndStartTimeAndEndTime(classSchedule.getCourse().getCourseId(), classSchedule.getDayOfWeek(), classSchedule.getStartTime(), classSchedule.getEndTime())) {
+        if(classScheduleRepository.existsByCourse_CourseIdAndDayOfWeekAndStartTimeAndEndTime(classSchedule.getCourse().getCourseId(), classSchedule.getDayOfWeek(), classSchedule.getStartTime(), classSchedule.getEndTime())) {
             throw new ResourceNotFoundException(CLASSSCHEDULE, "course, dayOfWeek, startTime, endTime", classSchedule.toString());
         }
-        if(classScheduleRepository.existsByCourseIdAndDayOfWeekAndStartTimeAndEndTime(classSchedule.getCourse().getCourseId(), classSchedule.getDayOfWeek(), classSchedule.getStartTime(), classSchedule.getEndTime())) {
+        if(classScheduleRepository.existsByCourse_CourseIdAndDayOfWeekAndStartTimeAndEndTime(classSchedule.getCourse().getCourseId(), classSchedule.getDayOfWeek(), classSchedule.getStartTime(), classSchedule.getEndTime())) {
             throw new DuplicateIDException(classSchedule.toString());
         }
         if(classSchedule.getVacancy() > classSchedule.getMaxCapacity()) {
@@ -72,7 +72,7 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
         if (existingClass == null) {
             throw new ResourceNotFoundException(CLASSSCHEDULE);
         }
-        if(classScheduleRepository.existsByCourseIdAndDayOfWeekAndStartTimeAndEndTime(classSchedule.getCourse().getCourseId(), classSchedule.getDayOfWeek(), classSchedule.getStartTime(), classSchedule.getEndTime())) {
+        if(classScheduleRepository.existsByCourse_CourseIdAndDayOfWeekAndStartTimeAndEndTime(classSchedule.getCourse().getCourseId(), classSchedule.getDayOfWeek(), classSchedule.getStartTime(), classSchedule.getEndTime())) {
             throw new DuplicateIDException(classSchedule.toString());
         }
 
@@ -97,7 +97,7 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
 	@Override
 	public boolean existsByCourseAndDayOfWeekAndStartTimeAndEndTime(Integer courseId, String dayOfWeek,
 			LocalTime startTime, LocalTime endTime) {
-        return classScheduleRepository.existsByCourseIdAndDayOfWeekAndStartTimeAndEndTime(
+        return classScheduleRepository.existsByCourse_CourseIdAndDayOfWeekAndStartTimeAndEndTime(
             courseId, dayOfWeek, startTime, endTime);
 	}
 
