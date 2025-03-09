@@ -9,7 +9,6 @@ import com.example.coursemanagement.exception.ResourceNotFoundException;
 import com.example.coursemanagement.model.ClassSchedule;
 import com.example.coursemanagement.service.ClassScheduleService;
 
-import org.apache.tomcat.util.file.ConfigurationSource.Resource;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

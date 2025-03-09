@@ -17,7 +17,7 @@ public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, In
     @Query("SELECT c FROM ClassSchedule c WHERE c.classId = :classId")
     ClassSchedule getClassScheduleById(int classId);
 
-    boolean existsByCourseIdAndDayOfWeekAndStartTimeAndEndTime(Integer courseId, String dayOfWeek, 
+    boolean existsByCourse_CourseIdAndDayOfWeekAndStartTimeAndEndTime(Integer courseId, String dayOfWeek, 
         LocalTime startTime, LocalTime endTime);
     
 }
