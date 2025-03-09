@@ -1,6 +1,9 @@
-package com.example.usermanagement.config;
+package com.example.usermanagement.processor;
 
+import com.example.usermanagement.model.Role;
 import com.example.usermanagement.model.Student;
+import com.example.usermanagement.model.User;
+import com.example.usermanagement.service.UserService;
 import com.example.usermanagement.strategy.CapitalizeNameStrategy;
 import com.example.usermanagement.strategy.CompositeNameCleaningStrategy;
 import com.example.usermanagement.strategy.NameCleaningStrategy;
@@ -39,8 +42,10 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
 
     private final NameCleaningStrategy nameCleaningStrategy; // Name cleaning strategy
 
+    private final UserService userService;
+
     // Constructor to initialize the validation chain and name cleaning strategy
-    public StudentProcessor(NameCleaningStrategy nameCleaningStrategy) {
+    public StudentProcessor(NameCleaningStrategy nameCleaningStrategy, UserService userService) {
         // Initialize the validation chain with validators
         this.validationChain = new StudentValidationChain()
                 .addHandler(new FirstNameValidator())
@@ -48,6 +53,7 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
 
         // Initialize the name cleaning strategy
         this.nameCleaningStrategy = nameCleaningStrategy;
+        this.userService = userService;
     }
 
     @Override
@@ -72,8 +78,44 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
             student.setName(student.getFirstName().trim() + " " + student.getLastName().trim());
         }
 
+        // **Save the student to generate the studentId**
+        student = userService.saveStudent(student); // Assuming a method in userService that saves the student entity and generates studentId.
+
+        // **Generate the full student ID (e.g., "S12345") after saving**
+        if (student.getStudentId() != null) {
+            // Get the base student ID (e.g., from the database, S4)
+            String baseStudentId = student.getStudentId().toString();
+
+            // Generate a random 3-digit number (between 100 and 999)
+            int randomPadding = 100 + (int)(Math.random() * 900); // Random number between 100 and 999
+
+            // Combine base ID and random number
+            String fullStudentId = "U" + baseStudentId + randomPadding;
+
+            // Ensure the final ID is no longer than 5 digits (excluding the "S")
+            if (fullStudentId.length() > 6) {
+                // Trim the random padding if the length exceeds 6 characters (including "S")
+                fullStudentId = "U" + baseStudentId.substring(0, 5 - randomPadding);
+            }
+
+            // Set the final full ID with the prefix "S" and adjusted padding
+            student.setStudentFullId(fullStudentId);
+        }
+
+        // **Create User for the Student**
+        Role studentRole = new Role(); // Assuming you have a default student role
+        studentRole.setRoleName("student"); // Set the role name
+
+        User user = userService.createAndSaveUser(student, studentRole);
+
+
         // Log the student details after processing
         System.out.println("After processing student: " + student);
+
+
+        // Log user creation
+        System.out.println("Created user: " + user);
+
 
 
         return student;

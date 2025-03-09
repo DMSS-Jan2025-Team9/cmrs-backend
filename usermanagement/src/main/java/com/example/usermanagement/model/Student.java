@@ -6,9 +6,16 @@ import java.util.Date;
 @Entity
 public class Student {
 
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Long studentId;
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long studentId;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "student_seq")
+    @SequenceGenerator(name = "student_seq", sequenceName = "student_sequence", allocationSize = 1)
+    private Long studentId;  // This is the sequence-generated number
+
+    private String studentFullId;  // The full student ID with prefix
 
     @OneToOne
     @JoinColumn(name = "user_id")
@@ -81,6 +88,14 @@ public class Student {
         this.lastName = lastName;
     }
 
+    public String getStudentFullId() {
+        return studentFullId;
+    }
+
+    public void setStudentFullId(String studentFullId) {
+        this.studentFullId = studentFullId;
+    }
+
     @Override
     public String toString() {
         return "Student{" +
@@ -88,6 +103,7 @@ public class Student {
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", name='" + name + '\'' +
+                ", studentId='" + studentFullId + '\'' +
                 ", enrolledAt='" + enrolledAt + '\'' +
                 '}';
     }
