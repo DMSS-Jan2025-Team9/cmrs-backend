@@ -2,11 +2,14 @@ package com.example.coursemanagement.service.impl;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import com.example.coursemanagement.exception.ResourceNotFoundException;
 import com.example.coursemanagement.model.ClassSchedule;
 import com.example.coursemanagement.repository.ClassScheduleRepository;
 import com.example.coursemanagement.service.ClassScheduleService;
 
+@Service
 public class ClassScheduleServiceImpl implements ClassScheduleService {
 
     private final ClassScheduleRepository classScheduleRepository;

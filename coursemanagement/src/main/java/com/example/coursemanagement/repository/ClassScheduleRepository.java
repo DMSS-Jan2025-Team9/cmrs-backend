@@ -9,7 +9,7 @@ import com.example.coursemanagement.model.ClassSchedule;
 
 public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, Integer>  {
 
-    @Query("SELECT c FROM ClassSchedule c WHERE c.courseId = :courseId")
+    @Query("SELECT c FROM ClassSchedule c WHERE c.course.courseId = :courseId")
     List<ClassSchedule> getAllClassSchedulesForCourse(int courseId);
 
 

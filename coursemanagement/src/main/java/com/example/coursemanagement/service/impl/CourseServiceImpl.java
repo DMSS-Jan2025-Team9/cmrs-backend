@@ -2,6 +2,9 @@ package com.example.coursemanagement.service.impl;
 
 import java.util.List;
 
+import com.example.coursemanagement.exception.DuplicateCourseCodeException;
+import com.example.coursemanagement.exception.InvalidCapacityException;
+import com.example.coursemanagement.exception.InvalidDateException;
 import com.example.coursemanagement.exception.ResourceNotFoundException;
 import com.example.coursemanagement.model.Course;
 import com.example.coursemanagement.repository.CourseRepository;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
 public class CourseServiceImpl implements CourseService{
 
     private final CourseRepository courseRepository;
+    private static final String COURSE = "course";
 	
 	public CourseServiceImpl(CourseRepository courseRepository) {
 		super();
@@ -30,7 +34,7 @@ public class CourseServiceImpl implements CourseService{
 		if(result != null) {
 			return result;
 		}else {
-			throw new ResourceNotFoundException("Course", "courseCode", courseCode);
+			throw new ResourceNotFoundException(COURSE, "courseCode", courseCode);
 		}
     }
 
@@ -40,7 +44,7 @@ public class CourseServiceImpl implements CourseService{
 		if(result != null) {
 			return result;
 		}else {
-			throw new ResourceNotFoundException("Course", "courseId", courseId + "");
+			throw new ResourceNotFoundException(COURSE, "courseId", courseId + "");
 		}
     }
 
@@ -52,6 +56,18 @@ public class CourseServiceImpl implements CourseService{
 
     @Override
     public Course addCourse(Course course) {
+        if (courseRepository.existsByCourseCode(course.getCourseCode())) {
+            throw new DuplicateCourseCodeException("Course code already exists");
+        }
+        
+        if (course.getMaxCapacity() <= 0) {
+            throw new InvalidCapacityException("Capacity must be a positive number");
+        }
+        
+        if (course.getRegistrationStart() != null && course.getRegistrationEnd() != null &&
+                course.getRegistrationStart().after(course.getRegistrationEnd())) {
+            throw new InvalidDateException("Start date cannot be after end date");
+        }
         return courseRepository.save(course);
     }
 
@@ -59,7 +75,19 @@ public class CourseServiceImpl implements CourseService{
     public Course editCourse(Course course) {
         Course existingCourse = courseRepository.getCourseById(course.getCourseId());
         if (existingCourse == null) {
-            throw new ResourceNotFoundException("Course", "courseId", course.getCourseId().toString());
+            throw new ResourceNotFoundException(COURSE, "courseId", course.getCourseId().toString());
+        }
+        if (courseRepository.existsByCourseCode(course.getCourseCode())) {
+            throw new DuplicateCourseCodeException("Course code already exists");
+        }
+        
+        if (course.getMaxCapacity() <= 0) {
+            throw new InvalidCapacityException("Capacity must be a positive number");
+        }
+        
+        if (course.getRegistrationStart() != null && course.getRegistrationEnd() != null &&
+                course.getRegistrationStart().after(course.getRegistrationEnd())) {
+            throw new InvalidDateException("Start date cannot be after end date");
         }
         existingCourse.setCourseName(course.getCourseName());
         existingCourse.setCourseCode(course.getCourseCode());

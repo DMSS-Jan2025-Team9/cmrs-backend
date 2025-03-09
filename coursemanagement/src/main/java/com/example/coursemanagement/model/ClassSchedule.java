@@ -12,6 +12,8 @@ public class ClassSchedule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer classId;
 
+    @ManyToOne
+    @JoinColumn(name = "course_id")
     private Course course;
 
     private String dayOfWeek;
