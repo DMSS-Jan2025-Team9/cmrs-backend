@@ -1,6 +1,9 @@
 package com.example.coursemanagement.controller;
 
 import com.example.coursemanagement.dto.CourseDTO;
+import com.example.coursemanagement.exception.DuplicateCourseCodeException;
+import com.example.coursemanagement.exception.InvalidCapacityException;
+import com.example.coursemanagement.exception.InvalidDateException;
 import com.example.coursemanagement.model.Course;
 import com.example.coursemanagement.service.CourseService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.util.Arrays;
@@ -114,13 +118,68 @@ class CourseManagementTest {
         when(courseService.getCourse("CS501")).thenReturn(course3);
         when(modelMapper.map(course3, CourseDTO.class)).thenReturn(courseDTO3);
 
-        mockMvc.perform(get("/api/courses/CS501")
+        mockMvc.perform(get("/api/courses/courseCode/CS501")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.courseName").value(course3.getCourseName()))
                 .andExpect(jsonPath("$.courseCode").value(course3.getCourseCode()));
 
         verify(courseService, times(1)).getCourse("CS501");
+    }
+
+    @Test
+    void testGetCourseNotFound() throws Exception {
+        // Test case for course not found
+        when(courseService.getCourse("INVALID")).thenReturn(null);
+    
+        mockMvc.perform(get("/api/courses/courseCode/INVALID")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    
+        verify(courseService, times(1)).getCourse("INVALID");
+    }
+
+    @Test
+    void testGetCourseById() throws Exception {
+        // Test retrieving a course by ID - successful case
+        int courseId = 1;
+        
+        when(courseService.getCourseById(courseId)).thenReturn(course1);
+        when(modelMapper.map(course1, CourseDTO.class)).thenReturn(courseDTO1);
+
+        mockMvc.perform(get("/api/courses/courseId/{courseId}", courseId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.courseId").value(course1.getCourseId()))
+                .andExpect(jsonPath("$.courseName").value(course1.getCourseName()))
+                .andExpect(jsonPath("$.courseCode").value(course1.getCourseCode()))
+                .andExpect(jsonPath("$.maxCapacity").value(course1.getMaxCapacity()))
+                .andExpect(jsonPath("$.status").value(course1.getStatus()));
+
+        verify(courseService, times(1)).getCourseById(courseId);
+        verify(modelMapper, times(1)).map(course1, CourseDTO.class);
+    }
+
+    @Test
+    void testGetCourseByIdNotFound() throws Exception {
+        // Test retrieving a non-existent course by ID
+        int nonExistentCourseId = 999;
+        
+        when(courseService.getCourseById(nonExistentCourseId)).thenReturn(null);
+
+        mockMvc.perform(get("/api/courses/courseId/{courseId}", nonExistentCourseId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        verify(courseService, times(1)).getCourseById(nonExistentCourseId);
+    }
+
+    @Test
+    void testGetCourseByIdInvalidId() throws Exception {
+        // Test with an invalid ID format (non-numeric)
+        mockMvc.perform(get("/api/courses/courseId/abc")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -185,8 +244,41 @@ class CourseManagementTest {
        verify(courseService, times(1)).searchCourse("","compu");
     }
  
-   @Test
-    void addCourse() throws Exception {
+    @Test
+    void testSearchCoursesWithBothParameters() throws Exception {
+        // Test searching with both course code and name parameters
+        when(courseService.searchCourse("CS5", "Computing")).thenReturn(Arrays.asList(course3));
+        when(modelMapper.map(course3, CourseDTO.class)).thenReturn(courseDTO3);
+
+        mockMvc.perform(get("/api/courses/searchCourses")
+                .param("courseCode", "CS5")
+                .param("courseName", "Computing")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].courseCode").value(course3.getCourseCode()))
+                .andExpect(jsonPath("$[0].courseName").value(course3.getCourseName()));
+
+        verify(courseService, times(1)).searchCourse("CS5", "Computing");
+    }
+
+    @Test
+    void testSearchCoursesNoResults() throws Exception {
+        // Test searching with no matching results
+        when(courseService.searchCourse("XYZ", "")).thenReturn(Arrays.asList());
+
+        mockMvc.perform(get("/api/courses/searchCourses")
+                .param("courseCode", "XYZ")
+                .param("courseName", "")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+
+        verify(courseService, times(1)).searchCourse("XYZ", "");
+    }
+
+      @Test
+      void addCourse() throws Exception {
         // Create a CourseDTO to be sent in the request body
         CourseDTO newCourseDTO = new CourseDTO(
             99, 
@@ -235,6 +327,83 @@ class CourseManagementTest {
         Course capturedCourse = courseCaptor.getValue();
         assertEquals(newCourseDTO.getCourseCode(), capturedCourse.getCourseCode());
     }
+
+    @Test
+    void testAddCourseWithDuplicateCode() throws Exception {
+        // Test adding a course with an existing course code
+        CourseDTO newCourseDTO = new CourseDTO(
+            5, 
+            "Duplicate Code Course", 
+            "CS101", // Using existing code from course1
+            new Date(), 
+            new Date(), 
+            30, 
+            "Open", 
+            "Test Duplicate Code"
+        );
+        
+        Course newCourse = new Course(
+            5, 
+            "Duplicate Code Course", 
+            "CS101", 
+            new Date(), 
+            new Date(), 
+            30, 
+            "Open", 
+            "Test Duplicate Code"
+        );
+        
+        when(modelMapper.map(any(CourseDTO.class), eq(Course.class))).thenReturn(newCourse);
+        // Simulate the service throwing an exception for duplicate code
+        when(courseService.addCourse(any(Course.class))).thenThrow(new DuplicateCourseCodeException("Course code already exists"));
+        
+        mockMvc.perform(post("/api/courses/addCourse")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(newCourseDTO)))
+                .andDo(print()) 
+                .andExpect(status().isConflict());
+        
+        verify(courseService).addCourse(any(Course.class));
+    }
+
+@Test
+void testAddCourseWithInvalidCapacity() throws Exception {
+    // Test adding a course with invalid capacity (negative)
+    CourseDTO invalidCourseDTO = new CourseDTO(
+        6, 
+        "Invalid Capacity Course", 
+        "CS999", 
+        new Date(), 
+        new Date(), 
+        -10, // Invalid capacity
+        "Open", 
+        "Test Invalid Capacity"
+    );
+    
+    Course invalidCourse = new Course(
+        6, 
+        "Invalid Capacity Course", 
+        "CS999", 
+        new Date(), 
+        new Date(), 
+        -10, 
+        "Open", 
+        "Test Invalid Capacity"
+    );
+    
+    // Mock the modelMapper to return your course entity
+    when(modelMapper.map(any(CourseDTO.class), eq(Course.class))).thenReturn(invalidCourse);
+    
+    // Mock the service to throw InvalidCapacityException
+    when(courseService.addCourse(any(Course.class))).thenThrow(new InvalidCapacityException("Capacity must be a positive number"));
+    
+    mockMvc.perform(post("/api/courses/addCourse")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(invalidCourseDTO)))
+            .andExpect(status().isBadRequest());
+            
+    verify(courseService).addCourse(any(Course.class));
+}
 
     @Test
     void editCourse() throws Exception {
@@ -307,4 +476,80 @@ class CourseManagementTest {
       verify(modelMapper).map(any(CourseDTO.class), any(Course.class));
       verify(modelMapper).map(any(Course.class), eq(CourseDTO.class));
   } 
+
+  @Test
+  void testEditCourseNotFound() throws Exception {
+      // Test editing a non-existent course
+      int nonExistentCourseId = 999;
+      
+      CourseDTO updatedCourseDTO = new CourseDTO(
+          nonExistentCourseId, 
+          "Non-existent Course", 
+          "CS999", 
+          new Date(), 
+          new Date(), 
+          40, 
+          "Open", 
+          "This course doesn't exist"
+      );
+      
+      when(courseService.getCourseById(nonExistentCourseId)).thenReturn(null);
+      
+      mockMvc.perform(put("/api/courses/editCourse/{courseId}", nonExistentCourseId)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(updatedCourseDTO)))
+              .andExpect(status().isNotFound());
+      
+      verify(courseService).getCourseById(nonExistentCourseId);
+      // Verify editCourse was never called
+      verify(courseService, times(0)).editCourse(any(Course.class));
+  }
+  
+  @Test
+  void testEditCourseInvalidDates() throws Exception {
+      // Test editing a course with invalid registration dates (end date before start date)
+      int courseId = 1;
+      
+      // Create dates where end is before start
+      Date startDate = new Date(System.currentTimeMillis() + 1000000); // Future date
+      Date endDate = new Date(System.currentTimeMillis()); // Current date (before start)
+      
+      CourseDTO invalidDatesDTO = new CourseDTO(
+          courseId,
+          "Invalid Dates Course",
+          "CS101",
+          startDate,
+          endDate, // End date before start date
+          40,
+          "Open",
+          "Course with invalid registration dates"
+      );
+      
+      Course existingCourse = new Course(
+          courseId,
+          "Original Course",
+          "CS101",
+          new Date(),
+          new Date(),
+          30,
+          "Open",
+          "Original description"
+      );
+      
+      // First mock getCourseById to return an existing course
+      when(courseService.getCourseById(courseId)).thenReturn(existingCourse);
+      
+      // Then mock editCourse to throw InvalidDateException
+      when(courseService.editCourse(any(Course.class)))
+          .thenThrow(new InvalidDateException("Start date cannot be after end date"));
+      
+      mockMvc.perform(put("/api/courses/editCourse/{courseId}", courseId)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(invalidDatesDTO)))
+              .andExpect(status().isBadRequest());
+      
+      verify(courseService).getCourseById(courseId);
+      verify(courseService).editCourse(any(Course.class));
+  } 
+
 }
