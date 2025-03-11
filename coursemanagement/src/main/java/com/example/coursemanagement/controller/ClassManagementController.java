@@ -93,11 +93,22 @@ public class ClassManagementController {
     @PutMapping("/editClassSchedule/{classId}")
     public ResponseEntity<?> editCourse(@PathVariable int classId, @RequestBody ClassScheduleDTO classScheduleDTO) {
         try {
-                ClassSchedule existingClassSchedule = classScheduleService.getClassScheduleById(classId);
+            ClassSchedule existingClassSchedule = classScheduleService.getClassScheduleById(classId);
             if (existingClassSchedule == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
-            modelMapper.map(classScheduleDTO, existingClassSchedule); // Map updated fields to existing entity
+            if (classScheduleDTO.getDayOfWeek() != null) {
+                existingClassSchedule.setDayOfWeek(classScheduleDTO.getDayOfWeek());
+            }
+            if (classScheduleDTO.getStartTime() != null) {
+                existingClassSchedule.setStartTime(classScheduleDTO.getStartTime());
+            }
+            if (classScheduleDTO.getEndTime() != null) {
+                existingClassSchedule.setEndTime(classScheduleDTO.getEndTime());
+            }
+            existingClassSchedule.setMaxCapacity(classScheduleDTO.getMaxCapacity());
+            existingClassSchedule.setVacancy(classScheduleDTO.getVacancy());
+            
             ClassSchedule updatedClassSchedule = classScheduleService.editClassSchedule(existingClassSchedule); // Update course
             ClassScheduleDTO updatedClassScheduleDTO = modelMapper.map(updatedClassSchedule, ClassScheduleDTO.class); // Map entity to DTO
             return ResponseEntity.ok().body(updatedClassScheduleDTO); // Return updated DTO

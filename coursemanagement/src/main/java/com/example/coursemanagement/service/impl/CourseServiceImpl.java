@@ -77,7 +77,8 @@ public class CourseServiceImpl implements CourseService{
         if (existingCourse == null) {
             throw new ResourceNotFoundException(COURSE, "courseId", course.getCourseId().toString());
         }
-        if (courseRepository.existsByCourseCode(course.getCourseCode())) {
+        if (!existingCourse.getCourseCode().equals(course.getCourseCode()) && 
+            courseRepository.existsByCourseCode(course.getCourseCode())) {
             throw new DuplicateIDException("Course code already exists");
         }
         

@@ -72,7 +72,12 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
         if (existingClass == null) {
             throw new ResourceNotFoundException(CLASSSCHEDULE);
         }
-        if(classScheduleRepository.existsByCourse_CourseIdAndDayOfWeekAndStartTimeAndEndTime(classSchedule.getCourse().getCourseId(), classSchedule.getDayOfWeek(), classSchedule.getStartTime(), classSchedule.getEndTime())) {
+        if (classScheduleRepository.existsByCourse_CourseIdAndDayOfWeekAndStartTimeAndEndTimeAndClassIdNot(
+            classSchedule.getCourse().getCourseId(), 
+            classSchedule.getDayOfWeek(), 
+            classSchedule.getStartTime(), 
+            classSchedule.getEndTime(), 
+            classSchedule.getClassId())) {
             throw new DuplicateIDException(classSchedule.toString());
         }
 
