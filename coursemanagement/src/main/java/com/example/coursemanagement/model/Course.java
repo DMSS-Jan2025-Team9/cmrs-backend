@@ -2,6 +2,7 @@ package com.example.coursemanagement.model;
 
 import jakarta.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 public class Course {
@@ -106,4 +107,7 @@ public class Course {
     public void setCourseDesc(String courseDesc) {
         this.courseDesc = courseDesc;
     }
+
+     @OneToMany(mappedBy="course")
+    private List<Class> classes;
 }

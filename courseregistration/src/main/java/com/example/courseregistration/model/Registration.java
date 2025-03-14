@@ -1,7 +1,7 @@
 package com.example.courseregistration.model;
 
 import jakarta.persistence.*;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 public class Registration {
@@ -12,10 +12,10 @@ public class Registration {
 
     private Long studentId;
 
-    private Long courseId;
+    private Long classId;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date registeredAt = new Date();
+    private LocalDateTime registeredAt;
 
     private String registrationStatus;
 
@@ -38,19 +38,19 @@ public class Registration {
         this.studentId = studentId;
     }
 
-    public Long getCourseId() {
-        return courseId;
+    public Long getClassId() {
+        return classId;
     }
 
-    public void setCourseId(Long courseId) {
-        this.courseId = courseId;
+    public void setClassId(Long classId) {
+        this.classId = classId;
     }
 
-    public Date getRegisteredAt() {
+    public LocalDateTime getRegisteredAt() {
         return registeredAt;
     }
 
-    public void setRegisteredAt(Date registeredAt) {
+    public void setRegisteredAt(LocalDateTime registeredAt) {
         this.registeredAt = registeredAt;
     }
 
