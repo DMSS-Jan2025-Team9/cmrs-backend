@@ -1,17 +1,17 @@
 package com.example.usermanagement.processor;
 
-import com.example.usermanagement.model.Role;
-import com.example.usermanagement.model.Student;
-import com.example.usermanagement.model.User;
+import com.example.usermanagement.dto.ProgramResponse;
+import com.example.usermanagement.dto.Role;
+import com.example.usermanagement.dto.Student;
+import com.example.usermanagement.dto.User;
 import com.example.usermanagement.service.UserService;
-import com.example.usermanagement.strategy.CapitalizeNameStrategy;
-import com.example.usermanagement.strategy.CompositeNameCleaningStrategy;
 import com.example.usermanagement.strategy.NameCleaningStrategy;
-import com.example.usermanagement.strategy.RemoveSpecialCharsStrategy;
 import com.example.usermanagement.validation.FirstNameValidator;
 import com.example.usermanagement.validation.LastNameValidator;
 import com.example.usermanagement.validation.StudentValidationChain;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 public class StudentProcessor implements ItemProcessor<Student, Student> {
 //    @Override
@@ -44,6 +44,10 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
 
     private final UserService userService;
 
+    private final RestTemplate restTemplate;
+    private final String programApiUrl = "http://localhost:8081/api/program/";
+
+
     // Constructor to initialize the validation chain and name cleaning strategy
     public StudentProcessor(NameCleaningStrategy nameCleaningStrategy, UserService userService) {
         // Initialize the validation chain with validators
@@ -54,6 +58,7 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
         // Initialize the name cleaning strategy
         this.nameCleaningStrategy = nameCleaningStrategy;
         this.userService = userService;
+        this.restTemplate = new RestTemplate();
     }
 
     @Override
@@ -77,6 +82,25 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
         if (!student.getFirstName().trim().isEmpty() && !student.getLastName().trim().isEmpty()) {
             student.setName(student.getFirstName().trim() + " " + student.getLastName().trim());
         }
+
+        // Fetch the program name using the programId (assuming it's in the student object)
+        Long programId = student.getProgramId(); // Get the program ID from the student
+
+        if (programId != null) {
+            // Construct the URL with the programId to fetch program details
+            String url = UriComponentsBuilder.fromHttpUrl(programApiUrl)
+                    .pathSegment(programId.toString())
+                    .toUriString();
+
+            // Fetch the program details from the API (assuming you have a ProgramDto or similar)
+            ProgramResponse programResponse = restTemplate.getForObject(url, ProgramResponse.class);
+
+            // Set the program name in the student
+            if (programResponse != null) {
+                student.setProgramName(programResponse.getProgramName());
+            }
+        }
+
 
         // **Save the student to generate the studentId**
         student = userService.saveStudent(student); // Assuming a method in userService that saves the student entity and generates studentId.

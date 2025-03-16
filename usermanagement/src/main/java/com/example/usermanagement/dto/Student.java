@@ -1,4 +1,4 @@
-package com.example.usermanagement.model;
+package com.example.usermanagement.dto;
 
 import jakarta.persistence.*;
 import java.util.Date;
@@ -30,6 +30,7 @@ public class Student {
     private String firstName;
 
     private String lastName;
+    private String programName;
 
     // Getters and Setters
     public Long getStudentId() {
@@ -94,6 +95,14 @@ public class Student {
 
     public void setStudentFullId(String studentFullId) {
         this.studentFullId = studentFullId;
+    }
+
+    public String getProgramName() {
+        return programName;
+    }
+
+    public void setProgramName(String programName) {
+        this.programName = programName;
     }
 
     @Override

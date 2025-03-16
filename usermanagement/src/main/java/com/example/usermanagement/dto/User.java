@@ -1,4 +1,4 @@
-package com.example.usermanagement.model;
+package com.example.usermanagement.dto;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;

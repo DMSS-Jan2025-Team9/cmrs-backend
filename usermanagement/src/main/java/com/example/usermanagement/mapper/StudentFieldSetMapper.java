@@ -1,13 +1,11 @@
 package com.example.usermanagement.mapper;
 
-import com.example.usermanagement.model.Student;
-import com.example.usermanagement.model.User;
+import com.example.usermanagement.dto.Student;
 import com.example.usermanagement.repository.UserRepository;
 import org.springframework.batch.item.file.mapping.FieldSetMapper;
 import org.springframework.batch.item.file.transform.FieldSet;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 

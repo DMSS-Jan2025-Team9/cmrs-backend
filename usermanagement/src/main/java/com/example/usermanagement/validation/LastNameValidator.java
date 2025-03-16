@@ -1,6 +1,6 @@
 package com.example.usermanagement.validation;
 
-import com.example.usermanagement.model.Student;
+import com.example.usermanagement.dto.Student;
 
 public class LastNameValidator implements StudentValidationHandler {
     @Override

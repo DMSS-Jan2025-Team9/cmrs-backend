@@ -1,6 +1,6 @@
 package com.example.usermanagement.config;
 
-import com.example.usermanagement.model.Student;
+import com.example.usermanagement.dto.Student;
 import com.example.usermanagement.processor.StudentProcessor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
