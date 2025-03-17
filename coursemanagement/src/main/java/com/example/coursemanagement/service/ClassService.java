@@ -23,7 +23,7 @@ public class ClassService {
         return classes.stream()
                 .map(courseClass -> new ClassDTO(
                         courseClass.getClassId(),
-                        courseClass.getCourse().getCourseId(),
+                        Long.valueOf(courseClass.getCourse().getCourseId()),
                         courseClass.getDayOfWeek(),
                         courseClass.getStartTime(),
                         courseClass.getEndTime(),
@@ -37,7 +37,7 @@ public class ClassService {
         return classRepository.findById(classId)
                 .map(courseClass -> new ClassDTO(
                         courseClass.getClassId(),
-                        courseClass.getCourse().getCourseId(),
+                        Long.valueOf(courseClass.getCourse().getCourseId()),
                         courseClass.getDayOfWeek(),
                         courseClass.getStartTime(),
                         courseClass.getEndTime(),
@@ -64,7 +64,7 @@ public class ClassService {
         // Map the saved entity to a DTO and return it
         return new ClassDTO(
                 savedClass.getClassId(),
-                savedClass.getCourse().getCourseId(),
+                Long.valueOf(savedClass.getCourse().getCourseId()),
                 savedClass.getDayOfWeek(),
                 savedClass.getStartTime(),
                 savedClass.getEndTime(),
