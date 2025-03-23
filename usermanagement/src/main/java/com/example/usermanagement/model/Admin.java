@@ -7,7 +7,7 @@ public class Admin {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long adminId;
+    private Integer adminId;
 
     @OneToOne
     @JoinColumn(name = "user_id")
@@ -16,11 +16,11 @@ public class Admin {
     private String name;
 
     // Getters and Setters
-    public Long getAdminId() {
+    public Integer getAdminId() {
         return adminId;
     }
 
-    public void setAdminId(Long adminId) {
+    public void setAdminId(Integer adminId) {
         this.adminId = adminId;
     }
 

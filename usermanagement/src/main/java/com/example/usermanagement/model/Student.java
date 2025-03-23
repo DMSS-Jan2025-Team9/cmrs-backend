@@ -1,6 +1,8 @@
 package com.example.usermanagement.model;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -8,7 +10,7 @@ public class Student {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long studentId;
+    private Integer studentId;
 
     @OneToOne
     @JoinColumn(name = "user_id")
@@ -16,16 +18,16 @@ public class Student {
 
     private String name;
 
-    private Long programId;
+    private Integer programId;
 
     private Date enrolledAt;
 
     // Getters and Setters
-    public Long getStudentId() {
+    public Integer getStudentId() {
         return studentId;
     }
 
-    public void setStudentId(Long studentId) {
+    public void setStudentId(Integer studentId) {
         this.studentId = studentId;
     }
 
@@ -45,11 +47,11 @@ public class Student {
         this.name = name;
     }
 
-    public Long getProgramId() {
+    public Integer getProgramId() {
         return programId;
     }
 
-    public void setProgramId(Long programId) {
+    public void setProgramId(Integer programId) {
         this.programId = programId;
     }
 
