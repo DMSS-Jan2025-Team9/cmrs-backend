@@ -31,3 +31,4 @@ build/
 
 ### VS Code ###
 .vscode/
+usermanagement/src/main/resources/application.properties
