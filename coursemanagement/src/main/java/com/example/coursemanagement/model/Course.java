@@ -2,13 +2,14 @@ package com.example.coursemanagement.model;
 
 import jakarta.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 public class Course {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long courseId;
+    private Integer courseId;
 
     private String courseName;
     
@@ -27,12 +28,27 @@ public class Course {
 
     private String courseDesc;  
 
+    public Course(){} // Default constructor
+
+    public Course(Integer courseId, String courseName, String courseCode, Date registrationStart, 
+        Date registrationEnd, int maxCapacity, String status, String courseDesc) {
+    this.courseId = courseId;
+    this.courseName = courseName;
+    this.courseCode = courseCode;
+    this.registrationStart = registrationStart;
+    this.registrationEnd = registrationEnd;
+    this.maxCapacity = maxCapacity;
+    this.status = status;
+    this.courseDesc = courseDesc;
+    }
+
+
     // Getters and Setters
-    public Long getCourseId() {
+    public Integer getCourseId() {
         return courseId;
     }
 
-    public void setCourseId(Long courseId) {
+    public void setCourseId(Integer courseId) {
         this.courseId = courseId;
     }
 
@@ -91,4 +107,7 @@ public class Course {
     public void setCourseDesc(String courseDesc) {
         this.courseDesc = courseDesc;
     }
+
+     @OneToMany(mappedBy="course")
+    private List<Class> classes;
 }

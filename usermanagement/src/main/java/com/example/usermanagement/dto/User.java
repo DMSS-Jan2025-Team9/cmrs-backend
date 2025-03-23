@@ -1,4 +1,4 @@
-package com.example.usermanagement.model;
+package com.example.usermanagement.dto;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 public class User {
@@ -90,5 +91,19 @@ public class User {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userId=" + userId +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", roles=" + (roles != null ? roles.stream()
+                .map(Role::getRoleName)
+                .collect(Collectors.joining(", ")) : "No Roles") +
+                '}';
     }
 }
