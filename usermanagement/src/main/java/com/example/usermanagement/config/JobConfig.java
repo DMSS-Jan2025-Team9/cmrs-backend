@@ -89,7 +89,8 @@ public class JobConfig {
 //    }
 
     @Bean
-    public StudentProcessor processor(UserService userService) {
+    @StepScope
+    public StudentProcessor processor(UserService userService, @Value("#{jobParameters['jobId']}") String jobId) {
         // Initialize both strategies and pass them to the composite strategy
         NameCleaningStrategy removeSpecialCharsStrategy = new RemoveSpecialCharsStrategy();
         NameCleaningStrategy capitalizeNameStrategy = new CapitalizeNameStrategy();
@@ -98,7 +99,7 @@ public class JobConfig {
         NameCleaningStrategy compositeStrategy = new CompositeNameCleaningStrategy(removeSpecialCharsStrategy, capitalizeNameStrategy);
 
         // Pass the composite strategy to the StudentProcessor
-        return new StudentProcessor(compositeStrategy, userService);
+        return new StudentProcessor(compositeStrategy, userService, jobId);
     }
 
 
@@ -117,7 +118,7 @@ public class JobConfig {
         return new StepBuilder("csv-step", jobRepository)
                 .<Student, Student>chunk(10, transactionManager)
                 .reader(reader(null))
-                .processor(processor(userService))
+                .processor(processor(userService,null))
                 .writer(writer())
                 .taskExecutor(taskExecutor())
                 .build();

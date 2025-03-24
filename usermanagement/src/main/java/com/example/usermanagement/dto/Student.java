@@ -32,6 +32,8 @@ public class Student {
     private String lastName;
     private String programName;
 
+    private String jobId;
+
     // Getters and Setters
     public Long getStudentId() {
         return studentId;
@@ -103,6 +105,14 @@ public class Student {
 
     public void setProgramName(String programName) {
         this.programName = programName;
+    }
+
+    public String getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
     }
 
     @Override

@@ -9,10 +9,16 @@ import com.example.usermanagement.strategy.NameCleaningStrategy;
 import com.example.usermanagement.validation.FirstNameValidator;
 import com.example.usermanagement.validation.LastNameValidator;
 import com.example.usermanagement.validation.StudentValidationChain;
+
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
+@Component
+@StepScope
 public class StudentProcessor implements ItemProcessor<Student, Student> {
 //    @Override
 //    public Student process(Student student) throws Exception {
@@ -46,15 +52,18 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
 
     private final RestTemplate restTemplate;
     private final String programApiUrl = "http://localhost:8081/api/program/";
+    // Fetch jobId from parameters
+    private String jobId;
 
 
     // Constructor to initialize the validation chain and name cleaning strategy
-    public StudentProcessor(NameCleaningStrategy nameCleaningStrategy, UserService userService) {
+    public StudentProcessor(NameCleaningStrategy nameCleaningStrategy, UserService userService,@Value("#{jobParameters['jobId']}") String jobId) {
         // Initialize the validation chain with validators
         this.validationChain = new StudentValidationChain()
                 .addHandler(new FirstNameValidator())
                 .addHandler(new LastNameValidator());
 
+        this.jobId = jobId;
         // Initialize the name cleaning strategy
         this.nameCleaningStrategy = nameCleaningStrategy;
         this.userService = userService;
@@ -65,6 +74,7 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
     public Student process(Student student) throws Exception {
         // Log the student details (for debugging)
         System.out.println("Processing student: " + student);
+        student.setJobId(jobId); // Set the jobId before writing to DB
 
         // Validate using the chain
         validationChain.validate(student);

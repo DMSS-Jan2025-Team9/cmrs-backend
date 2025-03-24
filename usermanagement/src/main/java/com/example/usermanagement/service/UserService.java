@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -48,5 +49,10 @@ public class UserService {
 
         return userRepository.save(user);
     }
+
+    public List<Student> getAllStudents() {
+        return studentRepository.findAll();
+    }
+
 }
 
