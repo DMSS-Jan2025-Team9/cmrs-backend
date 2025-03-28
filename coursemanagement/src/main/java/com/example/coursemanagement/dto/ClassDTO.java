@@ -4,14 +4,14 @@ import java.time.LocalTime;
 
 public class ClassDTO {
     private Long classId;
-    private Long courseId;
+    private Integer courseId;
     private String dayOfWeek;
     private LocalTime startTime;
     private LocalTime endTime;
     private int maxCapacity;
     private int vacancy;
 
-    public ClassDTO(Long classId, Long courseId, String dayOfWeek, LocalTime startTime, LocalTime endTime, int maxCapacity, int vacancy) {
+    public ClassDTO(Long classId, Integer courseId, String dayOfWeek, LocalTime startTime, LocalTime endTime, int maxCapacity, int vacancy) {
         this.classId = classId;
         this.courseId = courseId;
         this.dayOfWeek = dayOfWeek;
@@ -25,7 +25,7 @@ public class ClassDTO {
         return classId;
     }
 
-    public Long getCourseId() {
+    public Integer getCourseId() {
         return courseId;
     }
 
