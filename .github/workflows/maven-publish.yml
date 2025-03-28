@@ -16,21 +16,21 @@ jobs:
       matrix:
         service: 
           - coursemanagement
-          # - courserecommendation
-          # - courseregistration
-          # - notificationservice
-          # - usermanagement
+          - courserecommendation
+          - courseregistration
+          - notificationservice
+          - usermanagement
         include:
           - service: coursemanagement
             db_name: course_db
-          # - service: courserecommendation
-          #   db_name: recommendation_db
-          # - service: courseregistration
-          #   db_name: registration_db
-          # - service: notificationservice
-          #   db_name: notification_db
-          # - service: usermanagement
-          #   db_name: user_management_db
+          - service: courserecommendation
+            db_name: recommendation_db
+          - service: courseregistration
+            db_name: registration_db
+          - service: notificationservice
+            db_name: notification_db
+          - service: usermanagement
+            db_name: user_management_db
   
     runs-on: ubuntu-latest
     services:
