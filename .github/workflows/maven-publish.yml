@@ -54,6 +54,10 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
 
+    - name: Add MySQL JDBC Driver
+      working-directory: ./${{ matrix.service }}
+      run: |
+        mvn dependency:get -Dartifact=mysql:mysql-connector-java:8.0.33
 
     - name: Build ${{ matrix.service }}
       working-directory: ./${{ matrix.service }}
@@ -63,6 +67,7 @@ jobs:
       working-directory: ./${{ matrix.service }}
       run: mvn test
       env:
+        DB_NAME: ${{ matrix.db_name }}
         SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ matrix.db_name }}
         SPRING_DATASOURCE_USERNAME: root
         SPRING_DATASOURCE_PASSWORD: password123
