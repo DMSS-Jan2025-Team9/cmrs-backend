@@ -6,9 +6,9 @@ name: Maven Package
 on:
 
   push:
-    branches: [ main, feature/github-actions ]
+    branches: [ '**' ]
   pull_request:
-    branches: [ main, feature/github-actions  ]
+    branches: ['**'  ]
 
 jobs:
   build:
