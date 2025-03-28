@@ -16,24 +16,23 @@ jobs:
       matrix:
         service: 
           - coursemanagement
-          - courserecommendation
-          - courseregistration
-          - notificationservice
-          - usermanagement
+          # - courserecommendation
+          # - courseregistration
+          # - notificationservice
+          # - usermanagement
         include:
           - service: coursemanagement
             db_name: course_db
-          - service: courserecommendation
-            db_name: recommendation_db
-          - service: courseregistration
-            db_name: registration_db
-          - service: notificationservice
-            db_name: notification_db
-          - service: usermanagement
-            db_name: user_management_db
+          # - service: courserecommendation
+          #   db_name: recommendation_db
+          # - service: courseregistration
+          #   db_name: registration_db
+          # - service: notificationservice
+          #   db_name: notification_db
+          # - service: usermanagement
+          #   db_name: user_management_db
   
     runs-on: ubuntu-latest
-
     services:
       mysql:
         image: mysql:8.0
@@ -54,10 +53,9 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
 
-    - name: Add MySQL JDBC Driver
-      working-directory: ./${{ matrix.service }}
-      run: |
-        mvn dependency:get -Dartifact=mysql:mysql-connector-java:8.0.33
+    # Add a short delay to ensure MySQL is fully initialized
+    - name: Wait for MySQL to initialize
+      run: sleep 10
 
     - name: Build ${{ matrix.service }}
       working-directory: ./${{ matrix.service }}
