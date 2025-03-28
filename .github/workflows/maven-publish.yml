@@ -20,8 +20,29 @@ jobs:
           - courseregistration
           - notificationservice
           - usermanagement
+        include:
+          - service: coursemanagement
+            db_name: course_db
+          - service: courserecommendation
+            db_name: recommendation_db
+          - service: courseregistration
+            db_name: registration_db
+          - service: notificationservice
+            db_name: notification_db
+          - service: usermanagement
+            db_name: user_management_db
   
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password123
+          MYSQL_DATABASE: ${{ matrix.db_name }}
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
 
     steps:
@@ -41,6 +62,10 @@ jobs:
     - name: Run Unit Tests for ${{ matrix.service }}
       working-directory: ./${{ matrix.service }}
       run: mvn test
+      env:
+        SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ matrix.db_name }}
+        SPRING_DATASOURCE_USERNAME: root
+        SPRING_DATASOURCE_PASSWORD: password123
     
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
