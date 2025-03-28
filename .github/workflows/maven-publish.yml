@@ -15,14 +15,14 @@ jobs:
     strategy:
       matrix:
         service: 
-          # - coursemanagement
+          - coursemanagement
           - courserecommendation
           # - courseregistration
           # - notificationservice
           # - usermanagement
         include:
-          # - service: coursemanagement
-          #   db_name: course_db
+          - service: coursemanagement
+            db_name: course_db
           - service: courserecommendation
             db_name: recommendation_db
           # - service: courseregistration
