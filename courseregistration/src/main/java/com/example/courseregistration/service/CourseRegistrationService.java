@@ -161,6 +161,34 @@ public class CourseRegistrationService {
         return updatedRegistrations;
     }
 
+    public RegistrationDTO unenrollRegistration(Long registrationId) {
+        // Retrieve the registration; throw an exception if not found.
+        Registration registration = courseRegistrationRepository.findById(registrationId)
+                .orElseThrow(() -> new RuntimeException("Registration with ID " + registrationId + " not found"));
+
+        String oldStatus = registration.getRegistrationStatus();
+
+        // If the registration is already unenrolled, simply return it.
+        if (oldStatus.equalsIgnoreCase("Unenrolled")) {
+            return mapToDTO(registration);
+        }
+
+        // Retrieve the class details.
+        CourseClassDTO courseClass = getClassDetails(registration.getClassId());
+
+        // If the student was registered (occupying a seat), update the vacancy.
+        if ("Registered".equalsIgnoreCase(oldStatus)) {
+            int updatedVacancy = courseClass.getVacancy() + 1;
+            updateClassVacancyDirect(courseClass, updatedVacancy);
+        }
+        
+        // Update the registration status to "Unenrolled".
+        registration.setRegistrationStatus("Unenrolled");
+        Registration updatedRegistration = courseRegistrationRepository.save(registration);
+        return mapToDTO(updatedRegistration);
+    }
+
+
 
     private void validateStudentExists(Long studentId) {
         String studentUrl = "http://localhost:8085/api/students/{studentId}";

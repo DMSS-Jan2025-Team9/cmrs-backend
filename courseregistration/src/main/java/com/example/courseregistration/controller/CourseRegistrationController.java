@@ -51,6 +51,12 @@ public class CourseRegistrationController {
         return ResponseEntity.ok(updatedRegistrations);
     }
 
+    @PutMapping("/unenroll/{registrationId}")
+    public ResponseEntity<RegistrationDTO> unenrollRegistration(@PathVariable Long registrationId) {
+        RegistrationDTO unenrolledRegistration = courseRegistrationService.unenrollRegistration(registrationId);
+        return ResponseEntity.ok(unenrolledRegistration);
+    }
+
 
 }
 
