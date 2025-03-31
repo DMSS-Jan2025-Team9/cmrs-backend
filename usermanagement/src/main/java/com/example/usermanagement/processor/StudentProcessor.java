@@ -1,5 +1,6 @@
 package com.example.usermanagement.processor;
 
+import com.example.usermanagement.factory.UserFactory;
 import com.example.usermanagement.model.ProgramResponse;
 import com.example.usermanagement.model.Role;
 import com.example.usermanagement.model.Student;
@@ -19,29 +20,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 @StepScope
 public class StudentProcessor implements ItemProcessor<Student, Student> {
-//    @Override
-//    public Student process(Student student) throws Exception {
-//        return student;
-//    }
-
-//    @Override
-//    public Student process(Student student) throws Exception {
-//        // Log the student details (for debugging purposes)
-//        System.out.println("Processing student: " + student);
-//
-//        // Perform some validation (example: check if the student has a valid name)
-//        if (student.getName() == null || student.getName().isEmpty()) {
-//            throw new IllegalArgumentException("Student name cannot be empty");
-//        }
-//
-//        // Example transformation (e.g., capitalize name)
-//        String name = student.getName();
-//        student.setName(name != null ? name.toUpperCase() : name);
-//
-//        // You can add more transformations or actions here...
-//
-//        return student;  // Return the processed student
-//    }
 
     private final StudentValidationChain validationChain;
 
@@ -110,7 +88,6 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
             }
         }
 
-
         // **Save the student to generate the studentId**
         student = userService.saveStudent(student); // Assuming a method in userService that saves the student entity and generates studentId.
 
@@ -127,8 +104,9 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
 
             // Ensure the final ID is no longer than 5 digits (excluding the "S")
             if (fullStudentId.length() > 6) {
-                // Trim the random padding if the length exceeds 6 characters (including "S")
-                fullStudentId = "U" + baseStudentId.substring(0, 5 - randomPadding);
+                // If length exceeds 6, trim the random padding appropriately
+                int excessLength = fullStudentId.length() - 6;
+                fullStudentId = fullStudentId.substring(0, fullStudentId.length() - excessLength);
             }
 
             // Set the final full ID with the prefix "S" and adjusted padding
@@ -137,19 +115,20 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
 
         // **Create User for the Student**
         Role studentRole = new Role(); // Assuming you have a default student role
+        studentRole.setDescription("Regular user who can view and register for courses");
         studentRole.setRoleName("student"); // Set the role name
 
-        User user = userService.createAndSaveUser(student, studentRole);
+        // Use the UserFactory to create and save the user
+        User user = UserFactory.createUser(student, studentRole);
 
+        // Save the user and role using UserService
+        userService.saveUserWithRole(user, studentRole); // U
 
         // Log the student details after processing
         System.out.println("After processing student: " + student);
 
-
         // Log user creation
         System.out.println("Created user: " + user);
-
-
 
         return student;
     }
