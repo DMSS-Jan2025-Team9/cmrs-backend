@@ -5,6 +5,8 @@ import com.example.coursemanagement.service.ProgramService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/program")
 public class ProgramController {
@@ -21,6 +23,12 @@ public class ProgramController {
     public Program getProgramById(@PathVariable Long programId) {
         // Fetch the program details by programId using the ProgramService
         return programService.getProgramById(programId);
+    }
+
+    // Get all programs
+    @GetMapping
+    public List<Program> getAllPrograms() {
+        return programService.getAllPrograms();  // Calls the service method to fetch all programs
     }
 }
 
