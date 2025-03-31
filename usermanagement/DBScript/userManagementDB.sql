@@ -95,3 +95,29 @@ INSERT INTO student (user_id, name, program_id)
 VALUES (LAST_INSERT_ID(), 'John Doe', 1);
 INSERT INTO user_role (user_id, role_id) 
 VALUES (LAST_INSERT_ID(), (SELECT role_id FROM role WHERE role_name = 'student'));
+
+INSERT INTO permission (permission_name, description) 
+VALUES ('view_users', 'Permission to view user list'),
+       ('manage_user_roles', 'Permission to assign roles to users'),
+       ('view_roles', 'Permission to view role list'),
+       ('manage_roles', 'Permission to create/update/delete roles'),
+       ('view_permissions', 'Permission to view permissions list'),
+       ('manage_permissions', 'Permission to create/update/delete permissions'),
+       ('manage_role_permissions', 'Permission to assign permissions to roles');
+       
+INSERT INTO role_permission (role_id, permission_id) 
+VALUES 
+((SELECT role_id FROM role WHERE role_name = 'admin'), 
+ (SELECT permission_id FROM permission WHERE permission_name = 'view_users')),
+((SELECT role_id FROM role WHERE role_name = 'admin'), 
+ (SELECT permission_id FROM permission WHERE permission_name = 'manage_user_roles')),
+((SELECT role_id FROM role WHERE role_name = 'admin'), 
+ (SELECT permission_id FROM permission WHERE permission_name = 'view_roles')),
+((SELECT role_id FROM role WHERE role_name = 'admin'), 
+ (SELECT permission_id FROM permission WHERE permission_name = 'manage_roles')),
+((SELECT role_id FROM role WHERE role_name = 'admin'), 
+ (SELECT permission_id FROM permission WHERE permission_name = 'view_permissions')),
+((SELECT role_id FROM role WHERE role_name = 'admin'), 
+ (SELECT permission_id FROM permission WHERE permission_name = 'manage_permissions')),
+((SELECT role_id FROM role WHERE role_name = 'admin'), 
+ (SELECT permission_id FROM permission WHERE permission_name = 'manage_role_permissions'));
