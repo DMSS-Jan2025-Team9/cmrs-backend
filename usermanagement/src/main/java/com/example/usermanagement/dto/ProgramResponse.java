@@ -2,6 +2,8 @@ package com.example.usermanagement.dto;
 
 import java.util.List;
 
+import com.example.usermanagement.model.Course;
+
 public class ProgramResponse {
     private Long programId;
     private String programName;

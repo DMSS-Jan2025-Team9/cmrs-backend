@@ -9,7 +9,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.data.RepositoryItemWriter;
-import com.example.usermanagement.dto.Student;
+
+import com.example.usermanagement.model.Student;
 import com.example.usermanagement.repository.StudentRepository;
 
 import java.text.SimpleDateFormat;

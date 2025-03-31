@@ -1,14 +1,17 @@
 package com.example.usermanagement.repository;
 
-import com.example.usermanagement.model.Role;
-
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.example.usermanagement.model.Role;
+
 public interface RoleRepository extends JpaRepository<Role, Long> {
     Optional <Role> findByRoleName(String roleName);
     Optional <Role> findByDescription(String description);
+    Optional <Role> findByRoleId(Integer userId);
+
+    Optional <Role> deleteByRoleId(Integer userId);
 
     boolean existsByRoleName(String roleName);
     boolean existsByDescription(String Description);

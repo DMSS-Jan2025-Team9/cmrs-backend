@@ -1,8 +1,8 @@
 package com.example.usermanagement.service;
 
-import com.example.usermanagement.dto.Role;
-import com.example.usermanagement.dto.Student;
-import com.example.usermanagement.dto.User;
+import com.example.usermanagement.model.Role;
+import com.example.usermanagement.model.Student;
+import com.example.usermanagement.model.User;
 import com.example.usermanagement.repository.StudentRepository;
 import com.example.usermanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

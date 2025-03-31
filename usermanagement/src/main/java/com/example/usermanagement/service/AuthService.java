@@ -18,7 +18,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -76,10 +75,12 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(signUpDto.getPassword()));
         user.setCreatedAt(new Date());
         user.setUpdatedAt(new Date());
+        // user.setRoles(signUpDto.getRoles());
+        // user.setPermissions(signUpDto.getPermissions());
         
-        // Assign default role (USER)
-        Role userRole = roleRepository.findByRoleName("student")
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Default role not found"));
+        // Assign default role (student)
+        Role userRole = roleRepository.findByRoleName(signUpDto.getRole())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Role not found"));
         
         Set<Role> roles = new HashSet<>();
         roles.add(userRole);

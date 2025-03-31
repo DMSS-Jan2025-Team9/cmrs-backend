@@ -1,8 +1,9 @@
 package com.example.usermanagement.factory;
 
-import com.example.usermanagement.dto.Role;
-import com.example.usermanagement.dto.Student;
-import com.example.usermanagement.dto.User;
+import com.example.usermanagement.model.Role;
+import com.example.usermanagement.model.Student;
+import com.example.usermanagement.model.User;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 

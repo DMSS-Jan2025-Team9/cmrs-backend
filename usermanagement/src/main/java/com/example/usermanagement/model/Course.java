@@ -1,4 +1,4 @@
-package com.example.usermanagement.dto;
+package com.example.usermanagement.model;
 
 import jakarta.persistence.*;
 import java.util.Date;

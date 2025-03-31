@@ -1,9 +1,17 @@
 package com.example.usermanagement.dto;
 
+import java.util.Set;
+
+import com.example.usermanagement.model.Permission;
+import com.example.usermanagement.model.Role;
+
 public class SignUpDto {
     private String username;
     private String email;
     private String password;
+
+    private String role;
+    // private Set<String> permissions;
 
     // Getters and setters
     public String getUsername() {
@@ -25,4 +33,19 @@ public class SignUpDto {
         this.password = password;
     }
 
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    // public Set<Permission> getPermissions() {
+    //     return permissions;
+    // }
+
+    // public void setPermissions(Set<Permission> permissions) {
+    //     this.permissions = permissions;
+    // }
 }

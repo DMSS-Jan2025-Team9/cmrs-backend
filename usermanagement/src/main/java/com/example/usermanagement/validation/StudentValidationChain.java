@@ -1,9 +1,9 @@
 package com.example.usermanagement.validation;
 
-import com.example.usermanagement.dto.Student;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.example.usermanagement.model.Student;
 
 public class StudentValidationChain {
 
