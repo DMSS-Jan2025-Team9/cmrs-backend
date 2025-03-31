@@ -1,6 +1,6 @@
 package com.example.usermanagement.validation;
 
-import com.example.usermanagement.dto.Student;
+import com.example.usermanagement.model.Student;
 
 import java.util.ArrayList;
 import java.util.List;

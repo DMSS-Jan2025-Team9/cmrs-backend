@@ -1,7 +1,7 @@
 package com.example.usermanagement.config;
 
 import com.example.usermanagement.listener.StudentJobCompletionListener;
-import com.example.usermanagement.dto.Student;
+import com.example.usermanagement.model.Student;
 import com.example.usermanagement.repository.StudentRepository;
 import com.example.usermanagement.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;

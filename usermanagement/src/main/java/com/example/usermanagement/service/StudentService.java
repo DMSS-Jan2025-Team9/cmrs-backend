@@ -1,6 +1,6 @@
 package com.example.usermanagement.service;
 
-import com.example.usermanagement.dto.Student;
+import com.example.usermanagement.model.Student;
 import com.example.usermanagement.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 

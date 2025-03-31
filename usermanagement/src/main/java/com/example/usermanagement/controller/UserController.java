@@ -1,6 +1,6 @@
 package com.example.usermanagement.controller;
 
-import com.example.usermanagement.dto.User;
+import com.example.usermanagement.model.User;
 import com.example.usermanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

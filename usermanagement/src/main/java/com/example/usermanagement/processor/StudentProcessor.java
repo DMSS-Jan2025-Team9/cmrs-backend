@@ -1,9 +1,9 @@
 package com.example.usermanagement.processor;
 
-import com.example.usermanagement.dto.ProgramResponse;
-import com.example.usermanagement.dto.Role;
-import com.example.usermanagement.dto.Student;
-import com.example.usermanagement.dto.User;
+import com.example.usermanagement.model.ProgramResponse;
+import com.example.usermanagement.model.Role;
+import com.example.usermanagement.model.Student;
+import com.example.usermanagement.model.User;
 import com.example.usermanagement.service.UserService;
 import com.example.usermanagement.strategy.NameCleaningStrategy;
 import com.example.usermanagement.validation.FirstNameValidator;
@@ -13,7 +13,6 @@ import com.example.usermanagement.validation.StudentValidationChain;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
