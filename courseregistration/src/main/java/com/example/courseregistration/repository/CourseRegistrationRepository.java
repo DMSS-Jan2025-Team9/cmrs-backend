@@ -9,6 +9,11 @@ import java.util.Optional;
 
 public interface CourseRegistrationRepository extends JpaRepository<Registration, Long> {
 
+        @Query("SELECT MAX(r.groupRegistrationId) FROM Registration r")
+    Long findMaxGroupRegistrationId();
+
+    List<Registration> findByGroupRegistrationId(Long groupRegistrationId);
+
     @Query("SELECT r FROM Registration r WHERE " +
             "(:registrationId IS NULL OR r.registrationId = :registrationId) AND " +
             "(:studentId IS NULL OR r.studentId = :studentId) AND " +
