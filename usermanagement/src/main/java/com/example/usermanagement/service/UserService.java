@@ -43,9 +43,9 @@ public class UserService {
     }
 
     @Transactional
-    public void saveUserWithRole(User user, Role role) {
+    public User saveUserWithRole(User user, Role role) {
         roleRepository.save(role);  // First save the role
-        userRepository.save(user);  // Then save the user
+        return userRepository.save(user);  // Then save the user
     }
 
 //    public void saveUser(User user, Role role) {

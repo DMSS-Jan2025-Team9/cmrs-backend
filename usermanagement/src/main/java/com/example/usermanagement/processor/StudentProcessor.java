@@ -1,10 +1,9 @@
 package com.example.usermanagement.processor;
 
 import com.example.usermanagement.factory.UserFactory;
-import com.example.usermanagement.model.ProgramResponse;
-import com.example.usermanagement.model.Role;
-import com.example.usermanagement.model.Student;
-import com.example.usermanagement.model.User;
+import com.example.usermanagement.model.*;
+import com.example.usermanagement.repository.PermissionRepository;
+import com.example.usermanagement.repository.RoleRepository;
 import com.example.usermanagement.service.UserService;
 import com.example.usermanagement.strategy.NameCleaningStrategy;
 import com.example.usermanagement.validation.FirstNameValidator;
@@ -17,6 +16,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.HashSet;
+import java.util.List;
+
 @Component
 @StepScope
 public class StudentProcessor implements ItemProcessor<Student, Student> {
@@ -32,9 +35,13 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
     // Fetch jobId from parameters
     private String jobId;
 
+    private final PermissionRepository permissionRepository;
+    private final RoleRepository roleRepository;
+
 
     // Constructor to initialize the validation chain and name cleaning strategy
-    public StudentProcessor(NameCleaningStrategy nameCleaningStrategy, UserService userService,@Value("#{jobParameters['jobId']}") String jobId) {
+    public StudentProcessor(NameCleaningStrategy nameCleaningStrategy, UserService userService,@Value("#{jobParameters['jobId']}") String jobId,
+                            PermissionRepository permissionRepository,RoleRepository roleRepository) {
         // Initialize the validation chain with validators
         this.validationChain = new StudentValidationChain()
                 .addHandler(new FirstNameValidator())
@@ -44,6 +51,8 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
         // Initialize the name cleaning strategy
         this.nameCleaningStrategy = nameCleaningStrategy;
         this.userService = userService;
+        this.permissionRepository = permissionRepository;
+        this.roleRepository = roleRepository;
         this.restTemplate = new RestTemplate();
     }
 
@@ -118,11 +127,28 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
         studentRole.setDescription("Regular user who can view and register for courses");
         studentRole.setRoleName("student"); // Set the role name
 
+        // Fetch only 'view_course' and 'register_course' permissions
+        List<Permission> studentPermissions = permissionRepository.findByPermissionNameIn(
+                List.of("view_course", "register_course")
+        );
+
+        // Assign to role
+        studentRole.setPermissions(new HashSet<>(studentPermissions));
+
+        // Save the role (if it’s new or you want to update permissions)
+        roleRepository.save(studentRole);
+
         // Use the UserFactory to create and save the user
         User user = UserFactory.createUser(student, studentRole);
 
         // Save the user and role using UserService
-        userService.saveUserWithRole(user, studentRole); // U
+        userService.saveUserWithRole(user, studentRole);
+
+        // Link the saved user to the student
+        student.setUser(user);
+
+        // Save student again with user_id
+        student = userService.saveStudent(student);
 
         // Log the student details after processing
         System.out.println("After processing student: " + student);
