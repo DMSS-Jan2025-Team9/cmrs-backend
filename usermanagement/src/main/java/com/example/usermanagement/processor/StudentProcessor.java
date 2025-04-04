@@ -1,42 +1,28 @@
 package com.example.usermanagement.processor;
 
-import com.example.usermanagement.dto.ProgramResponse;
-import com.example.usermanagement.model.Role;
-import com.example.usermanagement.model.Student;
-import com.example.usermanagement.model.User;
+import com.example.usermanagement.factory.UserFactory;
+import com.example.usermanagement.model.*;
+import com.example.usermanagement.repository.PermissionRepository;
+import com.example.usermanagement.repository.RoleRepository;
 import com.example.usermanagement.service.UserService;
 import com.example.usermanagement.strategy.NameCleaningStrategy;
 import com.example.usermanagement.validation.FirstNameValidator;
 import com.example.usermanagement.validation.LastNameValidator;
 import com.example.usermanagement.validation.StudentValidationChain;
+
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-public class StudentProcessor implements ItemProcessor<Student, Student> {
-//    @Override
-//    public Student process(Student student) throws Exception {
-//        return student;
-//    }
+import java.util.HashSet;
+import java.util.List;
 
-//    @Override
-//    public Student process(Student student) throws Exception {
-//        // Log the student details (for debugging purposes)
-//        System.out.println("Processing student: " + student);
-//
-//        // Perform some validation (example: check if the student has a valid name)
-//        if (student.getName() == null || student.getName().isEmpty()) {
-//            throw new IllegalArgumentException("Student name cannot be empty");
-//        }
-//
-//        // Example transformation (e.g., capitalize name)
-//        String name = student.getName();
-//        student.setName(name != null ? name.toUpperCase() : name);
-//
-//        // You can add more transformations or actions here...
-//
-//        return student;  // Return the processed student
-//    }
+@Component
+@StepScope
+public class StudentProcessor implements ItemProcessor<Student, Student> {
 
     private final StudentValidationChain validationChain;
 
@@ -46,18 +32,27 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
 
     private final RestTemplate restTemplate;
     private final String programApiUrl = "http://localhost:8081/api/program/";
+    // Fetch jobId from parameters
+    private String jobId;
+
+    private final PermissionRepository permissionRepository;
+    private final RoleRepository roleRepository;
 
 
     // Constructor to initialize the validation chain and name cleaning strategy
-    public StudentProcessor(NameCleaningStrategy nameCleaningStrategy, UserService userService) {
+    public StudentProcessor(NameCleaningStrategy nameCleaningStrategy, UserService userService,@Value("#{jobParameters['jobId']}") String jobId,
+                            PermissionRepository permissionRepository,RoleRepository roleRepository) {
         // Initialize the validation chain with validators
         this.validationChain = new StudentValidationChain()
                 .addHandler(new FirstNameValidator())
                 .addHandler(new LastNameValidator());
 
+        this.jobId = jobId;
         // Initialize the name cleaning strategy
         this.nameCleaningStrategy = nameCleaningStrategy;
         this.userService = userService;
+        this.permissionRepository = permissionRepository;
+        this.roleRepository = roleRepository;
         this.restTemplate = new RestTemplate();
     }
 
@@ -65,6 +60,7 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
     public Student process(Student student) throws Exception {
         // Log the student details (for debugging)
         System.out.println("Processing student: " + student);
+        student.setJobId(jobId); // Set the jobId before writing to DB
 
         // Validate using the chain
         validationChain.validate(student);
@@ -101,7 +97,6 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
             }
         }
 
-
         // **Save the student to generate the studentId**
         student = userService.saveStudent(student); // Assuming a method in userService that saves the student entity and generates studentId.
 
@@ -118,8 +113,9 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
 
             // Ensure the final ID is no longer than 5 digits (excluding the "S")
             if (fullStudentId.length() > 6) {
-                // Trim the random padding if the length exceeds 6 characters (including "S")
-                fullStudentId = "U" + baseStudentId.substring(0, 5 - randomPadding);
+                // If length exceeds 6, trim the random padding appropriately
+                int excessLength = fullStudentId.length() - 6;
+                fullStudentId = fullStudentId.substring(0, fullStudentId.length() - excessLength);
             }
 
             // Set the final full ID with the prefix "S" and adjusted padding
@@ -128,19 +124,37 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
 
         // **Create User for the Student**
         Role studentRole = new Role(); // Assuming you have a default student role
+        studentRole.setDescription("Regular user who can view and register for courses");
         studentRole.setRoleName("student"); // Set the role name
 
-        User user = userService.createAndSaveUser(student, studentRole);
+        // Fetch only 'view_course' and 'register_course' permissions
+        List<Permission> studentPermissions = permissionRepository.findByPermissionNameIn(
+                List.of("view_course", "register_course")
+        );
 
+        // Assign to role
+        studentRole.setPermissions(new HashSet<>(studentPermissions));
+
+        // Save the role (if it’s new or you want to update permissions)
+        roleRepository.save(studentRole);
+
+        // Use the UserFactory to create and save the user
+        User user = UserFactory.createUser(student, studentRole);
+
+        // Save the user and role using UserService
+        userService.saveUserWithRole(user, studentRole);
+
+        // Link the saved user to the student
+        student.setUser(user);
+
+        // Save student again with user_id
+        student = userService.saveStudent(student);
 
         // Log the student details after processing
         System.out.println("After processing student: " + student);
 
-
         // Log user creation
         System.out.println("Created user: " + user);
-
-
 
         return student;
     }

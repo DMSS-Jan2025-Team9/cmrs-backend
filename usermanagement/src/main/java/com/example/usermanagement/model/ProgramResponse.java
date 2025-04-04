@@ -1,4 +1,4 @@
-package com.example.usermanagement.dto;
+package com.example.usermanagement.model;
 
 import java.util.List;
 

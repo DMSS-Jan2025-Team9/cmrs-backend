@@ -2,6 +2,7 @@ package com.example.usermanagement.controller;
 
 import com.example.usermanagement.model.Student;
 import com.example.usermanagement.repository.StudentRepository;
+import com.example.usermanagement.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,9 @@ public class StudentController {
     @Autowired
     private StudentRepository studentRepository;
 
+    @Autowired
+    private StudentService studentService;
+
     // Get all students
     @GetMapping
     public List<Student> getStudents() {
@@ -26,6 +30,11 @@ public class StudentController {
         return studentRepository.findById(id)
             .map(student -> ResponseEntity.ok(student))
             .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/program/{programName}")
+    public List<Student> getStudentsByProgram(@PathVariable String programName) {
+        return studentService.findStudentsByProgram(programName);
     }
 
 

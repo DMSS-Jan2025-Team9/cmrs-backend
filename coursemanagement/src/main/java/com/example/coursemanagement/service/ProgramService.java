@@ -4,6 +4,8 @@ import com.example.coursemanagement.model.Program;
 import com.example.coursemanagement.repository.ProgramRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,4 +28,9 @@ public class ProgramService {
             throw new RuntimeException("Program not found with ID: " + programId); // Handle case where Program is not found
         }
     }
+
+    public List<Program> getAllPrograms() {
+        return programRepository.findAll(); // Fetches all programs from the database
+    }
+
 }

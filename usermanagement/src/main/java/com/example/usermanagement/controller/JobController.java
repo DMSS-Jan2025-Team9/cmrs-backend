@@ -1,11 +1,9 @@
 package com.example.usermanagement.controller;
 
+import com.example.usermanagement.model.Student;
+import com.example.usermanagement.repository.StudentRepository;
+import com.example.usermanagement.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.hibernate.annotations.Parameter;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -14,8 +12,6 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,20 +21,25 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/jobs")
 public class JobController {
 
 
-    private JobLauncher jobLauncher;
+    private final JobLauncher jobLauncher;
 
-    private Job job;
+    private final Job job;
+    private final StudentRepository studentRepository;
+    private final UserService userService;
 
     // Constructor Injection (Best Practice)
-    public JobController(JobLauncher jobLauncher, Job job) {
+    public JobController(JobLauncher jobLauncher, Job job, UserService userService, StudentRepository studentRepository) {
         this.jobLauncher = jobLauncher;
         this.job = job;
+        this.userService = userService;
+        this.studentRepository = studentRepository;
     }
 
 
@@ -56,16 +57,19 @@ public class JobController {
 
     @PostMapping("/importStudents")
     @Operation(summary = "Upload CSV and trigger batch job", description = "Uploads a CSV file to be processed by the batch job.")
-    public void importCsvToDBJob(
+    public ResponseEntity<Object> importCsvToDBJob(
             @RequestParam("csvFile") MultipartFile file) throws IOException {
 
         // Save the file temporarily to disk or process it directly
         File tempFile = new File("C:/tmp/cmrs-students-list/" + file.getOriginalFilename());
         file.transferTo(tempFile);
 
+        String jobId = "job_" + System.currentTimeMillis(); // Unique job ID
+
         // Trigger the job
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("csvFile", tempFile.getAbsolutePath())
+                .addString("jobId", jobId) // Pass job ID to Job
                 .addLong("startAt", System.currentTimeMillis())
                 .toJobParameters();
 
@@ -75,5 +79,21 @@ public class JobController {
                  JobParametersInvalidException e) {
             e.printStackTrace();
         }
+
+        // Fetch the data from the student table (assuming you have a repository or service to do so)
+//        List<Student> students = userService.getAllStudents(); // Adjust as necessary for your setup
+//        for (Student student : students) {
+//            System.out.println(student);
+//        }
+//        return ResponseEntity.ok(students); // Return the student list after job completion
+
+        // Fetch only the students processed in this job
+        List<Student> students = studentRepository.findByJobId(jobId);  // Fetch only this job's students
+        System.out.println("students: " + students);
+        System.out.println("job id: " + jobId);
+        return ResponseEntity.ok(students);  // Return only this job’s students
+
     }
+
+
 }

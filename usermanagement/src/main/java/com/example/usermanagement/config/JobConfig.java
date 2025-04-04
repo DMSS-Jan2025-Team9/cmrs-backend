@@ -4,6 +4,8 @@ import com.example.usermanagement.listener.StudentJobCompletionListener;
 import com.example.usermanagement.mapper.StudentFieldSetMapper;
 import com.example.usermanagement.model.Student;
 import com.example.usermanagement.processor.StudentProcessor;
+import com.example.usermanagement.repository.PermissionRepository;
+import com.example.usermanagement.repository.RoleRepository;
 import com.example.usermanagement.repository.StudentRepository;
 import com.example.usermanagement.repository.UserRepository;
 import com.example.usermanagement.service.UserService;
@@ -36,13 +38,17 @@ public class JobConfig {
 
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
+    private final PermissionRepository permissionRepository;
+    private final RoleRepository roleRepository;
 
     private final StudentJobCompletionListener studentJobCompletionListener;
 
     // Explicit Constructor Injection
-    public JobConfig(StudentRepository studentRepository, StudentJobCompletionListener listener, UserRepository userRepository) {
+    public JobConfig(StudentRepository studentRepository, StudentJobCompletionListener listener, UserRepository userRepository,PermissionRepository permissionRepository, RoleRepository roleRepository) {
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
+        this.permissionRepository = permissionRepository;
+        this.roleRepository = roleRepository;
         this.studentJobCompletionListener = listener;
     }
 
@@ -89,7 +95,8 @@ public class JobConfig {
 //    }
 
     @Bean
-    public StudentProcessor processor(UserService userService) {
+    @StepScope
+    public StudentProcessor processor(UserService userService, @Value("#{jobParameters['jobId']}") String jobId) {
         // Initialize both strategies and pass them to the composite strategy
         NameCleaningStrategy removeSpecialCharsStrategy = new RemoveSpecialCharsStrategy();
         NameCleaningStrategy capitalizeNameStrategy = new CapitalizeNameStrategy();
@@ -98,7 +105,7 @@ public class JobConfig {
         NameCleaningStrategy compositeStrategy = new CompositeNameCleaningStrategy(removeSpecialCharsStrategy, capitalizeNameStrategy);
 
         // Pass the composite strategy to the StudentProcessor
-        return new StudentProcessor(compositeStrategy, userService);
+        return new StudentProcessor(compositeStrategy, userService, jobId,permissionRepository,roleRepository);
     }
 
 
@@ -117,7 +124,7 @@ public class JobConfig {
         return new StepBuilder("csv-step", jobRepository)
                 .<Student, Student>chunk(10, transactionManager)
                 .reader(reader(null))
-                .processor(processor(userService))
+                .processor(processor(userService,null))
                 .writer(writer())
                 .taskExecutor(taskExecutor())
                 .build();

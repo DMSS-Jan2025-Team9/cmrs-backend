@@ -78,6 +78,7 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> getRoles(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key())
@@ -88,6 +89,7 @@ public class JwtTokenProvider {
         return claims.get("roles", List.class);
     }
     
+    @SuppressWarnings("unchecked")
     public List<String> getPermissions(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key())
