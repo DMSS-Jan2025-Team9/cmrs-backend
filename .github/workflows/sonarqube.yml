@@ -36,9 +36,16 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: password123
           MYSQL_DATABASE: ${{ matrix.db_name }}
+          # Initialize with privileges
+          MYSQL_USER: sonaruser
+          MYSQL_PASSWORD: sonarpass
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
     
     steps:
       - uses: actions/checkout@v4
@@ -66,23 +73,57 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       
+      # Initialize the database schema to avoid test failures
+      - name: Initialize Database Schema
+        run: |
+          echo "Initializing database schema for ${{ matrix.service }}..."
+          mysql -h 127.0.0.1 -P 3306 -u root -ppassword123 ${{ matrix.db_name }} -e "
+          CREATE DATABASE IF NOT EXISTS ${{ matrix.db_name }} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+          GRANT ALL PRIVILEGES ON ${{ matrix.db_name }}.* TO 'sonaruser'@'%';
+          FLUSH PRIVILEGES;
+          "
+      
       - name: Build and analyze
         working-directory: ./${{ matrix.service }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           DB_NAME: ${{ matrix.db_name }}
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ matrix.db_name }}
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ matrix.db_name }}?createDatabaseIfNotExist=true
           SPRING_DATASOURCE_USERNAME: root
           SPRING_DATASOURCE_PASSWORD: password123
-          HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
+          # Set Hibernate to create-drop for test execution
+          SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+          SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
+          # Add debugging for Hibernate
+          SPRING_JPA_PROPERTIES_HIBERNATE_SHOW_SQL: true
+          SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: true
         run: |
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          # Run the SonarQube analysis with detailed test reports
+          mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.projectKey=${{ matrix.service }} \
-          -Dsonar.projectName='${{ matrix.service }}'
+          -Dsonar.projectName='${{ matrix.service }}' \
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+          -Dsonar.tests=src/test \
+          -Dsonar.test.inclusions=**/*Test.java \
+          -Dsonar.java.coveragePlugin=jacoco \
+          -Dsonar.verbose=true
       
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
+        if: success() || failure()  # Upload artifacts even if tests fail
         with:
           name: ${{ matrix.service }}-artifact
-          path: ${{ matrix.service }}/target/*.jar
+          path: |
+            ${{ matrix.service }}/target/*.jar
+            ${{ matrix.service }}/target/site/jacoco/
+            ${{ matrix.service }}/target/surefire-reports/
+      
+      - name: Upload Test Reports
+        uses: actions/upload-artifact@v4
+        if: failure()  # Only upload detailed reports on failure
+        with:
+          name: ${{ matrix.service }}-test-reports
+          path: |
+            ${{ matrix.service }}/target/surefire-reports/
+            ${{ matrix.service }}/target/failsafe-reports/
