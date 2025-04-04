@@ -12,6 +12,7 @@ on:
 
 jobs:
   build:
+    name: Build and Test
     strategy:
       matrix:
         service: 
@@ -72,6 +73,3 @@ jobs:
       with:
         name: ${{ matrix.service }}-artifact
         path: ${{ matrix.service }}/target/*.jar
-          
-
-

@@ -2,7 +2,9 @@ name: SonarQube Analysis
 
 on:
   push:
-    branches: ['feature/github-actions']
+    branches: ['**']
+  pull_request:
+    branches: ['**']
 
 jobs:
   sonarqube:
@@ -81,11 +83,67 @@ jobs:
           FLUSH PRIVILEGES;
           "
       
-      - name: Build and analyze
+      # SonarQube connection diagnostics
+      - name: SonarQube Connection Diagnostics
+        run: |
+          echo "Running SonarQube connection diagnostics..."
+          
+          # Check if SONAR_HOST_URL is set
+          if [ -z "${{ secrets.SONAR_HOST_URL }}" ]; then
+            echo "::error::SONAR_HOST_URL secret is not set!"
+            exit 1
+          else
+            echo "SONAR_HOST_URL is set to: ${{ secrets.SONAR_HOST_URL }}"
+          fi
+          
+          # Check if SONAR_TOKEN is set (without revealing it)
+          if [ -z "${{ secrets.SONAR_TOKEN }}" ]; then
+            echo "::error::SONAR_TOKEN secret is not set!"
+            exit 1
+          else
+            echo "SONAR_TOKEN is set (value not shown for security)"
+          fi
+          
+          # Try to reach the SonarQube server
+          echo "Testing connection to SonarQube server..."
+          
+          # Using curl to test connectivity
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.SONAR_HOST_URL }}/api/system/status")
+          
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Successfully connected to SonarQube server!"
+          else
+            echo "::warning::Could not connect to SonarQube server, status code: $HTTP_CODE"
+            
+            # Additional diagnostics
+            echo "Running network diagnostics..."
+            
+            # Extract hostname from URL
+            SONAR_HOST=$(echo "${{ secrets.SONAR_HOST_URL }}" | sed -E 's|^https?://([^:/]+).*|\1|')
+            
+            # Try to ping the host
+            echo "Attempting to ping $SONAR_HOST..."
+            ping -c 3 $SONAR_HOST
+            
+            # Try traceroute
+            echo "Traceroute to $SONAR_HOST..."
+            traceroute $SONAR_HOST
+            
+            # Check if we can at least reach the server (even if authentication fails)
+            echo "Checking if server is reachable (without authentication)..."
+            curl -v "${{ secrets.SONAR_HOST_URL }}/api/system/status"
+          fi
+          
+          # Check for common issues in URL format
+          if [[ "${{ secrets.SONAR_HOST_URL }}" == *"localhost"* ]] || [[ "${{ secrets.SONAR_HOST_URL }}" == *"127.0.0.1"* ]]; then
+            echo "::error::SONAR_HOST_URL contains 'localhost' or '127.0.0.1'! GitHub Actions cannot access your local machine."
+            echo "You must use a publicly accessible URL for your SonarQube server."
+          fi
+      
+      # Split build and SonarQube analysis to isolate potential issues
+      - name: Build and Run Tests
         working-directory: ./${{ matrix.service }}
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           DB_NAME: ${{ matrix.db_name }}
           SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ matrix.db_name }}?createDatabaseIfNotExist=true
           SPRING_DATASOURCE_USERNAME: root
@@ -97,8 +155,33 @@ jobs:
           SPRING_JPA_PROPERTIES_HIBERNATE_SHOW_SQL: true
           SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: true
         run: |
+          # Run the build and tests first, without SonarQube
+          mvn -B clean verify
+      
+      - name: Check SonarQube Connection
+        id: sonar-check
+        continue-on-error: true
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          # Simple check if SonarQube server is reachable
+          if curl -s -f -o /dev/null $SONAR_HOST_URL/api/system/status; then
+            echo "SonarQube server is reachable at $SONAR_HOST_URL"
+            echo "sonar_reachable=true" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::Unable to reach SonarQube server at $SONAR_HOST_URL"
+            echo "sonar_reachable=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Run SonarQube Analysis
+        working-directory: ./${{ matrix.service }}
+        if: steps.sonar-check.outputs.sonar_reachable == 'true'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
           # Run the SonarQube analysis with detailed test reports
-          mvn -B clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.projectKey=${{ matrix.service }} \
           -Dsonar.projectName='${{ matrix.service }}' \
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
