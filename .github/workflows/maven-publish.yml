@@ -73,3 +73,12 @@ jobs:
       with:
         name: ${{ matrix.service }}-artifact
         path: ${{ matrix.service }}/target/*.jar
+
+    - name: Upload Test Reports
+      uses: actions/upload-artifact@v4
+      if: failure()  # Only upload detailed reports on failure
+      with:
+        name: ${{ matrix.service }}-test-reports
+        path: |
+          ${{ matrix.service }}/target/surefire-reports/
+          ${{ matrix.service }}/target/failsafe-reports/
