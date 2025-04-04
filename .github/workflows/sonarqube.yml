@@ -1,39 +1,88 @@
-name: Build
+name: SonarQube Analysis
 
 on:
   push:
     branches: ['**']
-
+  pull_request:
+    branches: ['**']
 
 jobs:
-  build:
-    name: Build and analyze
+  sonarqube:
+    name: SonarQube Analysis
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: 
+          - coursemanagement
+          - courserecommendation
+          - courseregistration
+          - notificationservice
+          # - usermanagement
+        include:
+          - service: coursemanagement 
+            db_name: course_db
+          - service: courserecommendation
+            db_name: recommendation_db
+          - service: courseregistration
+            db_name: registration_db
+          - service: notificationservice
+            db_name: notification_db
+          # - service: usermanagement
+          #   db_name: user_management_db
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password123
+          MYSQL_DATABASE: ${{ matrix.db_name }}
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: 21
-          distribution: 'temurin' # Alternative distribution options are available.
+          distribution: 'temurin'
           cache: 'maven'
+      
       - name: Cache SonarQube packages
         uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
+          key: ${{ runner.os }}-sonar-${{ matrix.service }}
+          restore-keys: ${{ runner.os }}-sonar-${{ matrix.service }}
+      
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
+      
       - name: Build and analyze
+        working-directory: ./${{ matrix.service }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=test -Dsonar.projectName='test'
+          DB_NAME: ${{ matrix.db_name }}
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ matrix.db_name }}
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: password123
+          HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
+        run: |
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.projectKey=${{ matrix.service }} \
+          -Dsonar.projectName='${{ matrix.service }}'
+      
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.service }}-artifact
+          path: ${{ matrix.service }}/target/*.jar
