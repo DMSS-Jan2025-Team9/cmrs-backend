@@ -19,7 +19,7 @@ jobs:
           - courserecommendation
           - courseregistration
           - notificationservice
-          # - usermanagement
+          - usermanagement
         include:
           - service: coursemanagement 
             db_name: course_db
@@ -29,8 +29,8 @@ jobs:
             db_name: registration_db
           - service: notificationservice
             db_name: notification_db
-          # - service: usermanagement
-          #   db_name: user_management_db
+          - service: usermanagement
+            db_name: user_management_db
   
     runs-on: ubuntu-latest
     services:
