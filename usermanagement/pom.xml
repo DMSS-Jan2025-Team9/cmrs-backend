@@ -95,6 +95,12 @@
 			<artifactId>spring-security-crypto</artifactId>
 			<version>6.4.2</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-csv</artifactId>
+			<version>1.10.0</version>
+		</dependency>
+
 
 	</dependencies>
 
@@ -103,14 +109,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.5.2</version> <!-- Use your current version -->
-				<configuration>
-					<argLine>"-javaagent:C:/Users/Zchyrlene Mae/.m2/repository/org/mockito/mockito-core/5.15.2/mockito-core-5.15.2.jar"</argLine>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

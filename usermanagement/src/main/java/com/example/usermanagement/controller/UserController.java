@@ -1,8 +1,10 @@
 package com.example.usermanagement.controller;
 
-import com.example.usermanagement.dto.User;
+import com.example.usermanagement.model.User;
 import com.example.usermanagement.repository.UserRepository;
+import com.example.usermanagement.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,8 +27,5 @@ public class UserController {
     public User getUser(@PathVariable Long id) {
         return userRepository.findById(id).orElse(null);  // Returns null if not found
     }
-
-
-
 
 }
