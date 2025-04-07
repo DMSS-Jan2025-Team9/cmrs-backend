@@ -76,10 +76,13 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
 
         // 5. Generate studentFullId and update user email/username
         if (student.getStudentId() != null) {
-            String baseId = student.getStudentId().toString();
-            int randomPadding = 1000 + (int) (Math.random() * 9000); // Generates 1000–9999
-            String fullStudentId = "U" + baseId + randomPadding;     // e.g., U221234
+            Long idLong = student.getStudentId();
 
+            // Pad ID to 2 digits if it's less than 10
+            String paddedId = (idLong < 10) ? String.format("%02d", idLong) : idLong.toString();
+
+            int randomPadding = 1000 + (int) (Math.random() * 9000); // Generates 1000–9999
+            String fullStudentId = "U" + paddedId + randomPadding;   // e.g., U010234 or U101234
             student.setStudentFullId(fullStudentId);
 
             savedUser.setUsername(fullStudentId);
