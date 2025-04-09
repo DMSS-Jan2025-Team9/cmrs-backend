@@ -1,5 +1,7 @@
 package com.example.usermanagement.controller;
 
+import com.example.usermanagement.dto.StudentDto;
+import com.example.usermanagement.mapper.StudentMapper;
 import com.example.usermanagement.model.Student;
 import com.example.usermanagement.repository.StudentRepository;
 import com.example.usermanagement.service.UserService;
@@ -22,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/jobs")
@@ -88,10 +91,19 @@ public class JobController {
 //        return ResponseEntity.ok(students); // Return the student list after job completion
 
         // Fetch only the students processed in this job
-        List<Student> students = studentRepository.findByJobId(jobId);  // Fetch only this job's students
-        System.out.println("students: " + students);
-        System.out.println("job id: " + jobId);
-        return ResponseEntity.ok(students);  // Return only this job’s students
+//        List<Student> students = studentRepository.findByJobId(jobId);  // Fetch only this job's students
+//        System.out.println("students: " + students);
+//        System.out.println("job id: " + jobId);
+//        return ResponseEntity.ok(students);  // Return only this job’s students
+
+
+        List<Student> students = studentRepository.findByJobId(jobId);
+
+        List<StudentDto> studentDtos = students.stream()
+                .map(StudentMapper::toDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(studentDtos);
 
     }
 

@@ -1,5 +1,6 @@
 package com.example.coursemanagement.controller;
 
+import com.example.coursemanagement.dto.ProgramDto;
 import com.example.coursemanagement.model.Program;
 import com.example.coursemanagement.service.ProgramService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,16 +20,29 @@ public class ProgramController {
     }
 
     // Get a program by programId
+//    @GetMapping("/{programId}")
+//    public Program getProgramById(@PathVariable Long programId) {
+//        // Fetch the program details by programId using the ProgramService
+//        return programService.getProgramById(programId);
+//    }
+//
+//    // Get all programs
+//    @GetMapping
+//    public List<Program> getAllPrograms() {
+//        return programService.getAllPrograms();  // Calls the service method to fetch all programs
+//    }
+
+
+    // ✅ Return ProgramDto instead of entity
     @GetMapping("/{programId}")
-    public Program getProgramById(@PathVariable Long programId) {
-        // Fetch the program details by programId using the ProgramService
+    public ProgramDto getProgramById(@PathVariable Long programId) {
         return programService.getProgramById(programId);
     }
 
-    // Get all programs
+    // ✅ Return list of ProgramDto
     @GetMapping
-    public List<Program> getAllPrograms() {
-        return programService.getAllPrograms();  // Calls the service method to fetch all programs
+    public List<ProgramDto> getAllPrograms() {
+        return programService.getAllPrograms();
     }
 }
 
