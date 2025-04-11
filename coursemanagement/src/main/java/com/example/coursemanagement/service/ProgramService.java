@@ -1,12 +1,13 @@
 package com.example.coursemanagement.service;
 
-import com.example.coursemanagement.model.Program;
-import com.example.coursemanagement.repository.ProgramRepository;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import com.example.coursemanagement.model.Program;
+import com.example.coursemanagement.repository.ProgramRepository;
 
 @Service
 public class ProgramService {
@@ -19,7 +20,7 @@ public class ProgramService {
     }
 
     // Method to fetch program details by programId
-    public Program getProgramById(Long programId) {
+    public Program getProgramById(Integer programId) {
         // Check if program exists by programId
         Optional<Program> program = programRepository.findById(programId);
         if (program.isPresent()) {
