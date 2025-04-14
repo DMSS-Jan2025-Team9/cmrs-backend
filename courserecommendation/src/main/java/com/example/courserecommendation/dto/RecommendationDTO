@@ -1,0 +1,90 @@
+package com.example.courserecommendation.dto;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.example.courserecommendation.dto.CourseDTO;
+import com.example.courserecommendation.dto.ProgramDTO;
+
+public class RecommendationDTO {
+
+    private Long recommendationId;
+
+    private Long programId;
+    private List<String> courseNames;
+
+    private ProgramDTO program;
+    private List<CourseDTO> recommendedCourses;
+
+
+    // Private constructor to enforce the use of the Builder
+    private RecommendationDTO(Builder builder) {
+        this.program = builder.program;
+        this.recommendedCourses = builder.recommendedCourses;
+    }
+
+    // Getters
+    public ProgramDTO getProgram() {
+        return program;
+    }
+
+    public List<CourseDTO> getRecommendedCourses() {
+        return recommendedCourses;
+    }
+
+    // Builder class
+    public static class Builder {
+        private ProgramDTO program;
+        private List<CourseDTO> recommendedCourses;
+
+        public Builder program(ProgramDTO program) {
+            this.program = program;
+            return this;
+        }
+
+        public Builder recommendedCourses(List<CourseDTO> recommendedCourses) {
+            this.recommendedCourses = recommendedCourses;
+            return this;
+        }
+
+        public CourseRecommendation build() {
+            return new CourseRecommendation(this);
+        }
+    }
+
+    // Constructors
+    public RecommendationDTO() {
+    }
+
+    public RecommendationDTO(Long programId, Long courseId) {
+        this.programId = programId;
+        this.courseId = courseId;
+    }
+
+    // Getters and Setters
+    public Long getRecommendationId() {
+        return recommendationId;
+    }
+
+    public void setRecommendationId(Long recommendationId) {
+        this.recommendationId = recommendationId;
+    }
+
+    public Long getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(Long programId) {
+        this.programId = programId;
+    }
+
+    public Long getCourseId() {
+        return courseId;
+    }
+
+    public void setCourseId(Long courseId) {
+        this.courseId = courseId;
+    }
+
+
+}
