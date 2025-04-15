@@ -57,12 +57,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         .collect(Collectors.toList()));
                 
                 // Load user details
-                // UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                 
                 // Create authentication object
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    // userDetails,
-                    username,
+                    userDetails,
+                    // username,
                     null,
                     authorities
                 );

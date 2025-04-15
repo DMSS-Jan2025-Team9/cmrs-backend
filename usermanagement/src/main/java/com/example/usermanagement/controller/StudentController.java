@@ -2,6 +2,7 @@ package com.example.usermanagement.controller;
 
 import com.example.usermanagement.dto.StudentDto;
 import com.example.usermanagement.mapper.StudentMapper;
+import com.example.usermanagement.model.Staff;
 import com.example.usermanagement.model.Student;
 import com.example.usermanagement.repository.StudentRepository;
 import com.example.usermanagement.service.StudentService;
@@ -46,6 +47,16 @@ public class StudentController {
         return studentRepository.findAll().stream()
                 .map(StudentMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping("/allInfo")
+    public ResponseEntity<List<Student>> getAllStudents() {
+        return ResponseEntity.ok(studentService.getAllStudents());
+    }
+
+    @GetMapping("/byUserId/{userId}")
+    public ResponseEntity<Student> getStudentById(@PathVariable Integer userId) {
+        return ResponseEntity.ok(studentService.getStudentByUserId(userId));
     }
 
     // GET a single student by ID as DTO

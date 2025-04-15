@@ -55,12 +55,12 @@ public class JwtTokenProvider {
                 .distinct()
                 .collect(Collectors.toList());
         
-        String email = user.getEmail();
+        Integer userId = user.getUserId();
 
         Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
         claims.put("roles", roles);
         claims.put("permissions", permissions);
-        claims.put("email", email);
         
         return Jwts.builder()
                 .setClaims(claims)

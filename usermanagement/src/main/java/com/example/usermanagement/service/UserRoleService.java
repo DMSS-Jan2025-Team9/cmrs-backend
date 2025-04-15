@@ -1,6 +1,8 @@
 package com.example.usermanagement.service;
 
 import com.example.usermanagement.dto.*;
+import com.example.usermanagement.mapper.PermissionMapper;
+import com.example.usermanagement.mapper.RoleMapper;
 import com.example.usermanagement.model.*;
 import com.example.usermanagement.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,12 @@ public class UserRoleService {
     
     @Autowired
     private PermissionRepository permissionRepository;
+
+    @Autowired
+    private RoleMapper roleMapper;
+
+    @Autowired
+    private PermissionMapper permissionMapper;
     
     // Get all users with their roles and permissions
     public List<UserRoleResponse> getAllUsers() {
@@ -41,7 +49,7 @@ public class UserRoleService {
     // Get all roles with permissions
     public List<RoleDto> getAllRoles() {
         return roleRepository.findAll().stream()
-                .map(this::mapRoleToDto)
+                .map(roleMapper::mapRoleToDto)
                 .collect(Collectors.toList());
     }
     
@@ -49,13 +57,20 @@ public class UserRoleService {
     public RoleDto getRoleById(Integer roleId) {
         Role role = roleRepository.findByRoleId(roleId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found with id: " + roleId));
-        return mapRoleToDto(role);
+        return roleMapper.mapRoleToDto(role);
+    }
+
+    // Get permission by ID
+    public PermissionDto getPermissionById(Integer permissionId) {
+        Permission permission = permissionRepository.findByPermissionId(permissionId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Permission not found with id: " + permissionId));
+        return permissionMapper.mapPermissionToDto(permission);
     }
     
     // Get all permissions
     public List<PermissionDto> getAllPermissions() {
         return permissionRepository.findAll().stream()
-                .map(this::mapPermissionToDto)
+                .map(permissionMapper::mapPermissionToDto)
                 .collect(Collectors.toList());
     }
     
@@ -84,7 +99,7 @@ public class UserRoleService {
             savedRole = roleRepository.save(savedRole);
         }
         
-        return mapRoleToDto(savedRole);
+        return roleMapper.mapRoleToDto(savedRole);
     }
     
     // Create a new permission
@@ -100,7 +115,7 @@ public class UserRoleService {
         permission.setDescription(permissionDto.getDescription());
         
         Permission savedPermission = permissionRepository.save(permission);
-        return mapPermissionToDto(savedPermission);
+        return permissionMapper.mapPermissionToDto(savedPermission);
     }
     
     // Update role permissions
@@ -117,7 +132,7 @@ public class UserRoleService {
         role.setPermissions(permissions);
         roleRepository.save(role);
         
-        return mapRoleToDto(role);
+        return roleMapper.mapRoleToDto(role);
     }
     
     // Assign roles to user
@@ -155,7 +170,7 @@ public class UserRoleService {
         
         roleRepository.save(role);
         
-        return mapRoleToDto(role);
+        return roleMapper.mapRoleToDto(role);
     }
     
     // Update permission
@@ -175,28 +190,41 @@ public class UserRoleService {
         
         permissionRepository.save(permission);
         
-        return mapPermissionToDto(permission);
+        return permissionMapper.mapPermissionToDto(permission);
     }
     
     // Delete role
     @Transactional
-    public void deleteRole(Integer roleId) {
-        Role role = roleRepository.findByRoleId(roleId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found with id: " + roleId));
-        
-        // Check if it's the only role assigned to any user
-        List<User> usersWithOnlyThisRole = userRepository.findAll().stream()
-                .filter(user -> user.getRoles().size() == 1 && 
-                        user.getRoles().stream().anyMatch(r -> r.getRoleId().equals(roleId)))
-                .collect(Collectors.toList());
-        
-        if (!usersWithOnlyThisRole.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
-                    "Cannot delete role. It is the only role assigned to " + usersWithOnlyThisRole.size() + " user(s).");
-        }
-        
-        roleRepository.deleteByRoleId(roleId);
+public void deleteRole(Integer roleId) {
+    Role role = roleRepository.findByRoleId(roleId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found with id: " + roleId));
+
+    // Check if any users only have this one role
+    List<User> usersWithOnlyThisRole = userRepository.findAll().stream()
+        .filter(user -> user.getRoles().size() == 1 &&
+                user.getRoles().stream().anyMatch(r -> r.getRoleId().equals(roleId)))
+        .collect(Collectors.toList());
+
+    if (!usersWithOnlyThisRole.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Cannot delete role. It is the only role assigned to " + usersWithOnlyThisRole.size() + " user(s).");
     }
+
+    // Remove the role from all users
+    List<User> usersWithThisRole = userRepository.findAll().stream()
+        .filter(user -> user.getRoles().stream().anyMatch(r -> r.getRoleId().equals(roleId)))
+        .collect(Collectors.toList());
+
+    for (User user : usersWithThisRole) {
+        user.getRoles().removeIf(r -> r.getRoleId().equals(roleId));
+    }
+
+    userRepository.saveAll(usersWithThisRole); // Important: this updates the join table
+
+    // Now delete the role safely
+    roleRepository.delete(role);
+}
+
     
     // Delete permission
     @Transactional
@@ -215,27 +243,9 @@ public class UserRoleService {
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
         dto.setRoles(user.getRoles().stream()
-                .map(this::mapRoleToDto)
+                .map(roleMapper::mapRoleToDto)
                 .collect(Collectors.toSet()));
         return dto;
     }
     
-    private RoleDto mapRoleToDto(Role role) {
-        RoleDto dto = new RoleDto();
-        dto.setRoleId(role.getRoleId());
-        dto.setRoleName(role.getRoleName());
-        dto.setDescription(role.getDescription());
-        dto.setPermissions(role.getPermissions().stream()
-                .map(this::mapPermissionToDto)
-                .collect(Collectors.toSet()));
-        return dto;
-    }
-    
-    private PermissionDto mapPermissionToDto(Permission permission) {
-        PermissionDto dto = new PermissionDto();
-        dto.setPermissionId(permission.getPermissionId());
-        dto.setPermissionName(permission.getPermissionName());
-        dto.setDescription(permission.getDescription());
-        return dto;
-    }
 }

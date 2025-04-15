@@ -2,6 +2,7 @@ package com.example.usermanagement.service;
 
 import com.example.usermanagement.dto.StudentDto;
 import com.example.usermanagement.mapper.StudentMapper;
+import com.example.usermanagement.model.Staff;
 import com.example.usermanagement.model.Student;
 import com.example.usermanagement.repository.StudentRepository;
 import org.springframework.stereotype.Service;
@@ -21,5 +22,14 @@ public class StudentService {
         return studentRepository.findByProgramName(programName).stream()
                 .map(StudentMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    public List<Student> getAllStudents() {
+        return studentRepository.findAll();
+    }
+
+    public Student getStudentByUserId(Integer userId) {
+        return studentRepository.findByUser_UserId(userId)
+                .orElseThrow(() -> new RuntimeException("Student not found with id: " + userId));
     }
 }

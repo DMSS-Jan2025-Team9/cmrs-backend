@@ -121,3 +121,17 @@ VALUES
  (SELECT permission_id FROM permission WHERE permission_name = 'manage_permissions')),
 ((SELECT role_id FROM role WHERE role_name = 'admin'), 
  (SELECT permission_id FROM permission WHERE permission_name = 'manage_role_permissions'));
+
+ CREATE TABLE staff (
+    staff_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,  -- Foreign key to users table
+    name VARCHAR(255) NOT NULL,  -- Renamed full_name to name
+    staff_full_id VARCHAR(255),
+    first_name VARCHAR(255),
+    last_name VARCHAR(255),
+    department VARCHAR(100),
+    position VARCHAR(100),
+    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE
+);
+
+drop table admin
