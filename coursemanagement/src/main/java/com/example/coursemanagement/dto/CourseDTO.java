@@ -12,12 +12,14 @@ public class CourseDTO {
     private int maxCapacity;
     private String status;
     private String courseDesc;
+    private Integer programId;
+    
 
     // Constructor
-     public CourseDTO() {
+    public CourseDTO() {
     }
 
-    public CourseDTO(Integer courseId, String courseName, String courseCode, Date registrationStart, 
+  public CourseDTO(Integer courseId, String courseName, String courseCode, Date registrationStart, 
                      Date registrationEnd, int maxCapacity, String status, String courseDesc) {
         this.courseId = courseId;
         this.courseName = courseName;
@@ -27,6 +29,19 @@ public class CourseDTO {
         this.maxCapacity = maxCapacity;
         this.status = status;
         this.courseDesc = courseDesc;
+    }
+
+    public CourseDTO(Integer courseId, String courseName, String courseCode, Date registrationStart, 
+                     Date registrationEnd, int maxCapacity, String status, String courseDesc, Integer programId) {
+        this.courseId = courseId;
+        this.courseName = courseName;
+        this.courseCode = courseCode;
+        this.registrationStart = registrationStart;
+        this.registrationEnd = registrationEnd;
+        this.maxCapacity = maxCapacity;
+        this.status = status;
+        this.courseDesc = courseDesc;
+        this.programId = programId;
     }
 
     // Getters and Setters
@@ -93,4 +108,13 @@ public class CourseDTO {
     public void setCourseDesc(String courseDesc) {
         this.courseDesc = courseDesc;
     }
+
+    public Integer getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(Integer programId) {
+        this.programId = programId;
+    }
+
 }

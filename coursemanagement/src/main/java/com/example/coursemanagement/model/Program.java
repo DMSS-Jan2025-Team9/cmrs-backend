@@ -1,14 +1,21 @@
 package com.example.coursemanagement.model;
 
-import jakarta.persistence.*;
 import java.util.List;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class Program {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long programId;
+    private Integer programId;
 
     private String programName;
 
@@ -23,11 +30,11 @@ public class Program {
     private List<Course> courses;
 
     // Getters and Setters
-    public Long getProgramId() {
+    public Integer getProgramId() {
         return programId;
     }
 
-    public void setProgramId(Long programId) {
+    public void setProgramId(Integer programId) {
         this.programId = programId;
     }
 

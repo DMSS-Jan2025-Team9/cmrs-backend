@@ -1,8 +1,20 @@
 package com.example.coursemanagement.model;
 
-import jakarta.persistence.*;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Version;
 
 @Entity
 public class Course {
@@ -28,10 +40,16 @@ public class Course {
 
     private String courseDesc;  
 
-    public Course(){} // Default constructor
+    @Version
+    private Long version;
+    
+
+    public Course(){this.programs = new HashSet<>();
+    } // Default constructor
 
     public Course(Integer courseId, String courseName, String courseCode, Date registrationStart, 
         Date registrationEnd, int maxCapacity, String status, String courseDesc) {
+        this.programs = new HashSet<>();
     this.courseId = courseId;
     this.courseName = courseName;
     this.courseCode = courseCode;
@@ -108,6 +126,11 @@ public class Course {
         this.courseDesc = courseDesc;
     }
 
-     @OneToMany(mappedBy="course")
-    private List<Class> classes;
+    @ManyToMany
+    @JoinTable(
+        name = "program_course",
+        joinColumns = @JoinColumn(name = "course_id"),
+        inverseJoinColumns = @JoinColumn(name = "program_id")
+    )
+    private Set<Program> programs;
 }
