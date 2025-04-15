@@ -4,7 +4,7 @@ import java.util.List;
 
 public class ProgramDto {
 
-    private Long programId;
+    private Integer programId;
     private String programName;
     private String programDesc;
     private List<CourseDTO> courses;
@@ -14,7 +14,7 @@ public class ProgramDto {
     }
 
     // All-args constructor
-    public ProgramDto(Long programId, String programName, String programDesc, List<CourseDTO> courses) {
+    public ProgramDto(Integer programId, String programName, String programDesc, List<CourseDTO> courses) {
         this.programId = programId;
         this.programName = programName;
         this.programDesc = programDesc;
@@ -22,11 +22,11 @@ public class ProgramDto {
     }
 
     // Getters and Setters
-    public Long getProgramId() {
+    public Integer getProgramId() {
         return programId;
     }
 
-    public void setProgramId(Long programId) {
+    public void setProgramId(Integer programId) {
         this.programId = programId;
     }
 

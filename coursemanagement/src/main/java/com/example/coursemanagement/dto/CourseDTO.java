@@ -19,6 +19,18 @@ public class CourseDTO {
     public CourseDTO() {
     }
 
+  public CourseDTO(Integer courseId, String courseName, String courseCode, Date registrationStart, 
+                     Date registrationEnd, int maxCapacity, String status, String courseDesc) {
+        this.courseId = courseId;
+        this.courseName = courseName;
+        this.courseCode = courseCode;
+        this.registrationStart = registrationStart;
+        this.registrationEnd = registrationEnd;
+        this.maxCapacity = maxCapacity;
+        this.status = status;
+        this.courseDesc = courseDesc;
+    }
+
     public CourseDTO(Integer courseId, String courseName, String courseCode, Date registrationStart, 
                      Date registrationEnd, int maxCapacity, String status, String courseDesc, Integer programId) {
         this.courseId = courseId;
