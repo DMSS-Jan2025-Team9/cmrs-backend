@@ -108,7 +108,7 @@ jobs:
         run: |
           # Run the SonarQube analysis with detailed test reports
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.host.url=https://ec4f-116-89-50-222.ngrok-free.app \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
           -Dsonar.projectKey=${{ matrix.service }} \
           -Dsonar.projectName='${{ matrix.service }}' \
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
