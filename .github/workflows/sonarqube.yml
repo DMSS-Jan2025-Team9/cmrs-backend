@@ -17,7 +17,7 @@ jobs:
           - courserecommendation
           - courseregistration
           - notificationservice
-          # - usermanagement
+          - usermanagement
         include:
           - service: coursemanagement 
             db_name: course_db
@@ -27,8 +27,8 @@ jobs:
             db_name: registration_db
           - service: notificationservice
             db_name: notification_db
-          # - service: usermanagement
-          #   db_name: user_management_db
+          - service: usermanagement
+            db_name: user_management_db
     
     services:
       mysql:
@@ -72,11 +72,6 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       
-      - name: Test SonarQube Connection
-        run: |
-          echo "Testing connection to SonarQube server via ngrok..."
-          curl -v "https://ec4f-116-89-50-222.ngrok-free.app/api/system/status" --connect-timeout 10
-      
       - name: Initialize Database Schema
         run: |
           echo "Initializing database schema for ${{ matrix.service }}..."
@@ -105,12 +100,12 @@ jobs:
         working-directory: ./${{ matrix.service }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           # Run the SonarQube analysis with detailed test reports
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-          -Dsonar.projectKey=${{ matrix.service }} \
-          -Dsonar.projectName='${{ matrix.service }}' \
+          -Dsonar.projectKey='DMSS_ ${{ matrix.service }}' \
+          -Dsonar.projectName='DMSS_${{ matrix.service }}' \
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
           -Dsonar.tests=src/test \
           -Dsonar.test.inclusions=**/*Test.java \
