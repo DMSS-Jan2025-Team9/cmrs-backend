@@ -95,6 +95,12 @@ jobs:
         run: |
           # Run the build and tests first, without SonarQube
           mvn -B clean verify
+
+      - name: Test SonarQube Connection
+        run: |
+          echo "Testing connection to SonarQube server..."
+          curl -v "${{ secrets.SONAR_HOST_URL }}/api/system/status" --connect-timeout 10
+
       
       - name: Run SonarQube Analysis
         working-directory: ./${{ matrix.service }}
