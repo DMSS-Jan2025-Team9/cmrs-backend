@@ -75,7 +75,7 @@ jobs:
       - name: Test SonarQube Connection
         run: |
           echo "Testing connection to SonarQube server via ngrok..."
-          curl -v "https://c596-2406-3003-2003-4622-84db-879f-461-8dee.ngrok-free.app/api/system/status" --connect-timeout 10
+          curl -v "http://3.1.79.190:9000/" --connect-timeout 10
       
       - name: Initialize Database Schema
         run: |
@@ -108,7 +108,7 @@ jobs:
         run: |
           # Run the SonarQube analysis with detailed test reports
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.host.url=https://c596-2406-3003-2003-4622-84db-879f-461-8dee.ngrok-free.app/ \
+          -Dsonar.host.url=http://3.1.79.190:9000/ \
           -Dsonar.projectKey=${{ matrix.service }} \
           -Dsonar.projectName='${{ matrix.service }}' \
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
