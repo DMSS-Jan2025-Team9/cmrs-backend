@@ -72,6 +72,11 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       
+      - name: Test SonarQube Connection
+        run: |
+          echo "Testing connection to SonarQube server via ngrok..."
+          curl -v "http://3.1.79.190:9000/" --connect-timeout 10
+      
       - name: Initialize Database Schema
         run: |
           echo "Initializing database schema for ${{ matrix.service }}..."
@@ -95,23 +100,17 @@ jobs:
         run: |
           # Run the build and tests first, without SonarQube
           mvn -B clean verify
-
-      - name: Test SonarQube Connection
-        run: |
-          echo "Testing connection to SonarQube server..."
-          curl -v "${{ secrets.SONAR_HOST_URL }}/api/system/status" --connect-timeout 10
-
       
       - name: Run SonarQube Analysis
         working-directory: ./${{ matrix.service }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: |
           # Run the SonarQube analysis with detailed test reports
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.projectKey='DMSS_ ${{ matrix.service }}' \
-          -Dsonar.projectName='DMSS_${{ matrix.service }}' \
+          -Dsonar.host.url= http://3.1.79.190:9000/ \
+          -Dsonar.projectKey=${{ matrix.service }} \
+          -Dsonar.projectName='${{ matrix.service }}' \
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
           -Dsonar.tests=src/test \
           -Dsonar.test.inclusions=**/*Test.java \
