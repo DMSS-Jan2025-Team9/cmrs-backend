@@ -75,21 +75,12 @@ jobs:
       - name: Test SonarQube Connection
         run: |
           echo "Testing connection to SonarQube server via ngrok..."
-          curl -v "http://3.1.79.190:9000/" --connect-timeout 10
+          curl -v "https://c596-2406-3003-2003-4622-84db-879f-461-8dee.ngrok-free.app/api/system/status" --connect-timeout 10
       
       - name: Initialize Database Schema
         run: |
           echo "Initializing database schema for ${{ matrix.service }}..."
-          # Wait for MySQL to be fully available
-          for i in {1..30}; do
-            if mysql -h 127.0.0.1 -P 3306 -u root -ppassword123 -e "SELECT 1"; then
-              break
-            fi
-            echo "Waiting for MySQL to be available... attempt $i"
-            sleep 1
-          done
-          
-          mysql -h 127.0.0.1 -P 3306 -u root -ppassword123 -e "
+          mysql -h 127.0.0.1 -P 3306 -u root -ppassword123 ${{ matrix.db_name }} -e "
           CREATE DATABASE IF NOT EXISTS ${{ matrix.db_name }} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
           GRANT ALL PRIVILEGES ON ${{ matrix.db_name }}.* TO 'sonaruser'@'%';
           FLUSH PRIVILEGES;
@@ -99,13 +90,11 @@ jobs:
         working-directory: ./${{ matrix.service }}
         env:
           DB_NAME: ${{ matrix.db_name }}
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ matrix.db_name }}?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ matrix.db_name }}?createDatabaseIfNotExist=true
           SPRING_DATASOURCE_USERNAME: root
           SPRING_DATASOURCE_PASSWORD: password123
-          SPRING_JPA_HIBERNATE_DDL_AUTO: create
+          SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
           SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
-          SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: true
-          SPRING_SQL_INIT_MODE: always
           SPRING_JPA_PROPERTIES_HIBERNATE_SHOW_SQL: true
           SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: true
         run: |
@@ -119,7 +108,7 @@ jobs:
         run: |
           # Run the SonarQube analysis with detailed test reports
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-          -Dsonar.host.url= http://3.1.79.190:9000/ \
+          -Dsonar.host.url= https://c596-2406-3003-2003-4622-84db-879f-461-8dee.ngrok-free.app/ \
           -Dsonar.projectKey=${{ matrix.service }} \
           -Dsonar.projectName='${{ matrix.service }}' \
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
