@@ -10,16 +10,16 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    
+
     @Autowired
     private AuthService authService;
-    
+
     @PostMapping("/login")
     public ResponseEntity<JwtAuthResponse> login(@RequestBody LoginDto loginDto) {
         JwtAuthResponse response = authService.login(loginDto);
         return ResponseEntity.ok(response);
     }
-    
+
     @PostMapping("/register/student")
     public ResponseEntity<String> registerStudent(@RequestBody StudentUserRegistrationDto registrationDto) {
         UserRegistrationDto userRegistrationDto = registrationDto.getUser();

@@ -20,48 +20,48 @@ import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenProvider {
-    
+
     @Value("${app.jwt-secret}")
     private String jwtSecret;
-    
+
     @Value("${app.jwt-expiration-milliseconds}")
     private long jwtExpirationDate;
 
     @Autowired
     private UserRepository userRepository;
-    
+
     private Key key() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
-    
+
     public String generateToken(Authentication authentication) {
         String username = authentication.getName();
         Date currentDate = new Date();
         Date expireDate = new Date(currentDate.getTime() + jwtExpirationDate);
 
-          // Get user roles and permissions
+        // Get user roles and permissions
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
-        
+
         // Extract role names
         List<String> roles = user.getRoles().stream()
                 .map(Role::getRoleName)
                 .collect(Collectors.toList());
-        
+
         // Extract permission names
         List<String> permissions = user.getRoles().stream()
                 .flatMap(role -> role.getPermissions().stream())
                 .map(Permission::getPermissionName)
                 .distinct()
                 .collect(Collectors.toList());
-        
+
         Integer userId = user.getUserId();
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("roles", roles);
         claims.put("permissions", permissions);
-        
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(username)
@@ -70,14 +70,14 @@ public class JwtTokenProvider {
                 .signWith(key())
                 .compact();
     }
-    
+
     public String getUsername(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        
+
         return claims.getSubject();
     }
 
@@ -88,10 +88,10 @@ public class JwtTokenProvider {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        
+
         return claims.get("roles", List.class);
     }
-    
+
     @SuppressWarnings("unchecked")
     public List<String> getPermissions(String token) {
         Claims claims = Jwts.parserBuilder()
@@ -99,11 +99,10 @@ public class JwtTokenProvider {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        
+
         return claims.get("permissions", List.class);
     }
 
-    
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()

@@ -2,43 +2,26 @@ package com.example.usermanagement.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import com.example.usermanagement.dto.PasswordUpdateDto;
 import com.example.usermanagement.dto.StaffDto;
+import com.example.usermanagement.dto.StaffResponseDto;
+import com.example.usermanagement.dto.StaffUpdateRequestDto;
 import com.example.usermanagement.model.Staff;
-import com.example.usermanagement.repository.StaffRepository;
 
-@Service
-public class StaffService {
+public interface StaffService {
+    List<Staff> getAllStaff();
 
-    @Autowired
-    private StaffRepository staffRepository;
+    Staff getStaffByUserId(Integer userId);
 
-    public List<Staff> getAllStaff() {
-        return staffRepository.findAll();
-    }
+    StaffResponseDto getStaffResponseByUserId(Integer userId);
 
-    public Staff getStaffByUserId(Integer id) {
-        return staffRepository.findByUser_UserId(id)
-                .orElseThrow(() -> new RuntimeException("Staff not found with id: " + id));
-    }
+    Staff updateStaff(Long id, StaffDto staffDto);
 
-    public Staff updateStaff(Long id, StaffDto staffDto) {
-    Staff staff = staffRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Staff not found with id: " + id));
+    StaffResponseDto updateStaff(Integer userId, StaffUpdateRequestDto updateDto);
 
-    staff.setFirstName(staffDto.getFirstName().trim());
-    staff.setLastName(staffDto.getLastName().trim());
-    staff.setName(staff.getFirstName() + " " + staff.getLastName());
-    staff.setDepartment(staffDto.getDepartment());
-    staff.setPosition(staffDto.getPosition());
+    boolean updatePassword(Integer userId, PasswordUpdateDto passwordUpdateDto);
 
-    return staffRepository.save(staff);
-}
+    void deleteStaff(Integer userId);
 
-
-    public void deleteStaff(Integer id) {
-        staffRepository.deleteByUser_UserId(id);
-    }
+    List<StaffResponseDto> getAllStaffResponses();
 }
