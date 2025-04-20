@@ -42,13 +42,6 @@ CREATE TABLE role_permission (
     FOREIGN KEY (permission_id) REFERENCES permission(permission_id) ON DELETE CASCADE
 );
 
--- 6. Admin table: stores admin-specific information (linked to users table)
-CREATE TABLE admin (
-    admin_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,  -- Foreign key to users table
-    name VARCHAR(255) NOT NULL,  -- Renamed full_name to name
-    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE
-);
 
 -- 7. Student table: stores student-specific information (linked to users table)
 CREATE TABLE student (
