@@ -64,6 +64,7 @@ jobs:
           SPRING_DATASOURCE_USERNAME: root
           SPRING_DATASOURCE_PASSWORD: password123
           HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
+          SPRING_PROFILES_ACTIVE: test
 
       # Upload Build Artifact with retention days to manage storage usage
       - name: Upload Build Artifact
