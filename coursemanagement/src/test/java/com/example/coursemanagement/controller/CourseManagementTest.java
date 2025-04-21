@@ -441,7 +441,7 @@ class CourseManagementTest {
           new Date(), 
           new Date(), 
           40, 
-          "Closed", 
+          "inactive", 
           "Updated description",
           programId2 // Changed program ID
       );
@@ -454,7 +454,7 @@ class CourseManagementTest {
           updatedCourseDTO.getRegistrationStart(), 
           updatedCourseDTO.getRegistrationEnd(), 
           40, 
-          "Closed", 
+          "inactive", 
           "Updated description"
       );
       
@@ -489,7 +489,7 @@ class CourseManagementTest {
               .andExpect(jsonPath("$.courseId").value(courseId))
               .andExpect(jsonPath("$.courseName").value("Updated Course Name"))
               .andExpect(jsonPath("$.maxCapacity").value(40))
-              .andExpect(jsonPath("$.status").value("Closed"))
+              .andExpect(jsonPath("$.status").value("inactive"))
               .andExpect(jsonPath("$.courseDesc").value("Updated description"))
               .andExpect(jsonPath("$.programId").value(programId2)); // Check program ID
       
