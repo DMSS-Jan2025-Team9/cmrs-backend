@@ -46,6 +46,12 @@ public class CourseManagementController {
             .toList();
     }
 
+    @GetMapping("/getActiveCourses")
+    public List<CourseDTO> getAllActiveCourses() {
+         return courseService.findAllActiveCourses().stream().map(course -> modelMapper.map(course, CourseDTO.class))
+            .toList();
+    }
+
     // Get course by course code
     @GetMapping("/courseCode/{courseCode}")
     public ResponseEntity<CourseDTO> getCourse(@PathVariable String courseCode) {

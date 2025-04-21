@@ -8,6 +8,7 @@ import com.example.coursemanagement.model.Course;
 public interface CourseService {
 
     List<Course> getAllCourses();
+    List<Course> findAllActiveCourses();
     Course getCourse(String courseCode);
     Course getCourseWithProgram(String courseCode);
     Course getCourseById(int courseId);
