@@ -1,9 +1,9 @@
 package com.example.coursemanagement.service;
 
-import com.example.coursemanagement.model.ClassSchedule;
-
 import java.time.LocalTime;
 import java.util.List;
+
+import com.example.coursemanagement.model.ClassSchedule;
 
 
 public interface ClassScheduleService {
@@ -13,4 +13,8 @@ public interface ClassScheduleService {
     ClassSchedule editClassSchedule(ClassSchedule course);
     boolean existsByCourseAndDayOfWeekAndStartTimeAndEndTime(Integer courseId, String dayOfWeek, LocalTime startTime,
             LocalTime endTime);
+
+    List<ClassSchedule> getFullClasses();
+    List<ClassSchedule> getNearFullClasses(); 
+    List<ClassSchedule> getMostlyEmptyClasses();
 } 

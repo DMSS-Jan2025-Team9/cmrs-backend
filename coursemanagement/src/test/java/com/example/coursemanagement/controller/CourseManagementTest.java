@@ -1,6 +1,7 @@
 package com.example.coursemanagement.controller;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -113,6 +114,90 @@ class CourseManagementTest {
                 .andExpect(jsonPath("$[2].courseName").value(course3.getCourseName()));
 
        verify(courseService, times(1)).getAllCourses();
+    }
+
+    @Test
+    void testGetAllActiveCourses() throws Exception {
+        // Create a list of active courses - in this case, we'll use our existing courses
+        List<Course> activeCourses = Arrays.asList(course1, course2, course3);
+        
+        // Mock the service method to return the active courses
+        when(courseService.findAllActiveCourses()).thenReturn(activeCourses);
+        
+        // Mock the model mapper for each course
+        when(modelMapper.map(course1, CourseDTO.class)).thenReturn(courseDTO1);
+        when(modelMapper.map(course2, CourseDTO.class)).thenReturn(courseDTO2);
+        when(modelMapper.map(course3, CourseDTO.class)).thenReturn(courseDTO3);
+
+        // Perform the GET request
+        mockMvc.perform(get("/api/courses/getActiveCourses")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$[0].courseId").value(course1.getCourseId()))
+                .andExpect(jsonPath("$[1].courseId").value(course2.getCourseId()))
+                .andExpect(jsonPath("$[2].courseId").value(course3.getCourseId()));
+
+        // Verify the service method was called once
+        verify(courseService, times(1)).findAllActiveCourses();
+    }
+
+    @Test
+    void testGetAllActiveCoursesEmptyList() throws Exception {
+        // Mock the service method to return an empty list (no active courses)
+        when(courseService.findAllActiveCourses()).thenReturn(Collections.emptyList());
+        
+        // Perform the GET request
+        mockMvc.perform(get("/api/courses/getActiveCourses")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+
+        // Verify the service method was called once
+        verify(courseService, times(1)).findAllActiveCourses();
+    }
+
+    @Test
+    void testGetAllActiveCoursesMixedStatus() throws Exception {
+        // Create courses with different status values
+        Course activeCourse1 = new Course(1, "Active Course 1", "AC101", new Date(), 
+                                        new Date(), 100, "Open", "Description 1");
+        Course activeCourse2 = new Course(2, "Active Course 2", "AC102", new Date(), 
+                                        new Date(), 50, "Open", "Description 2");
+        Course inactiveCourse = new Course(3, "Inactive Course", "IC101", new Date(), 
+                                        new Date(), 80, "Closed", "Description 3");
+        
+        // Create corresponding DTOs
+        CourseDTO activeCourseDTO1 = new CourseDTO(1, "Active Course 1", "AC101", new Date(), 
+                                                new Date(), 100, "Open", "Description 1", programId1);
+        CourseDTO activeCourseDTO2 = new CourseDTO(2, "Active Course 2", "AC102", new Date(), 
+                                                new Date(), 50, "Open", "Description 2", programId1);
+        
+        // Create a list of active courses
+        List<Course> activeCourses = Arrays.asList(activeCourse1, activeCourse2);
+        
+        // Mock the service method to return only active courses
+        when(courseService.findAllActiveCourses()).thenReturn(activeCourses);
+        
+        // Mock the model mapper for each active course
+        when(modelMapper.map(activeCourse1, CourseDTO.class)).thenReturn(activeCourseDTO1);
+        when(modelMapper.map(activeCourse2, CourseDTO.class)).thenReturn(activeCourseDTO2);
+
+        // Perform the GET request
+        mockMvc.perform(get("/api/courses/getActiveCourses")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].courseId").value(activeCourse1.getCourseId()))
+                .andExpect(jsonPath("$[0].status").value("Open"))
+                .andExpect(jsonPath("$[1].courseId").value(activeCourse2.getCourseId()))
+                .andExpect(jsonPath("$[1].status").value("Open"));
+
+        // Verify the service method was called once
+        verify(courseService, times(1)).findAllActiveCourses();
     }
 
     // Test for /getCourses endpoint 
@@ -441,7 +526,7 @@ class CourseManagementTest {
           new Date(), 
           new Date(), 
           40, 
-          "Closed", 
+          "inactive", 
           "Updated description",
           programId2 // Changed program ID
       );
@@ -454,7 +539,7 @@ class CourseManagementTest {
           updatedCourseDTO.getRegistrationStart(), 
           updatedCourseDTO.getRegistrationEnd(), 
           40, 
-          "Closed", 
+          "inactive", 
           "Updated description"
       );
       
@@ -489,7 +574,7 @@ class CourseManagementTest {
               .andExpect(jsonPath("$.courseId").value(courseId))
               .andExpect(jsonPath("$.courseName").value("Updated Course Name"))
               .andExpect(jsonPath("$.maxCapacity").value(40))
-              .andExpect(jsonPath("$.status").value("Closed"))
+              .andExpect(jsonPath("$.status").value("inactive"))
               .andExpect(jsonPath("$.courseDesc").value("Updated description"))
               .andExpect(jsonPath("$.programId").value(programId2)); // Check program ID
       
