@@ -1,7 +1,6 @@
 package com.example.coursemanagement.service.impl;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +38,10 @@ public class CourseServiceImpl implements CourseService{
     @Override
     public List<Course> getAllCourses() {
        return courseRepository.findAll();
+    }
+
+    public List<Course> findAllActiveCourses() {
+        return courseRepository.findByStatus("active");
     }
 
     @Override

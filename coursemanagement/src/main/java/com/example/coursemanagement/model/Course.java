@@ -14,7 +14,6 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.persistence.Version;
 
 @Entity
 public class Course {
@@ -39,9 +38,6 @@ public class Course {
     private String status;
 
     private String courseDesc;  
-
-    @Version
-    private Long version;
     
 
     public Course(){this.programs = new HashSet<>();
