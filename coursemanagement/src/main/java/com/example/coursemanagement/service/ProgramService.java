@@ -1,29 +1,16 @@
 package com.example.coursemanagement.service;
 
+import java.util.List;
+
+import com.example.coursemanagement.dto.CourseDTO;
+import com.example.coursemanagement.dto.ProgramDto;
+import com.example.coursemanagement.model.Course;
 import com.example.coursemanagement.model.Program;
-import com.example.coursemanagement.repository.ProgramRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import java.util.Optional;
 
-@Service
-public class ProgramService {
+public interface ProgramService {
 
-    private final ProgramRepository programRepository;
-
-    @Autowired
-    public ProgramService(ProgramRepository programRepository) {
-        this.programRepository = programRepository;
-    }
-
-    // Method to fetch program details by programId
-    public Program getProgramById(Long programId) {
-        // Check if program exists by programId
-        Optional<Program> program = programRepository.findById(programId);
-        if (program.isPresent()) {
-            return program.get(); // Return the Program details if found
-        } else {
-            throw new RuntimeException("Program not found with ID: " + programId); // Handle case where Program is not found
-        }
-    }
+    public ProgramDto getProgramById(Integer programId) ;
+    public List<ProgramDto> getAllPrograms();
+    public ProgramDto mapToDto(Program program);
+    public CourseDTO mapCourseToDto(Course course);
 }

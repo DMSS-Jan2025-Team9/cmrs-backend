@@ -1,4 +1,4 @@
-package com.example.usermanagement.dto;
+package com.example.usermanagement.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;

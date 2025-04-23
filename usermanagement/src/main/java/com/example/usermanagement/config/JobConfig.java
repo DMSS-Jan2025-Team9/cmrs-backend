@@ -2,16 +2,14 @@ package com.example.usermanagement.config;
 
 import com.example.usermanagement.listener.StudentJobCompletionListener;
 import com.example.usermanagement.mapper.StudentFieldSetMapper;
-import com.example.usermanagement.dto.Student;
+import com.example.usermanagement.model.Student;
 import com.example.usermanagement.processor.StudentProcessor;
-import com.example.usermanagement.repository.StudentRepository;
-import com.example.usermanagement.repository.UserRepository;
+import com.example.usermanagement.repository.*;
 import com.example.usermanagement.service.UserService;
 import com.example.usermanagement.strategy.CapitalizeNameStrategy;
 import com.example.usermanagement.strategy.CompositeNameCleaningStrategy;
 import com.example.usermanagement.strategy.NameCleaningStrategy;
 import com.example.usermanagement.strategy.RemoveSpecialCharsStrategy;
-//import lombok.Value;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -37,12 +35,15 @@ public class JobConfig {
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
 
+    private final UserRoleRepository userRoleRepository;
+
     private final StudentJobCompletionListener studentJobCompletionListener;
 
     // Explicit Constructor Injection
-    public JobConfig(StudentRepository studentRepository, StudentJobCompletionListener listener, UserRepository userRepository) {
+    public JobConfig(StudentRepository studentRepository, StudentJobCompletionListener listener, UserRepository userRepository,UserRoleRepository userRoleRepository) {
         this.studentRepository = studentRepository;
         this.userRepository = userRepository;
+        this.userRoleRepository = userRoleRepository;
         this.studentJobCompletionListener = listener;
     }
 
@@ -70,9 +71,6 @@ public class JobConfig {
         lineTokenizer.setStrict(false);
         lineTokenizer.setNames("programId", "firstName", "lastName","enrolledAt");
 
-//        BeanWrapperFieldSetMapper<Student> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
-//        fieldSetMapper.setTargetType(Student.class);
-
         // Use the custom field set mapper with User repository lookup
         StudentFieldSetMapper fieldSetMapper = new StudentFieldSetMapper(userRepository);
 
@@ -81,15 +79,9 @@ public class JobConfig {
         return lineMapper;
     }
 
-    // Processor for student data
-//    @Bean
-//    public StudentProcessor processor(){
-//
-//        return new StudentProcessor();
-//    }
-
     @Bean
-    public StudentProcessor processor(UserService userService) {
+    @StepScope
+    public StudentProcessor processor(UserService userService, @Value("#{jobParameters['jobId']}") String jobId) {
         // Initialize both strategies and pass them to the composite strategy
         NameCleaningStrategy removeSpecialCharsStrategy = new RemoveSpecialCharsStrategy();
         NameCleaningStrategy capitalizeNameStrategy = new CapitalizeNameStrategy();
@@ -98,7 +90,7 @@ public class JobConfig {
         NameCleaningStrategy compositeStrategy = new CompositeNameCleaningStrategy(removeSpecialCharsStrategy, capitalizeNameStrategy);
 
         // Pass the composite strategy to the StudentProcessor
-        return new StudentProcessor(compositeStrategy, userService);
+        return new StudentProcessor(compositeStrategy, userService, jobId,userRoleRepository);
     }
 
 
@@ -115,9 +107,9 @@ public class JobConfig {
     @Bean
     public Step step1(JobRepository jobRepository, PlatformTransactionManager transactionManager, UserService userService){
         return new StepBuilder("csv-step", jobRepository)
-                .<Student, Student>chunk(10, transactionManager)
+                .<Student, Student>chunk(100, transactionManager)
                 .reader(reader(null))
-                .processor(processor(userService))
+                .processor(processor(userService,null))
                 .writer(writer())
                 .taskExecutor(taskExecutor())
                 .build();

@@ -1,52 +1,59 @@
 package com.example.usermanagement.service;
 
-import com.example.usermanagement.dto.Role;
-import com.example.usermanagement.dto.Student;
-import com.example.usermanagement.dto.User;
+import com.example.usermanagement.model.Role;
+import com.example.usermanagement.model.Student;
+import com.example.usermanagement.model.User;
 import com.example.usermanagement.repository.StudentRepository;
 import com.example.usermanagement.repository.UserRepository;
+import com.example.usermanagement.repository.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.CannotAcquireLockException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Date;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 @Service
 public class UserService {
 
-
     @Autowired
     private StudentRepository studentRepository;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder,RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
     }
 
     public Student saveStudent(Student student) {
         // Save the student to the database and return the updated entity (with generated studentId)
-        return studentRepository.save(student);  // Assuming you have a StudentRepository to persist the student
+        return studentRepository.save(student);
     }
 
-    public User createAndSaveUser(Student student, Role studentRole) {
-        User user = new User();
-
-        // Create the username (first name + last name)
-        user.setUsername(student.getFirstName().toLowerCase() + student.getLastName().toLowerCase());
-        user.setPassword(passwordEncoder.encode("defaultpassword"));
-
-        // Create the email with student ID (first name + last name + student ID)
-        String email = student.getStudentFullId() + "@university.edu";
-
-        user.setEmail(email);
-        user.setCreatedAt(new Date());
-        user.setUpdatedAt(new Date());
-        //user.setRoles(Collections.singleton(studentRole));
-
+    @Retryable(
+            value = {CannotAcquireLockException.class},
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 1000)
+    )
+    public User saveUser(User user) {
         return userRepository.save(user);
     }
+
+    @Transactional
+    public User saveUserWithRole(User user, Role role) {
+        roleRepository.save(role);  // First save the role
+        return userRepository.save(user);  // Then save the user
+    }
+
+    public List<Student> getAllStudents() {
+        return studentRepository.findAll();
+    }
+
 }
 
