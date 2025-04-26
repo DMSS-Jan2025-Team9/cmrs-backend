@@ -3,6 +3,7 @@ package com.example.courseregistration.service.strategy;
 import com.example.courseregistration.dto.CreateRegistrationDTO;
 import com.example.courseregistration.dto.CourseClassDTO;
 import com.example.courseregistration.dto.RegistrationDTO;
+import com.example.courseregistration.dto.StudentDTO;
 import com.example.courseregistration.model.Registration;
 import com.example.courseregistration.repository.CourseRegistrationRepository;
 import org.springframework.http.HttpStatus;
@@ -34,18 +35,21 @@ public class GroupRegistrationCreationStrategy implements RegistrationCreationSt
 
     @Override
     public boolean supports(CreateRegistrationDTO dto) {
-        return dto.getStudentIds().size() > 1;
+        return dto.getStudentFullIds().size() > 1;
     }
 
     @Override
     public List<RegistrationDTO> create(CreateRegistrationDTO dto) {
-        List<Long> studentIds = dto.getStudentIds();
+        List<String> studentFullIds = dto.getStudentFullIds();
+        List<Long> studentIds = new ArrayList<>();
         // Generate groupRegistrationId
         Long maxId = courseRegistrationRepository.findMaxGroupRegistrationId();
         Long groupId = (maxId == null) ? 1L : maxId + 1;
 
-        for (Long sid : studentIds) {
+        for (String sid : studentFullIds) {
             microserviceClient.validateStudentExists(sid);
+            StudentDTO student = microserviceClient.fetchStudentByFullId(sid);
+            studentIds.add(student.getStudentId());
         }
 
         // Fetch class details

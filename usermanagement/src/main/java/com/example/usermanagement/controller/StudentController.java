@@ -57,6 +57,15 @@ public class StudentController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    //Get a single student bystudentFullId
+    @GetMapping("/studentFullId/{studentFullId}")
+    public ResponseEntity<StudentDto> getStudentByStudentFullId(@PathVariable String studentFullId) {
+        return studentRepository.findBystudentFullId(studentFullId)
+                .map(StudentMapper::toDto)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     // GET all students by program name as DTOs
     @GetMapping("/program/{programName}")
     public List<StudentDto> getStudentsByProgram(@PathVariable String programName) {

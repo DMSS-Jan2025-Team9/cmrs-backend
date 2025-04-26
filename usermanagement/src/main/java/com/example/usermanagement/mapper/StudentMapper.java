@@ -13,7 +13,7 @@ public class StudentMapper {
     public static StudentDto toDto(Student student) {
         StudentDto dto = new StudentDto();
         dto.setName(student.getName());
-        dto.setStudentId(String.valueOf(student.getStudentId()));
+        dto.setStudentId(student.getStudentId());
         dto.setStudentFullId(student.getStudentFullId());
         dto.setProgramName(student.getProgramName());
         if (student.getEnrolledAt() != null) {
