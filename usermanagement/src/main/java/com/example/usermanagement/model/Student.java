@@ -17,10 +17,6 @@ public class Student {
 
     private String studentFullId;  // The full student ID with prefix
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
     private String name;
 
     private Long programId;
@@ -33,6 +29,10 @@ public class Student {
     private String programName;
 
     private String jobId;
+    
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     // Getters and Setters
     public Long getStudentId() {

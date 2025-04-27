@@ -2,6 +2,7 @@ package com.example.usermanagement.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+
 import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -11,7 +12,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
+    private Integer userId;
 
     private String username;
 
@@ -35,11 +36,11 @@ public class User {
     private Set<Role> roles;
 
     // Getters and Setters
-    public Long getUserId() {
+    public Integer getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(Integer userId) {
         this.userId = userId;
     }
 

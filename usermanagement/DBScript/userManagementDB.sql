@@ -42,13 +42,6 @@ CREATE TABLE role_permission (
     FOREIGN KEY (permission_id) REFERENCES permission(permission_id) ON DELETE CASCADE
 );
 
--- 6. Admin table: stores admin-specific information (linked to users table)
-CREATE TABLE admin (
-    admin_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,  -- Foreign key to users table
-    name VARCHAR(255) NOT NULL,  -- Renamed full_name to name
-    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE
-);
 
 -- 7. Student table: stores student-specific information (linked to users table)
 CREATE TABLE student (
@@ -95,3 +88,43 @@ INSERT INTO student (user_id, name, program_id)
 VALUES (LAST_INSERT_ID(), 'John Doe', 1);
 INSERT INTO user_role (user_id, role_id) 
 VALUES (LAST_INSERT_ID(), (SELECT role_id FROM role WHERE role_name = 'student'));
+
+INSERT INTO permission (permission_name, description) 
+VALUES ('view_users', 'Permission to view user list'),
+       ('manage_user_roles', 'Permission to assign roles to users'),
+       ('view_roles', 'Permission to view role list'),
+       ('manage_roles', 'Permission to create/update/delete roles'),
+       ('view_permissions', 'Permission to view permissions list'),
+       ('manage_permissions', 'Permission to create/update/delete permissions'),
+       ('manage_role_permissions', 'Permission to assign permissions to roles');
+       
+INSERT INTO role_permission (role_id, permission_id) 
+VALUES 
+((SELECT role_id FROM role WHERE role_name = 'admin'), 
+ (SELECT permission_id FROM permission WHERE permission_name = 'view_users')),
+((SELECT role_id FROM role WHERE role_name = 'admin'), 
+ (SELECT permission_id FROM permission WHERE permission_name = 'manage_user_roles')),
+((SELECT role_id FROM role WHERE role_name = 'admin'), 
+ (SELECT permission_id FROM permission WHERE permission_name = 'view_roles')),
+((SELECT role_id FROM role WHERE role_name = 'admin'), 
+ (SELECT permission_id FROM permission WHERE permission_name = 'manage_roles')),
+((SELECT role_id FROM role WHERE role_name = 'admin'), 
+ (SELECT permission_id FROM permission WHERE permission_name = 'view_permissions')),
+((SELECT role_id FROM role WHERE role_name = 'admin'), 
+ (SELECT permission_id FROM permission WHERE permission_name = 'manage_permissions')),
+((SELECT role_id FROM role WHERE role_name = 'admin'), 
+ (SELECT permission_id FROM permission WHERE permission_name = 'manage_role_permissions'));
+
+ CREATE TABLE staff (
+    staff_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,  -- Foreign key to users table
+    name VARCHAR(255) NOT NULL,  -- Renamed full_name to name
+    staff_full_id VARCHAR(255),
+    first_name VARCHAR(255),
+    last_name VARCHAR(255),
+    department VARCHAR(100),
+    position VARCHAR(100),
+    FOREIGN KEY (user_id) REFERENCES user(user_id) ON DELETE CASCADE
+);
+
+drop table admin

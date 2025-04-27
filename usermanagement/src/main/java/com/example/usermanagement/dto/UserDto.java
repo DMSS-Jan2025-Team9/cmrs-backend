@@ -7,10 +7,10 @@ import java.util.List;
 
 @Data
 public class UserDto {
-    private Long userId;
+    private Integer userId;
     private String username;
     private String email;
     private Date createdAt;
     private Date updatedAt;
-    private List<String> roles; // role names only
+    private List<String> roles;
 }

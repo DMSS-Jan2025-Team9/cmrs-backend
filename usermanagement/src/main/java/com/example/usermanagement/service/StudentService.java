@@ -1,25 +1,27 @@
 package com.example.usermanagement.service;
 
-import com.example.usermanagement.dto.StudentDto;
-import com.example.usermanagement.mapper.StudentMapper;
-import com.example.usermanagement.model.Student;
-import com.example.usermanagement.repository.StudentRepository;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Service
-public class StudentService {
-    private final StudentRepository studentRepository;
+import com.example.usermanagement.dto.PasswordUpdateDto;
+import com.example.usermanagement.dto.StudentDto;
+import com.example.usermanagement.dto.StudentResponseDto;
+import com.example.usermanagement.dto.StudentUpdateRequestDto;
+import com.example.usermanagement.model.Student;
 
-    public StudentService(StudentRepository studentRepository) {
-        this.studentRepository = studentRepository;
-    }
+public interface StudentService {
+    List<Student> getAllStudents();
 
-    public List<StudentDto> findStudentsByProgram(String programName) {
-        return studentRepository.findByProgramName(programName).stream()
-                .map(StudentMapper::toDto)
-                .collect(Collectors.toList());
-    }
+    Student getStudentByUserId(Integer userId);
+
+    StudentResponseDto getStudentResponseByUserId(Integer userId);
+
+    List<StudentDto> findStudentsByProgram(String programName);
+
+    List<StudentResponseDto> getAllStudentResponses();
+
+    StudentResponseDto updateStudent(Integer userId, StudentUpdateRequestDto updateDto);
+
+    boolean updatePassword(Integer userId, PasswordUpdateDto passwordUpdateDto);
+
+    void deleteStudent(Integer userId);
 }
