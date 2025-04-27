@@ -4,7 +4,8 @@ import com.example.coursemanagement.dto.ClassDTO;
 import com.example.coursemanagement.model.Class;
 import com.example.coursemanagement.repository.ClassRepository;
 import org.springframework.stereotype.Service;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,7 +45,7 @@ public class ClassService {
                         courseClass.getMaxCapacity(),
                         courseClass.getVacancy()
                 ))
-                .orElseThrow(() -> new RuntimeException("Class not found with id: " + classId));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Class not found with id: " + classId));
     }
 
     public ClassDTO updateClass(Long classId, ClassDTO updatedClassDTO) {

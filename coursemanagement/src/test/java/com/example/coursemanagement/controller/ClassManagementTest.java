@@ -1,5 +1,31 @@
 package com.example.coursemanagement.controller;
 
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.Matchers.hasSize;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.example.coursemanagement.dto.ClassScheduleDTO;
 import com.example.coursemanagement.exception.DuplicateIDException;
 import com.example.coursemanagement.exception.InvalidCapacityException;
@@ -9,27 +35,6 @@ import com.example.coursemanagement.model.ClassSchedule;
 import com.example.coursemanagement.model.Course;
 import com.example.coursemanagement.service.ClassScheduleService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -57,6 +62,19 @@ class ClassManagementTest {
     private ClassScheduleDTO classScheduleDTO3;
     private List<ClassSchedule> classScheduleList;
     private List<ClassScheduleDTO> classScheduleDTOList;
+
+    private ClassSchedule fullClassSchedule;
+    private ClassSchedule nearFullClassSchedule;
+    private ClassSchedule mostlyEmptyClassSchedule;
+    private ClassScheduleDTO fullClassScheduleDTO;
+    private ClassScheduleDTO nearFullClassScheduleDTO;
+    private ClassScheduleDTO mostlyEmptyClassScheduleDTO;
+    private List<ClassSchedule> fullClassScheduleList;
+    private List<ClassSchedule> nearFullClassScheduleList;
+    private List<ClassSchedule> mostlyEmptyClassScheduleList;
+    private List<ClassScheduleDTO> fullClassScheduleDTOList;
+    private List<ClassScheduleDTO> nearFullClassScheduleDTOList;
+    private List<ClassScheduleDTO> mostlyEmptyClassScheduleDTOList;
 
     @BeforeEach
     void setUp() {
@@ -127,6 +145,43 @@ class ClassManagementTest {
             40, 
             40
         );
+
+                // DTOs for additional class schedules
+        fullClassScheduleDTO = new ClassScheduleDTO(
+            4, 
+            2, 
+            "Test Course 2", 
+            "CS102", 
+            "Thursday", 
+            LocalTime.of(10, 0), 
+            LocalTime.of(12, 0), 
+            25, 
+            0
+        );
+        
+        nearFullClassScheduleDTO = new ClassScheduleDTO(
+            5, 
+            1, 
+            "Test Course", 
+            "CS101", 
+            "Wednesday", 
+            LocalTime.of(14, 0), 
+            LocalTime.of(16, 0), 
+            50, 
+            8
+        );
+        
+        mostlyEmptyClassScheduleDTO = new ClassScheduleDTO(
+            6, 
+            2, 
+            "Test Course 2", 
+            "CS102", 
+            "Monday", 
+            LocalTime.of(16, 0), 
+            LocalTime.of(18, 0), 
+            30, 
+            25
+        );
         
         // Create list of class schedules
         classScheduleList = new ArrayList<>();
@@ -138,6 +193,25 @@ class ClassManagementTest {
         classScheduleDTOList.add(classScheduleDTO1);
         classScheduleDTOList.add(classScheduleDTO2);
         classScheduleDTOList.add(classScheduleDTO3);
+
+        // Create lists for vacancy-based class schedules
+        fullClassScheduleList = new ArrayList<>();
+        fullClassScheduleList.add(fullClassSchedule);
+        
+        nearFullClassScheduleList = new ArrayList<>();
+        nearFullClassScheduleList.add(nearFullClassSchedule);
+        
+        mostlyEmptyClassScheduleList = new ArrayList<>();
+        mostlyEmptyClassScheduleList.add(mostlyEmptyClassSchedule);
+        
+        fullClassScheduleDTOList = new ArrayList<>();
+        fullClassScheduleDTOList.add(fullClassScheduleDTO);
+        
+        nearFullClassScheduleDTOList = new ArrayList<>();
+        nearFullClassScheduleDTOList.add(nearFullClassScheduleDTO);
+        
+        mostlyEmptyClassScheduleDTOList = new ArrayList<>();
+        mostlyEmptyClassScheduleDTOList.add(mostlyEmptyClassScheduleDTO);
     }
 
     @Test
@@ -643,5 +717,224 @@ class ClassManagementTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(testDTO)))
                 .andExpect(status().isInternalServerError());
+    }
+
+     @Test
+    void testGetFullClasses() throws Exception {
+        // Mock the service to return full classes
+        when(classScheduleService.getFullClasses()).thenReturn(fullClassScheduleList);
+        
+        // Mock the mapper to return the DTO
+        when(modelMapper.map(fullClassSchedule, ClassScheduleDTO.class)).thenReturn(fullClassScheduleDTO);
+        
+        // Perform the request
+        mockMvc.perform(get("/api/classSchedule/full")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].classId").value(4))
+                .andExpect(jsonPath("$[0].courseId").value(2))
+                .andExpect(jsonPath("$[0].dayOfWeek").value("Thursday"))
+                .andExpect(jsonPath("$[0].vacancy").value(0))
+                .andExpect(jsonPath("$[0].maxCapacity").value(25));
+        
+        // Verify service was called
+        verify(classScheduleService).getFullClasses();
+    }
+    
+    @Test
+    void testGetNearFullClasses() throws Exception {
+        // Mock the service to return near full classes
+        when(classScheduleService.getNearFullClasses()).thenReturn(nearFullClassScheduleList);
+        
+        // Mock the mapper to return the DTO
+        when(modelMapper.map(nearFullClassSchedule, ClassScheduleDTO.class)).thenReturn(nearFullClassScheduleDTO);
+        
+        // Perform the request
+        mockMvc.perform(get("/api/classSchedule/nearFull")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].classId").value(5))
+                .andExpect(jsonPath("$[0].courseId").value(1))
+                .andExpect(jsonPath("$[0].dayOfWeek").value("Wednesday"))
+                .andExpect(jsonPath("$[0].maxCapacity").value(50))
+                .andExpect(jsonPath("$[0].vacancy").value(8));
+        
+        // Verify service was called
+        verify(classScheduleService).getNearFullClasses();
+    }
+    
+    @Test
+    void testGetMostlyEmptyClasses() throws Exception {
+        // Mock the service to return mostly empty classes
+        when(classScheduleService.getMostlyEmptyClasses()).thenReturn(mostlyEmptyClassScheduleList);
+        
+        // Mock the mapper to return the DTO
+        when(modelMapper.map(mostlyEmptyClassSchedule, ClassScheduleDTO.class)).thenReturn(mostlyEmptyClassScheduleDTO);
+        
+        // Perform the request
+        mockMvc.perform(get("/api/classSchedule/mostlyEmpty")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].classId").value(6))
+                .andExpect(jsonPath("$[0].courseId").value(2))
+                .andExpect(jsonPath("$[0].dayOfWeek").value("Monday"))
+                .andExpect(jsonPath("$[0].maxCapacity").value(30))
+                .andExpect(jsonPath("$[0].vacancy").value(25));
+        
+        // Verify service was called
+        verify(classScheduleService).getMostlyEmptyClasses();
+    }
+    
+    @Test
+    void testGetFullClassesEmptyResult() throws Exception {
+        // Mock the service to return an empty list (no full classes)
+        when(classScheduleService.getFullClasses()).thenReturn(new ArrayList<>());
+        
+        // Perform the request
+        mockMvc.perform(get("/api/classSchedule/full")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+        
+        // Verify service was called
+        verify(classScheduleService).getFullClasses();
+    }
+    
+    @Test
+    void testGetNearFullClassesEmptyResult() throws Exception {
+        // Mock the service to return an empty list (no near full classes)
+        when(classScheduleService.getNearFullClasses()).thenReturn(new ArrayList<>());
+        
+        // Perform the request
+        mockMvc.perform(get("/api/classSchedule/nearFull")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+        
+        // Verify service was called
+        verify(classScheduleService).getNearFullClasses();
+    }
+    
+    @Test
+    void testGetMostlyEmptyClassesEmptyResult() throws Exception {
+        // Mock the service to return an empty list (no mostly empty classes)
+        when(classScheduleService.getMostlyEmptyClasses()).thenReturn(new ArrayList<>());
+        
+        // Perform the request
+        mockMvc.perform(get("/api/classSchedule/mostlyEmpty")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+        
+        // Verify service was called
+        verify(classScheduleService).getMostlyEmptyClasses();
+    }
+    
+    @Test
+    void testGetFullClassesError() throws Exception {
+        // Mock the service to throw an exception
+        when(classScheduleService.getFullClasses()).thenThrow(new RuntimeException("Unexpected error"));
+        
+        // Perform the request
+        mockMvc.perform(get("/api/classSchedule/full")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+        
+        // Verify service was called
+        verify(classScheduleService).getFullClasses();
+    }
+    
+    @Test
+    void testGetNearFullClassesError() throws Exception {
+        // Mock the service to throw an exception
+        when(classScheduleService.getNearFullClasses()).thenThrow(new RuntimeException("Unexpected error"));
+        
+        // Perform the request
+        mockMvc.perform(get("/api/classSchedule/nearFull")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+        
+        // Verify service was called
+        verify(classScheduleService).getNearFullClasses();
+    }
+    
+    @Test
+    void testGetMostlyEmptyClassesError() throws Exception {
+        // Mock the service to throw an exception
+        when(classScheduleService.getMostlyEmptyClasses()).thenThrow(new RuntimeException("Unexpected error"));
+        
+        // Perform the request
+        mockMvc.perform(get("/api/classSchedule/mostlyEmpty")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+        
+        // Verify service was called
+        verify(classScheduleService).getMostlyEmptyClasses();
+    }
+    
+    @Test
+    void testMultipleVacancyCategories() throws Exception {
+        // Create classes that fall into different vacancy categories
+        ClassSchedule fullClass = new ClassSchedule(7, course1, "Saturday", LocalTime.of(9, 0), LocalTime.of(11, 0), 20, 0);
+        ClassSchedule nearFullClass = new ClassSchedule(8, course1, "Saturday", LocalTime.of(13, 0), LocalTime.of(15, 0), 50, 5);
+        ClassSchedule regularClass = new ClassSchedule(9, course1, "Saturday", LocalTime.of(16, 0), LocalTime.of(18, 0), 40, 20);
+        ClassSchedule mostlyEmptyClass = new ClassSchedule(10, course1, "Sunday", LocalTime.of(9, 0), LocalTime.of(11, 0), 30, 25);
+        
+        // Create corresponding DTOs
+        ClassScheduleDTO fullClassDTO = new ClassScheduleDTO(7, 1, "Test Course", "CS101", "Saturday", LocalTime.of(9, 0), LocalTime.of(11, 0), 20, 0);
+        ClassScheduleDTO nearFullClassDTO = new ClassScheduleDTO(8, 1, "Test Course", "CS101", "Saturday", LocalTime.of(13, 0), LocalTime.of(15, 0), 50, 5);
+        ClassScheduleDTO mostlyEmptyClassDTO = new ClassScheduleDTO(10, 1, "Test Course", "CS101", "Sunday", LocalTime.of(9, 0), LocalTime.of(11, 0), 30, 25);
+        
+        // List for full classes
+        List<ClassSchedule> fullClassesList = new ArrayList<>();
+        fullClassesList.add(fullClass);
+        
+        // List for near full classes
+        List<ClassSchedule> nearFullClassesList = new ArrayList<>();
+        nearFullClassesList.add(nearFullClass);
+        
+        // List for mostly empty classes
+        List<ClassSchedule> mostlyEmptyClassesList = new ArrayList<>();
+        mostlyEmptyClassesList.add(mostlyEmptyClass);
+        
+        // Mock the service methods
+        when(classScheduleService.getFullClasses()).thenReturn(fullClassesList);
+        when(classScheduleService.getNearFullClasses()).thenReturn(nearFullClassesList);
+        when(classScheduleService.getMostlyEmptyClasses()).thenReturn(mostlyEmptyClassesList);
+        
+        // Mock the mapper for each class schedule
+        when(modelMapper.map(fullClass, ClassScheduleDTO.class)).thenReturn(fullClassDTO);
+        when(modelMapper.map(nearFullClass, ClassScheduleDTO.class)).thenReturn(nearFullClassDTO);
+        when(modelMapper.map(mostlyEmptyClass, ClassScheduleDTO.class)).thenReturn(mostlyEmptyClassDTO);
+        
+        // Test full classes endpoint
+        mockMvc.perform(get("/api/classSchedule/full")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].classId").value(7))
+                .andExpect(jsonPath("$[0].vacancy").value(0));
+        
+        // Test near full classes endpoint
+        mockMvc.perform(get("/api/classSchedule/nearFull")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].classId").value(8))
+                .andExpect(jsonPath("$[0].vacancy").value(5));
+        
+        // Test mostly empty classes endpoint
+        mockMvc.perform(get("/api/classSchedule/mostlyEmpty")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].classId").value(10))
+                .andExpect(jsonPath("$[0].vacancy").value(25));
     }
 }

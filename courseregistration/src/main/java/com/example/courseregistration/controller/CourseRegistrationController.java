@@ -2,6 +2,7 @@ package com.example.courseregistration.controller;
 
 import com.example.courseregistration.dto.RegistrationDTO;
 import com.example.courseregistration.dto.CreateRegistrationDTO;
+import com.example.courseregistration.dto.UpdateRegistrationStatusDTO;
 import com.example.courseregistration.service.CourseRegistrationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +26,9 @@ public class CourseRegistrationController {
             @RequestParam(required = false) Long studentId,
             @RequestParam(required = false) Long classId,
             @RequestParam(required = false) String registrationStatus,
-            @RequestParam(required = false) Long groupRegistrationId) {
-        return courseRegistrationService.filterRegistration(registrationId, studentId, classId, registrationStatus, groupRegistrationId);
+            @RequestParam(required = false) Long groupRegistrationId,
+            @RequestParam(required = false) Boolean groupRegistration) {
+        return courseRegistrationService.filterRegistration(registrationId, studentId, classId, registrationStatus, groupRegistrationId, groupRegistration);
     }
     
     @PostMapping
@@ -35,20 +37,11 @@ public class CourseRegistrationController {
         return new ResponseEntity<>(createdRegistrations, HttpStatus.CREATED);
     }
 
-    @PutMapping("/individual/{registrationId}")
-    public ResponseEntity<RegistrationDTO> updateIndividualRegistrationStatus(
-            @PathVariable Long registrationId,
-            @RequestParam String newStatus) {
-        RegistrationDTO updatedRegistration = courseRegistrationService.updateIndividualRegistrationStatus(registrationId, newStatus);
-        return ResponseEntity.ok(updatedRegistration);
-    }
-    
-    @PutMapping("/group/{groupRegistrationId}")
-    public ResponseEntity<List<RegistrationDTO>> updateGroupRegistrationStatus(
-            @PathVariable Long groupRegistrationId,
-            @RequestParam String newStatus) {
-        List<RegistrationDTO> updatedRegistrations = courseRegistrationService.updateGroupRegistrationStatus(groupRegistrationId, newStatus);
-        return ResponseEntity.ok(updatedRegistrations);
+    @PutMapping("/status")
+    public ResponseEntity<List<RegistrationDTO>> updateRegistrationStatus(
+            @RequestBody UpdateRegistrationStatusDTO dto) {
+        List<RegistrationDTO> updated = courseRegistrationService.updateRegistrationStatus(dto);
+        return ResponseEntity.ok(updated);
     }
 
     @PutMapping("/unenroll/{registrationId}")

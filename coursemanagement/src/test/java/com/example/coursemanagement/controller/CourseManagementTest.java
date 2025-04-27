@@ -1,44 +1,44 @@
 package com.example.coursemanagement.controller;
 
-import com.example.coursemanagement.dto.CourseDTO;
-import com.example.coursemanagement.exception.DuplicateIDException;
-import com.example.coursemanagement.exception.InvalidCapacityException;
-import com.example.coursemanagement.exception.InvalidDateException;
-import com.example.coursemanagement.model.Course;
-import com.example.coursemanagement.service.CourseService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import org.mockito.InjectMocks;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import com.example.coursemanagement.dto.CourseDTO;
+import com.example.coursemanagement.exception.DuplicateIDException;
+import com.example.coursemanagement.exception.InvalidCapacityException;
+import com.example.coursemanagement.exception.InvalidDateException;
+import com.example.coursemanagement.exception.ResourceNotFoundException;
+import com.example.coursemanagement.model.Course;
+import com.example.coursemanagement.service.CourseService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -69,6 +69,8 @@ class CourseManagementTest {
     private CourseDTO courseDTO3;
     private CourseDTO courseDTO4;
 
+    private Integer programId1 = 1;
+    private Integer programId2 = 2;
 
     @BeforeEach
     void setUp() {
@@ -83,13 +85,13 @@ class CourseManagementTest {
         courses = Arrays.asList(course1, course2, course3, course4);
 
         courseDTO1 = new CourseDTO(1, "Introduction to Computer Science", "CS101", new Date(), 
-          new Date(), 100, "Open", "A foundational course that covers the basics of computer science, programming, and problem-solving techniques.");
+          new Date(), 100, "Open", "A foundational course that covers the basics of computer science, programming, and problem-solving techniques.", programId1);
         courseDTO2 = new CourseDTO(2, "Advanced Database Systems", "CS201", new Date(), 
-          new Date(), 50, "Open", "This course explores complex database systems, including distributed databases, data warehousing, and SQL optimization.");
+          new Date(), 50, "Open", "This course explores complex database systems, including distributed databases, data warehousing, and SQL optimization.", programId1);
         courseDTO3 = new CourseDTO(3, "Cloud Computing Basics", "CS501", new Date(), 
-          new Date(), 80, "Open", "An introductory course to computer science");
+          new Date(), 80, "Open", "An introductory course to computer science", programId2);
         courseDTO4 = new CourseDTO(4,"Course Test", "ACS101", new Date(), 
-          new Date(), 100, "Open", "Test Description");
+          new Date(), 100, "Open", "Test Description", programId2);
 
         objectMapper = new ObjectMapper();
     }
@@ -114,32 +116,123 @@ class CourseManagementTest {
        verify(courseService, times(1)).getAllCourses();
     }
 
+    @Test
+    void testGetAllActiveCourses() throws Exception {
+        // Create a list of active courses - in this case, we'll use our existing courses
+        List<Course> activeCourses = Arrays.asList(course1, course2, course3);
+        
+        // Mock the service method to return the active courses
+        when(courseService.findAllActiveCourses()).thenReturn(activeCourses);
+        
+        // Mock the model mapper for each course
+        when(modelMapper.map(course1, CourseDTO.class)).thenReturn(courseDTO1);
+        when(modelMapper.map(course2, CourseDTO.class)).thenReturn(courseDTO2);
+        when(modelMapper.map(course3, CourseDTO.class)).thenReturn(courseDTO3);
+
+        // Perform the GET request
+        mockMvc.perform(get("/api/courses/getActiveCourses")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$[0].courseId").value(course1.getCourseId()))
+                .andExpect(jsonPath("$[1].courseId").value(course2.getCourseId()))
+                .andExpect(jsonPath("$[2].courseId").value(course3.getCourseId()));
+
+        // Verify the service method was called once
+        verify(courseService, times(1)).findAllActiveCourses();
+    }
+
+    @Test
+    void testGetAllActiveCoursesEmptyList() throws Exception {
+        // Mock the service method to return an empty list (no active courses)
+        when(courseService.findAllActiveCourses()).thenReturn(Collections.emptyList());
+        
+        // Perform the GET request
+        mockMvc.perform(get("/api/courses/getActiveCourses")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+
+        // Verify the service method was called once
+        verify(courseService, times(1)).findAllActiveCourses();
+    }
+
+    @Test
+    void testGetAllActiveCoursesMixedStatus() throws Exception {
+        // Create courses with different status values
+        Course activeCourse1 = new Course(1, "Active Course 1", "AC101", new Date(), 
+                                        new Date(), 100, "Open", "Description 1");
+        Course activeCourse2 = new Course(2, "Active Course 2", "AC102", new Date(), 
+                                        new Date(), 50, "Open", "Description 2");
+        Course inactiveCourse = new Course(3, "Inactive Course", "IC101", new Date(), 
+                                        new Date(), 80, "Closed", "Description 3");
+        
+        // Create corresponding DTOs
+        CourseDTO activeCourseDTO1 = new CourseDTO(1, "Active Course 1", "AC101", new Date(), 
+                                                new Date(), 100, "Open", "Description 1", programId1);
+        CourseDTO activeCourseDTO2 = new CourseDTO(2, "Active Course 2", "AC102", new Date(), 
+                                                new Date(), 50, "Open", "Description 2", programId1);
+        
+        // Create a list of active courses
+        List<Course> activeCourses = Arrays.asList(activeCourse1, activeCourse2);
+        
+        // Mock the service method to return only active courses
+        when(courseService.findAllActiveCourses()).thenReturn(activeCourses);
+        
+        // Mock the model mapper for each active course
+        when(modelMapper.map(activeCourse1, CourseDTO.class)).thenReturn(activeCourseDTO1);
+        when(modelMapper.map(activeCourse2, CourseDTO.class)).thenReturn(activeCourseDTO2);
+
+        // Perform the GET request
+        mockMvc.perform(get("/api/courses/getActiveCourses")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].courseId").value(activeCourse1.getCourseId()))
+                .andExpect(jsonPath("$[0].status").value("Open"))
+                .andExpect(jsonPath("$[1].courseId").value(activeCourse2.getCourseId()))
+                .andExpect(jsonPath("$[1].status").value("Open"));
+
+        // Verify the service method was called once
+        verify(courseService, times(1)).findAllActiveCourses();
+    }
+
     // Test for /getCourses endpoint 
     @Test
     void testGetCourseByCode() throws Exception {
-
-        when(courseService.getCourse("CS501")).thenReturn(course3);
+        String courseCode = "CS501";
+        
+        when(courseService.getCourseWithProgram(courseCode)).thenReturn(course3);
+        when(courseService.getProgramIdForCourse(course3.getCourseId())).thenReturn(programId2);
         when(modelMapper.map(course3, CourseDTO.class)).thenReturn(courseDTO3);
 
-        mockMvc.perform(get("/api/courses/courseCode/CS501")
+        mockMvc.perform(get("/api/courses/courseCode/{courseCode}", courseCode)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.courseName").value(course3.getCourseName()))
-                .andExpect(jsonPath("$.courseCode").value(course3.getCourseCode()));
+                .andExpect(jsonPath("$.courseCode").value(course3.getCourseCode()))
+                .andExpect(jsonPath("$.programId").value(programId2));
 
-        verify(courseService, times(1)).getCourse("CS501");
+        verify(courseService, times(1)).getCourseWithProgram(courseCode);
+        verify(courseService, times(1)).getProgramIdForCourse(course3.getCourseId());
     }
 
     @Test
     void testGetCourseNotFound() throws Exception {
         // Test case for course not found
-        when(courseService.getCourse("INVALID")).thenReturn(null);
+        String invalidCode = "INVALID";
+        
+        when(courseService.getCourseWithProgram(invalidCode))
+            .thenThrow(new ResourceNotFoundException("course", "courseCode", invalidCode));
     
-        mockMvc.perform(get("/api/courses/courseCode/INVALID")
+        mockMvc.perform(get("/api/courses/courseCode/{courseCode}", invalidCode)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     
-        verify(courseService, times(1)).getCourse("INVALID");
+        verify(courseService, times(1)).getCourseWithProgram(invalidCode);
     }
 
     @Test
@@ -147,7 +240,8 @@ class CourseManagementTest {
         // Test retrieving a course by ID - successful case
         int courseId = 1;
         
-        when(courseService.getCourseById(courseId)).thenReturn(course1);
+        when(courseService.getCourseByIdWithProgram(courseId)).thenReturn(course1);
+        when(courseService.getProgramIdForCourse(courseId)).thenReturn(programId1);
         when(modelMapper.map(course1, CourseDTO.class)).thenReturn(courseDTO1);
 
         mockMvc.perform(get("/api/courses/courseId/{courseId}", courseId)
@@ -157,9 +251,11 @@ class CourseManagementTest {
                 .andExpect(jsonPath("$.courseName").value(course1.getCourseName()))
                 .andExpect(jsonPath("$.courseCode").value(course1.getCourseCode()))
                 .andExpect(jsonPath("$.maxCapacity").value(course1.getMaxCapacity()))
-                .andExpect(jsonPath("$.status").value(course1.getStatus()));
+                .andExpect(jsonPath("$.status").value(course1.getStatus()))
+                .andExpect(jsonPath("$.programId").value(programId1));
 
-        verify(courseService, times(1)).getCourseById(courseId);
+        verify(courseService, times(1)).getCourseByIdWithProgram(courseId);
+        verify(courseService, times(1)).getProgramIdForCourse(courseId);
         verify(modelMapper, times(1)).map(course1, CourseDTO.class);
     }
 
@@ -168,13 +264,14 @@ class CourseManagementTest {
         // Test retrieving a non-existent course by ID
         int nonExistentCourseId = 999;
         
-        when(courseService.getCourseById(nonExistentCourseId)).thenReturn(null);
+        when(courseService.getCourseByIdWithProgram(nonExistentCourseId))
+            .thenThrow(new ResourceNotFoundException("course", "courseId", String.valueOf(nonExistentCourseId)));
 
         mockMvc.perform(get("/api/courses/courseId/{courseId}", nonExistentCourseId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
-        verify(courseService, times(1)).getCourseById(nonExistentCourseId);
+        verify(courseService, times(1)).getCourseByIdWithProgram(nonExistentCourseId);
     }
 
     @Test
@@ -280,8 +377,8 @@ class CourseManagementTest {
         verify(courseService, times(1)).searchCourse("XYZ", "");
     }
 
-      @Test
-      void addCourse() throws Exception {
+    @Test
+    void addCourse() throws Exception {
         // Create a CourseDTO to be sent in the request body
         CourseDTO newCourseDTO = new CourseDTO(
             99, 
@@ -291,7 +388,8 @@ class CourseManagementTest {
             new Date(), 
             30, 
             "Open", 
-            "Test New Desc."
+            "Test New Desc.",
+            programId1            
         );
         
         // Create the corresponding Course entity to be returned by the service
@@ -308,10 +406,11 @@ class CourseManagementTest {
         
         // Use ArgumentCaptor to capture the actual Course object passed to the service
         ArgumentCaptor<Course> courseCaptor = ArgumentCaptor.forClass(Course.class);
+        ArgumentCaptor<Integer> programIdCaptor = ArgumentCaptor.forClass(Integer.class);
         
         // Mock the behavior of the service and mapper
         when(modelMapper.map(any(CourseDTO.class), eq(Course.class))).thenReturn(newCourse);
-        when(courseService.addCourse(any(Course.class))).thenReturn(newCourse);
+        when(courseService.addCourse(any(Course.class), any(Integer.class))).thenReturn(newCourse);
         when(modelMapper.map(any(Course.class), eq(CourseDTO.class))).thenReturn(newCourseDTO);
         
         // Perform the POST request to add the new course
@@ -321,14 +420,18 @@ class CourseManagementTest {
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.courseId").value(newCourseDTO.getCourseId()))
-                .andExpect(jsonPath("$.courseName").value(newCourseDTO.getCourseName()));
+                .andExpect(jsonPath("$.courseName").value(newCourseDTO.getCourseName()))
+                .andExpect(jsonPath("$.programId").value(newCourseDTO.getProgramId()));
         
         // Verify that the service method was called with a Course object
-        verify(courseService).addCourse(courseCaptor.capture());
+        verify(courseService).addCourse(courseCaptor.capture(), programIdCaptor.capture());
         
         // Additional verification if needed
         Course capturedCourse = courseCaptor.getValue();
+        Integer capturedProgramId = programIdCaptor.getValue();
+        
         assertEquals(newCourseDTO.getCourseCode(), capturedCourse.getCourseCode());
+        assertEquals(newCourseDTO.getProgramId(), capturedProgramId);
     }
 
     @Test
@@ -342,7 +445,8 @@ class CourseManagementTest {
             new Date(), 
             30, 
             "Open", 
-            "Test Duplicate Code"
+            "Test Duplicate Code",
+            programId1 
         );
         
         Course newCourse = new Course(
@@ -358,7 +462,7 @@ class CourseManagementTest {
         
         when(modelMapper.map(any(CourseDTO.class), eq(Course.class))).thenReturn(newCourse);
         // Simulate the service throwing an exception for duplicate code
-        when(courseService.addCourse(any(Course.class))).thenThrow(new DuplicateIDException("Course code already exists"));
+        when(courseService.addCourse(any(Course.class), eq(programId1))).thenThrow(new DuplicateIDException("Course code already exists"));
         
         mockMvc.perform(post("/api/courses/addCourse")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -366,7 +470,7 @@ class CourseManagementTest {
                 .andDo(print()) 
                 .andExpect(status().isConflict());
         
-        verify(courseService).addCourse(any(Course.class));
+        verify(courseService).addCourse(any(Course.class), eq(programId1));
     }
 
     @Test
@@ -380,7 +484,8 @@ class CourseManagementTest {
             new Date(), 
             -10, // Invalid capacity
             "Open", 
-            "Test Invalid Capacity"
+            "Test Invalid Capacity",
+            programId1
         );
         
         Course invalidCourse = new Course(
@@ -398,14 +503,14 @@ class CourseManagementTest {
         when(modelMapper.map(any(CourseDTO.class), eq(Course.class))).thenReturn(invalidCourse);
         
         // Mock the service to throw InvalidCapacityException
-        when(courseService.addCourse(any(Course.class))).thenThrow(new InvalidCapacityException("Capacity must be a positive number"));
+        when(courseService.addCourse(any(Course.class), eq(programId1))).thenThrow(new InvalidCapacityException("Capacity must be a positive number"));
         
         mockMvc.perform(post("/api/courses/addCourse")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidCourseDTO)))
                 .andExpect(status().isBadRequest());
                 
-        verify(courseService).addCourse(any(Course.class));
+        verify(courseService).addCourse(any(Course.class), eq(programId1));
     }
 
     @Test
@@ -421,8 +526,9 @@ class CourseManagementTest {
           new Date(), 
           new Date(), 
           40, 
-          "Closed", 
-          "Updated description"
+          "inactive", 
+          "Updated description",
+          programId2 // Changed program ID
       );
       
       // Create the Course entity that will be returned after updating
@@ -433,13 +539,13 @@ class CourseManagementTest {
           updatedCourseDTO.getRegistrationStart(), 
           updatedCourseDTO.getRegistrationEnd(), 
           40, 
-          "Closed", 
+          "inactive", 
           "Updated description"
       );
       
       // Mock the behavior of the service and mapper
       when(courseService.getCourseById(courseId)).thenReturn(course1);
-      when(courseService.editCourse(any(Course.class))).thenReturn(updatedCourse);
+      when(courseService.editCourseWithProgram(any(Course.class), eq(programId2))).thenReturn(updatedCourse);
       when(modelMapper.map(any(Course.class), eq(CourseDTO.class))).thenReturn(updatedCourseDTO);
       
       // Mock the behavior for updating the existing course - important to use any() here
@@ -468,20 +574,21 @@ class CourseManagementTest {
               .andExpect(jsonPath("$.courseId").value(courseId))
               .andExpect(jsonPath("$.courseName").value("Updated Course Name"))
               .andExpect(jsonPath("$.maxCapacity").value(40))
-              .andExpect(jsonPath("$.status").value("Closed"))
-              .andExpect(jsonPath("$.courseDesc").value("Updated description"));
+              .andExpect(jsonPath("$.status").value("inactive"))
+              .andExpect(jsonPath("$.courseDesc").value("Updated description"))
+              .andExpect(jsonPath("$.programId").value(programId2)); // Check program ID
       
       // Verify that the service methods were called with correct parameters
       verify(courseService).getCourseById(courseId);
-      verify(courseService).editCourse(any(Course.class)); // Use matcher instead of exact object
+      verify(courseService).editCourseWithProgram(any(Course.class), eq(programId2)); // Verify with programId
       
       // Use argument matchers for both parameters since the exact objects aren't known
       verify(modelMapper).map(any(CourseDTO.class), any(Course.class));
       verify(modelMapper).map(any(Course.class), eq(CourseDTO.class));
-  } 
+    } 
 
-  @Test
-  void testEditCourseNotFound() throws Exception {
+    @Test
+    void testEditCourseNotFound() throws Exception {
       // Test editing a non-existent course
       int nonExistentCourseId = 999;
       
@@ -493,7 +600,8 @@ class CourseManagementTest {
           new Date(), 
           40, 
           "Open", 
-          "This course doesn't exist"
+          "This course doesn't exist",
+          programId1
       );
       
       when(courseService.getCourseById(nonExistentCourseId)).thenReturn(null);
@@ -505,11 +613,11 @@ class CourseManagementTest {
       
       verify(courseService).getCourseById(nonExistentCourseId);
       // Verify editCourse was never called
-      verify(courseService, times(0)).editCourse(any(Course.class));
-  }
+      verify(courseService, times(0)).editCourseWithProgram(any(Course.class), any(Integer.class));
+    }
   
-  @Test
-  void testEditCourseInvalidDates() throws Exception {
+    @Test
+    void testEditCourseInvalidDates() throws Exception {
       // Test editing a course with invalid registration dates (end date before start date)
       int courseId = 1;
       
@@ -525,7 +633,8 @@ class CourseManagementTest {
           endDate, // End date before start date
           40,
           "Open",
-          "Course with invalid registration dates"
+          "Course with invalid registration dates",
+          programId1
       );
       
       Course existingCourse = new Course(
@@ -543,7 +652,7 @@ class CourseManagementTest {
       when(courseService.getCourseById(courseId)).thenReturn(existingCourse);
       
       // Then mock editCourse to throw InvalidDateException
-      when(courseService.editCourse(any(Course.class)))
+      when(courseService.editCourseWithProgram(any(Course.class), eq(programId1)))
           .thenThrow(new InvalidDateException("Start date cannot be after end date"));
       
       mockMvc.perform(put("/api/courses/editCourse/{courseId}", courseId)
@@ -552,7 +661,78 @@ class CourseManagementTest {
               .andExpect(status().isBadRequest());
       
       verify(courseService).getCourseById(courseId);
-      verify(courseService).editCourse(any(Course.class));
-  } 
-
+      verify(courseService).editCourseWithProgram(any(Course.class), eq(programId1));
+    }
+    
+    @Test
+    void testEditCourseWithProgramNotFound() throws Exception {
+      // Test editing a course with a non-existent program
+      int courseId = 1;
+      Integer nonExistentProgramId = 999;
+      
+      CourseDTO updatedCourseDTO = new CourseDTO(
+          courseId,
+          "Course With Invalid Program",
+          "CS101",
+          new Date(),
+          new Date(),
+          40,
+          "Open",
+          "Course with non-existent program",
+          nonExistentProgramId
+      );
+      
+      Course existingCourse = new Course(
+          courseId,
+          "Original Course",
+          "CS101",
+          new Date(),
+          new Date(),
+          30,
+          "Open",
+          "Original description"
+      );
+      
+      // Mock getCourseById to return an existing course
+      when(courseService.getCourseById(courseId)).thenReturn(existingCourse);
+      
+      // Mock editCourseWithProgram to throw ResourceNotFoundException for program
+      when(courseService.editCourseWithProgram(any(Course.class), eq(nonExistentProgramId)))
+          .thenThrow(new ResourceNotFoundException("program", "programId", nonExistentProgramId.toString()));
+      
+      mockMvc.perform(put("/api/courses/editCourse/{courseId}", courseId)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(updatedCourseDTO)))
+              .andExpect(status().isNotFound());
+      
+      verify(courseService).getCourseById(courseId);
+      verify(courseService).editCourseWithProgram(any(Course.class), eq(nonExistentProgramId));
+    }
+    
+    @Test
+    void testGetProgramIdForCourseNotFound() throws Exception {
+      // Test getting program ID for a course without any program association
+      int courseId = 5; // Course without program association
+      
+      when(courseService.getCourseByIdWithProgram(courseId)).thenReturn(new Course(
+          courseId,
+          "Orphan Course",
+          "CS999",
+          new Date(),
+          new Date(),
+          30,
+          "Open",
+          "Course without program"
+      ));
+      
+      when(courseService.getProgramIdForCourse(courseId))
+          .thenThrow(new ResourceNotFoundException("course", "courseId with program association", String.valueOf(courseId)));
+      
+      mockMvc.perform(get("/api/courses/courseId/{courseId}", courseId)
+              .contentType(MediaType.APPLICATION_JSON))
+              .andExpect(status().isNotFound());
+      
+      verify(courseService).getCourseByIdWithProgram(courseId);
+      verify(courseService).getProgramIdForCourse(courseId);
+    }
 }
