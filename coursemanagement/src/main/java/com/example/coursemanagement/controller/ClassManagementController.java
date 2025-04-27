@@ -1,5 +1,18 @@
 package com.example.coursemanagement.controller;
 
+import java.util.List;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.example.coursemanagement.dto.ClassScheduleDTO;
 import com.example.coursemanagement.dto.ErrorResponse;
 import com.example.coursemanagement.exception.DuplicateIDException;
@@ -8,13 +21,6 @@ import com.example.coursemanagement.exception.InvalidDateException;
 import com.example.coursemanagement.exception.ResourceNotFoundException;
 import com.example.coursemanagement.model.ClassSchedule;
 import com.example.coursemanagement.service.ClassScheduleService;
-
-import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 
 @RestController
@@ -125,5 +131,44 @@ public class ClassManagementController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }    
+
+    @GetMapping("/full")
+    public ResponseEntity<List<ClassScheduleDTO>> getFullClasses() {
+        try {
+            List<ClassSchedule> fullClasses = classScheduleService.getFullClasses();
+            List<ClassScheduleDTO> fullClassesDTO = fullClasses.stream()
+                    .map(classSchedule -> modelMapper.map(classSchedule, ClassScheduleDTO.class))
+                    .toList();
+            return ResponseEntity.ok().body(fullClassesDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+    
+    @GetMapping("/nearFull")
+    public ResponseEntity<List<ClassScheduleDTO>> getNearFullClasses() {
+        try {
+            List<ClassSchedule> nearFullClasses = classScheduleService.getNearFullClasses();
+            List<ClassScheduleDTO> nearFullClassesDTO = nearFullClasses.stream()
+                    .map(classSchedule -> modelMapper.map(classSchedule, ClassScheduleDTO.class))
+                    .toList();
+            return ResponseEntity.ok().body(nearFullClassesDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+    
+    @GetMapping("/mostlyEmpty")
+    public ResponseEntity<List<ClassScheduleDTO>> getMostlyEmptyClasses() {
+        try {
+            List<ClassSchedule> mostlyEmptyClasses = classScheduleService.getMostlyEmptyClasses();
+            List<ClassScheduleDTO> mostlyEmptyClassesDTO = mostlyEmptyClasses.stream()
+                    .map(classSchedule -> modelMapper.map(classSchedule, ClassScheduleDTO.class))
+                    .toList();
+            return ResponseEntity.ok().body(mostlyEmptyClassesDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }
 
