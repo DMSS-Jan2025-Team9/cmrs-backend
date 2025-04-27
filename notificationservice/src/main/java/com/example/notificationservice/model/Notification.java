@@ -34,6 +34,7 @@ public class Notification {
     public void setUserId(Long userId) {
         this.userId = userId;
     }
+
     public String getNotificationMessage() {
         return notificationMessage;
     }
@@ -56,5 +57,20 @@ public class Notification {
 
     public void setSentAt(Timestamp sentAt) {
         this.sentAt = sentAt;
+    }
+
+    @Override
+    public String toString() {
+        return "Notification{" +
+                "notificationId=" + notificationId +
+                ", userId=" + userId +
+                ", notificationMessage='"
+                + (notificationMessage != null
+                        ? notificationMessage.substring(0, Math.min(notificationMessage.length(), 50)) + "..."
+                        : "null")
+                + '\'' +
+                ", createdAt=" + createdAt +
+                ", sentAt=" + sentAt +
+                '}';
     }
 }

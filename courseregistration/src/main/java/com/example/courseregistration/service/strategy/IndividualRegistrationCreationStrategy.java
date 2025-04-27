@@ -5,6 +5,7 @@ import com.example.courseregistration.dto.CourseClassDTO;
 import com.example.courseregistration.dto.RegistrationDTO;
 import com.example.courseregistration.model.Registration;
 import com.example.courseregistration.repository.CourseRegistrationRepository;
+import com.example.courseregistration.service.NotificationPublisherService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -22,13 +23,16 @@ public class IndividualRegistrationCreationStrategy implements RegistrationCreat
     private final CourseRegistrationRepository courseRegistrationRepository;
     private final MicroserviceClient microserviceClient;
     private final RestTemplate restTemplate;
+    private final NotificationPublisherService notificationPublisherService;
 
     public IndividualRegistrationCreationStrategy(
-        CourseRegistrationRepository courseRegistrationRepository,
-        MicroserviceClient microserviceClient) {
+            CourseRegistrationRepository courseRegistrationRepository,
+            MicroserviceClient microserviceClient,
+            NotificationPublisherService notificationPublisherService) {
         this.courseRegistrationRepository = courseRegistrationRepository;
         this.microserviceClient = microserviceClient;
         this.restTemplate = new RestTemplate();
+        this.notificationPublisherService = notificationPublisherService;
     }
 
     @Override
@@ -53,6 +57,8 @@ public class IndividualRegistrationCreationStrategy implements RegistrationCreat
             microserviceClient.updateVacancy(courseClass, courseClass.getVacancy() - 1);
         } else {
             status = "Waitlisted";
+            // Send waitlist notification
+            notificationPublisherService.publishWaitlistNotification(studentId, courseClass);
         }
 
         // Create and save registration
@@ -65,14 +71,13 @@ public class IndividualRegistrationCreationStrategy implements RegistrationCreat
 
         Registration saved = courseRegistrationRepository.save(reg);
         RegistrationDTO result = new RegistrationDTO(
-            saved.getRegistrationId(),
-            saved.getStudentId(),
-            saved.getClassId(),
-            saved.getRegisteredAt(),
-            saved.getRegistrationStatus(),
-            saved.getGroupRegistrationId());
+                saved.getRegistrationId(),
+                saved.getStudentId(),
+                saved.getClassId(),
+                saved.getRegisteredAt(),
+                saved.getRegistrationStatus(),
+                saved.getGroupRegistrationId());
 
         return Collections.singletonList(result);
     }
-
 }

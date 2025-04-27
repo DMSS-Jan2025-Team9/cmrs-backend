@@ -34,46 +34,43 @@ public class CourseRegistrationService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public CourseRegistrationService(
-        CourseRegistrationRepository courseRegistrationRepository,
-        List<RegistrationCreationStrategy> creationStrategies,
-        List<RegistrationStatusUpdateStrategy> statusUpdateStrategies,
-        MicroserviceClient microserviceClient) {
+            CourseRegistrationRepository courseRegistrationRepository,
+            List<RegistrationCreationStrategy> creationStrategies,
+            List<RegistrationStatusUpdateStrategy> statusUpdateStrategies,
+            MicroserviceClient microserviceClient) {
         this.courseRegistrationRepository = courseRegistrationRepository;
         this.creationStrategies = creationStrategies;
         this.statusUpdateStrategies = statusUpdateStrategies;
         this.microserviceClient = microserviceClient;
     }
-    
+
     public List<RegistrationDTO> filterRegistration(
             Long registrationId,
             Long studentId,
             Long classId,
             String registrationStatus,
             Long groupRegistrationId,
-            Boolean groupRegistration   
-    ) {
+            Boolean groupRegistration) {
         List<Registration> regs = courseRegistrationRepository.filterRegistration(
-            registrationId, studentId, classId, registrationStatus, groupRegistrationId
-        );
+                registrationId, studentId, classId, registrationStatus, groupRegistrationId);
 
         if (groupRegistration != null) {
             regs = regs.stream()
-                .filter(r -> groupRegistration 
-                        ? r.getGroupRegistrationId() != null    // true ⇒ keep those in a group
-                        : r.getGroupRegistrationId() == null)   // false ⇒ keep the singles
-                .collect(Collectors.toList());
+                    .filter(r -> groupRegistration
+                            ? r.getGroupRegistrationId() != null // true ⇒ keep those in a group
+                            : r.getGroupRegistrationId() == null) // false ⇒ keep the singles
+                    .collect(Collectors.toList());
         }
 
         return regs.stream()
-            .map(r -> new RegistrationDTO(
-                r.getRegistrationId(),
-                r.getStudentId(),
-                r.getClassId(),
-                r.getRegisteredAt(),
-                r.getRegistrationStatus(),
-                r.getGroupRegistrationId()
-            ))
-            .collect(Collectors.toList());
+                .map(r -> new RegistrationDTO(
+                        r.getRegistrationId(),
+                        r.getStudentId(),
+                        r.getClassId(),
+                        r.getRegisteredAt(),
+                        r.getRegistrationStatus(),
+                        r.getGroupRegistrationId()))
+                .collect(Collectors.toList());
     }
 
     public List<RegistrationDTO> createRegistration(CreateRegistrationDTO dto) {
@@ -86,10 +83,10 @@ public class CourseRegistrationService {
 
     public List<RegistrationDTO> updateRegistrationStatus(UpdateRegistrationStatusDTO dto) {
         return statusUpdateStrategies.stream()
-            .filter(s -> s.supports(dto))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Unsupported status update type"))
-            .update(dto);
+                .filter(s -> s.supports(dto))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unsupported status update type"))
+                .update(dto);
     }
 
     public RegistrationDTO unenrollRegistration(Long registrationId) {
@@ -112,7 +109,7 @@ public class CourseRegistrationService {
             int updatedVacancy = courseClass.getVacancy() + 1;
             microserviceClient.updateVacancy(courseClass, updatedVacancy);
         }
-        
+
         // Update the registration status to "Unenrolled".
         registration.setRegistrationStatus("Unenrolled");
         Registration updatedRegistration = courseRegistrationRepository.save(registration);
@@ -131,8 +128,7 @@ public class CourseRegistrationService {
                 registration.getClassId(),
                 registration.getRegisteredAt(),
                 registration.getRegistrationStatus(),
-                registration.getGroupRegistrationId()
-        );
+                registration.getGroupRegistrationId());
     }
-    
+
 }

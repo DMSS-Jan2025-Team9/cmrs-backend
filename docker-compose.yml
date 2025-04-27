@@ -1,0 +1,94 @@
+version: '3.8'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    mem_limit: 256m
+    networks:
+      - cmrs-network
+
+  coursemanagement-service:
+    build:
+      context: ./coursemanagement
+    container_name: coursemanagement-service
+    depends_on:
+      - rabbitmq
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/course_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_RABBITMQ_HOST: rabbitmq
+      JAVA_OPTS: "-Xmx256m -Xms128m"
+    ports:
+      - "8081:8081"
+    mem_limit: 512m
+    networks:
+      - cmrs-network
+
+  courseregistration-service:
+    build:
+      context: ./courseregistration
+    container_name: courseregistration-service
+    depends_on:
+      - rabbitmq
+      - coursemanagement-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/registration_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_RABBITMQ_HOST: rabbitmq
+      JAVA_OPTS: "-Xmx256m -Xms128m"
+    ports:
+      - "8083:8083"
+    mem_limit: 512m
+    networks:
+      - cmrs-network
+
+  notification-service:
+    build:
+      context: ./notificationservice
+    container_name: notification-service
+    depends_on:
+      - rabbitmq
+      - coursemanagement-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/notification_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_RABBITMQ_HOST: rabbitmq
+      JAVA_OPTS: "-Xmx256m -Xms128m"
+    ports:
+      - "8084:8084"
+    mem_limit: 512m
+    networks:
+      - cmrs-network
+  
+  usermanagement-service:
+    build:
+      context: ./usermanagement
+    container_name: usermanagement-service
+    depends_on:
+      - rabbitmq
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/user_management_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_RABBITMQ_HOST: rabbitmq
+      JAVA_OPTS: "-Xmx256m -Xms128m"
+    ports:
+      - "8085:8085"
+    mem_limit: 512m
+    networks:
+      - cmrs-network
+
+networks:
+  cmrs-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
