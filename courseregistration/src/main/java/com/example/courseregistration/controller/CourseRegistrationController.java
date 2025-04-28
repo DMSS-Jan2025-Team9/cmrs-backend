@@ -2,6 +2,7 @@ package com.example.courseregistration.controller;
 
 import com.example.courseregistration.dto.RegistrationDTO;
 import com.example.courseregistration.dto.CreateRegistrationDTO;
+import com.example.courseregistration.dto.StudentDTO;
 import com.example.courseregistration.dto.UpdateRegistrationStatusDTO;
 import com.example.courseregistration.dto.CourseClassDTO;
 import com.example.courseregistration.service.CourseRegistrationService;
@@ -69,41 +70,44 @@ public class CourseRegistrationController {
     /**
      * Endpoint to test the waitlist notification
      * 
-     * @param studentId The ID of the student to notify
-     * @param classId   The ID of the class for which the student is waitlisted
+     * @param studentFullId The full ID of the student to notify
+     * @param classId       The ID of the class for which the student is waitlisted
      * @return ResponseEntity with status
      */
     @PostMapping("/waitlist-notification")
     public ResponseEntity<Map<String, String>> testWaitlistNotification(
-            @RequestParam Long studentId,
+            @RequestParam String studentFullId,
             @RequestParam Long classId) {
 
+        StudentDTO student = microserviceClient.fetchStudentByFullId(studentFullId);
         CourseClassDTO courseClass = microserviceClient.fetchClass(classId);
-        notificationPublisherService.publishWaitlistNotification(studentId, courseClass);
+        notificationPublisherService.publishWaitlistNotification(studentFullId, student.getStudentId(), courseClass);
 
         return ResponseEntity.ok(Map.of(
                 "status", "success",
-                "message", "Waitlist notification sent for student " + studentId + " and class " + classId));
+                "message", "Waitlist notification sent for student " + studentFullId + " and class " + classId));
     }
 
     /**
      * Endpoint to test the vacancy available notification
      * 
-     * @param studentId The ID of the student to notify
-     * @param classId   The ID of the class that has vacancy
+     * @param studentFullId The full ID of the student to notify
+     * @param classId       The ID of the class that has vacancy
      * @return ResponseEntity with status
      */
     @PostMapping("/vacancy-notification")
     public ResponseEntity<Map<String, String>> testVacancyNotification(
-            @RequestParam Long studentId,
+            @RequestParam String studentFullId,
             @RequestParam Long classId) {
 
+        StudentDTO student = microserviceClient.fetchStudentByFullId(studentFullId);
         CourseClassDTO courseClass = microserviceClient.fetchClass(classId);
-        notificationPublisherService.publishVacancyAvailableNotification(studentId, courseClass);
+        notificationPublisherService.publishVacancyAvailableNotification(studentFullId, student.getStudentId(),
+                courseClass);
 
         return ResponseEntity.ok(Map.of(
                 "status", "success",
-                "message", "Vacancy notification sent for student " + studentId + " and class " + classId));
+                "message", "Vacancy notification sent for student " + studentFullId + " and class " + classId));
     }
 
     /**

@@ -3,6 +3,7 @@ package com.example.courseregistration.service.client;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import com.example.courseregistration.dto.CourseClassDTO;
+import com.example.courseregistration.dto.StudentDTO;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
@@ -20,19 +21,11 @@ public class MicroserviceClient {
     private final RestTemplate rest = new RestTemplate();
     // private static final String classAPI =
     // "http://localhost:8081/api/classes/{classId}";
-    private static final String classAPI = "http://coursemanagement-service:8081/api/classes/{classId}"; // For Docker
-                                                                                                         // environment
-    private static final String courseAPI = "http://coursemanagement-service:8081/api/courses/courseId/{courseId}"; // Updated
-                                                                                                                    // API
-                                                                                                                    // endpoint
-                                                                                                                    // to
-                                                                                                                    // get
-                                                                                                                    // course
-                                                                                                                    // details
-    private static final String studentAPI = "http://usermanagement-service:8085/api/students/{studentId}"; // Updated
-                                                                                                            // for
-                                                                                                            // Docker
-                                                                                                            // environment
+    private static final String classAPI = "http://coursemanagement-service:8081/api/classes/{classId}"; 
+    private static final String courseAPI = "http://coursemanagement-service:8081/api/courses/{courseId}"; 
+                                                                                                           
+    private static final String studentAPI = "http://usermanagement-service:8085/api/students/studentFullId/{studentFullId}";
+    private static final String studentIdAPI = "http://usermanagement-service:8085/api/students/{studentId}";
 
     public CourseClassDTO fetchClass(Long classId) {
         try {
@@ -45,44 +38,36 @@ public class MicroserviceClient {
                         "Class not found: " + classId);
             }
 
-            // If course details are missing, fetch them explicitly
+            // If course details are missing, fetch them
             if (dto.getCourseCode() == null || dto.getCourseName() == null) {
                 logger.debug("Course details missing, fetching course with ID: {}", dto.getCourseId());
                 try {
-                    // Fetch the course details from the correct endpoint
+                    // Fetch the course details
                     Map<String, Object> courseDetails = rest.getForObject(courseAPI, Map.class, dto.getCourseId());
-                    logger.debug("Fetched course details: {}", courseDetails);
 
                     if (courseDetails != null) {
                         // Set the courseCode and courseName
                         if (courseDetails.containsKey("courseCode")) {
                             dto.setCourseCode((String) courseDetails.get("courseCode"));
-                            logger.debug("Set courseCode to {}", dto.getCourseCode());
                         } else {
                             dto.setCourseCode("COURSE-" + dto.getCourseId()); // Fallback
                         }
 
                         if (courseDetails.containsKey("courseName")) {
                             dto.setCourseName((String) courseDetails.get("courseName"));
-                            logger.debug("Set courseName to {}", dto.getCourseName());
                         } else {
                             dto.setCourseName("Course " + dto.getCourseId()); // Fallback
                         }
-                    } else {
-                        logger.warn("Course details response was null for course ID: {}", dto.getCourseId());
-                        // Set fallback values
-                        dto.setCourseCode("COURSE-" + dto.getCourseId());
-                        dto.setCourseName("Course " + dto.getCourseId());
                     }
                 } catch (Exception e) {
-                    logger.error("Error fetching course details: {}", e.getMessage(), e);
+                    logger.error("Error fetching course details: {}", e.getMessage());
                     // Set default values if course fetch fails
                     dto.setCourseCode("COURSE-" + dto.getCourseId());
                     dto.setCourseName("Course " + dto.getCourseId());
                 }
             }
 
-            logger.debug("Returning class DTO: {}", dto);
+            logger.debug("Fetched class: {}", dto);
             return dto;
         } catch (HttpClientErrorException.NotFound e) {
             logger.error("Class not found: {}", classId);
@@ -103,16 +88,59 @@ public class MicroserviceClient {
         rest.put(classAPI, payload, dto.getClassId());
     }
 
-    public void validateStudentExists(Long studentId) {
+    public void validateStudentExists(String studentFullId) {
         try {
-            rest.getForEntity(studentAPI, String.class, studentId);
+            rest.getForEntity(studentAPI, String.class, studentFullId);
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
                 throw new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Student with ID " + studentId + " does not exist");
+                        "Student with Full Id " + studentFullId + " does not exist");
             }
             throw e;
+        }
+    }
+
+    public StudentDTO fetchStudentByFullId(String studentFullId) {
+        try {
+            StudentDTO dto = rest.getForObject(
+                    studentAPI,
+                    StudentDTO.class,
+                    studentFullId);
+
+            if (dto == null) {
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Student not found: " + studentFullId);
+            }
+            return dto;
+
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Student not found: " + studentFullId);
+        }
+    }
+
+    public StudentDTO fetchStudentById(Long studentId) {
+        try {
+            logger.debug("Fetching student with ID: {}", studentId);
+            StudentDTO dto = rest.getForObject(
+                    studentIdAPI,
+                    StudentDTO.class,
+                    studentId);
+
+            if (dto == null) {
+                throw new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Student not found with ID: " + studentId);
+            }
+            return dto;
+
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Student not found with ID: " + studentId);
         }
     }
 }

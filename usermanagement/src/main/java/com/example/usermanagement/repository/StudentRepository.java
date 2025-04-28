@@ -9,10 +9,13 @@ import java.util.Optional;
 
 @Repository
 public interface StudentRepository extends JpaRepository<Student, Long> {
-    List<Student> findByJobId(String jobId);  // Find students by jobId
+    List<Student> findByJobId(String jobId); // Find students by jobId
+
+    Optional<Student> findBystudentFullId(String studentFullId);
 
     List<Student> findByProgramName(String programName);
 
-    Optional <Student> findByUser_UserId(Integer userId);
-    Optional <Student> deleteByUser_UserId(Integer userId);
+    Optional<Student> findByUser_UserId(Integer userId);
+
+    Optional<Student> deleteByUser_UserId(Integer userId);
 }

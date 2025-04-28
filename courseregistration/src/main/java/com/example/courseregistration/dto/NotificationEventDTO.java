@@ -6,7 +6,8 @@ import lombok.Data;
 
 @Data
 public class NotificationEventDTO implements Serializable {
-    private Long studentId;
+    private String studentFullId;
+    private Long studentId; // Keep for backward compatibility
     private Long classId;
     private String courseCode;
     private String courseName;
@@ -16,8 +17,10 @@ public class NotificationEventDTO implements Serializable {
     public NotificationEventDTO() {
     }
 
-    public NotificationEventDTO(Long studentId, Long classId, String courseCode, String courseName, String message,
+    public NotificationEventDTO(String studentFullId, Long studentId, Long classId, String courseCode,
+            String courseName, String message,
             String eventType) {
+        this.studentFullId = studentFullId;
         this.studentId = studentId;
         this.classId = classId;
         this.courseCode = courseCode;

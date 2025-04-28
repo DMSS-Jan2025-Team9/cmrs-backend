@@ -31,6 +31,12 @@ public class NotificationController {
         return ResponseEntity.ok(notifications);
     }
 
+    @GetMapping("/user/fullId/{userFullId}")
+    public ResponseEntity<List<Notification>> getUserNotificationsByFullId(@PathVariable String userFullId) {
+        List<Notification> notifications = notificationService.getUserNotificationsByFullId(userFullId);
+        return ResponseEntity.ok(notifications);
+    }
+
     @PutMapping("/{notificationId}/mark-as-sent")
     public ResponseEntity<Void> markNotificationAsSent(@PathVariable Long notificationId) {
         notificationService.markAsSent(notificationId);
@@ -40,17 +46,23 @@ public class NotificationController {
     /**
      * Test endpoint to manually create a notification
      * 
-     * @param userId  The user to notify
-     * @param message The notification message
+     * @param userFullId The user full ID to notify
+     * @param message    The notification message
      * @return The created notification
      */
     @PostMapping("/createNotification")
     public ResponseEntity<Notification> CreateNotification(
-            @RequestParam Long userId,
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String userFullId,
             @RequestParam String message) {
 
         Notification notification = new Notification();
-        notification.setUserId(userId);
+        if (userFullId != null) {
+            notification.setUserFullId(userFullId);
+        }
+        if (userId != null) {
+            notification.setUserId(userId);
+        }
         notification.setNotificationMessage(message);
         notification.setCreatedAt(Timestamp.from(Instant.now()));
 
@@ -61,18 +73,26 @@ public class NotificationController {
     /**
      * Test endpoint to manually send a notification event
      * 
-     * @param studentId The student ID
-     * @param classId   The class ID
-     * @param eventType The type of event (WAITLISTED or VACANCY_AVAILABLE)
+     * @param studentFullId The student full ID
+     * @param studentId     The student ID (for backward compatibility)
+     * @param classId       The class ID
+     * @param eventType     The type of event (WAITLISTED or VACANCY_AVAILABLE)
      * @return Success status
      */
     @PostMapping("/notificationEvent")
     public ResponseEntity<Map<String, String>> NotificationEvent(
-            @RequestParam Long studentId,
+            @RequestParam(required = false) Long studentId,
+            @RequestParam(required = false) String studentFullId,
             @RequestParam Long classId,
             @RequestParam String eventType) {
 
         String message;
+
+        if (studentFullId == null && studentId == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "Either studentId or studentFullId must be provided"));
+        }
 
         if (eventType.equalsIgnoreCase("WAITLISTED")) {
             message = "You have been waitlisted for a course with ID " + classId;
@@ -83,6 +103,7 @@ public class NotificationController {
         }
 
         NotificationEventDTO eventDTO = new NotificationEventDTO(
+                studentFullId,
                 studentId,
                 classId,
                 "TEST-CODE",
@@ -93,9 +114,12 @@ public class NotificationController {
         Notification notification = notificationService.createNotification(eventDTO);
         notificationService.sendNotification(notification);
 
+        String studentIdentifier = studentFullId != null ? studentFullId : studentId.toString();
+
         return ResponseEntity.ok(Map.of(
                 "status", "success",
-                "message", "Test notification sent for student " + studentId + " with event type " + eventType));
+                "message",
+                "Test notification sent for student " + studentIdentifier + " with event type " + eventType));
     }
 
     /**
@@ -105,16 +129,35 @@ public class NotificationController {
      * @param message The message content
      * @return Success status
      */
-    @PostMapping("/test/websocket")
-    public ResponseEntity<Map<String, String>> testWebSocketMessage(
-            @RequestParam Long userId,
+    @PostMapping("/websocket-message")
+    public ResponseEntity<Map<String, String>> sendWebSocketMessage(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) String userFullId,
             @RequestParam String message) {
 
-        messagingTemplate.convertAndSend("/topic/user/" + userId,
-                Map.of("message", message, "timestamp", Instant.now().toString()));
+        if (userFullId == null && userId == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "Either userId or userFullId must be provided"));
+        }
+
+        String userIdentifier = userFullId != null ? userFullId : userId.toString();
+
+        // Create a notification object
+        Notification notification = new Notification();
+        if (userFullId != null)
+            notification.setUserFullId(userFullId);
+        if (userId != null)
+            notification.setUserId(userId);
+        notification.setNotificationMessage(message);
+        notification.setCreatedAt(Timestamp.from(Instant.now()));
+        notification.setSentAt(Timestamp.from(Instant.now()));
+
+        // Send directly without saving to DB
+        messagingTemplate.convertAndSend("/topic/user/" + userIdentifier, notification);
 
         return ResponseEntity.ok(Map.of(
                 "status", "success",
-                "message", "WebSocket message sent to user " + userId));
+                "message", "WebSocket message sent to user " + userIdentifier));
     }
 }

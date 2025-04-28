@@ -2,6 +2,7 @@ package com.example.courseregistration.service.strategy;
 
 import com.example.courseregistration.dto.CreateRegistrationDTO;
 import com.example.courseregistration.dto.CourseClassDTO;
+import com.example.courseregistration.dto.StudentDTO;
 import com.example.courseregistration.dto.RegistrationDTO;
 import com.example.courseregistration.model.Registration;
 import com.example.courseregistration.repository.CourseRegistrationRepository;
@@ -37,15 +38,17 @@ public class IndividualRegistrationCreationStrategy implements RegistrationCreat
 
     @Override
     public boolean supports(CreateRegistrationDTO dto) {
-        return dto.getStudentIds().size() == 1;
+        return dto.getStudentFullIds().size() == 1;
     }
 
     @Override
     public List<RegistrationDTO> create(CreateRegistrationDTO dto) {
-        Long studentId = dto.getStudentIds().get(0);
+        String studentFullId = dto.getStudentFullIds().get(0);
 
         // Validate student exists
-        microserviceClient.validateStudentExists(studentId);
+        microserviceClient.validateStudentExists(studentFullId);
+        StudentDTO student = microserviceClient.fetchStudentByFullId(studentFullId);
+        Long studentId = student.getStudentId();
 
         // Fetch class details
         CourseClassDTO courseClass = microserviceClient.fetchClass(dto.getClassId());

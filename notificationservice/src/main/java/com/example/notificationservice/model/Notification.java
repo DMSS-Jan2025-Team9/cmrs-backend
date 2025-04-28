@@ -10,7 +10,9 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long notificationId;
 
-    private Long userId;
+    private String userFullId;
+
+    private Long userId; // Keep for backward compatibility
 
     private String notificationMessage;
 
@@ -25,6 +27,14 @@ public class Notification {
 
     public void setNotificationId(Long notificationId) {
         this.notificationId = notificationId;
+    }
+
+    public String getUserFullId() {
+        return userFullId;
+    }
+
+    public void setUserFullId(String userFullId) {
+        this.userFullId = userFullId;
     }
 
     public Long getUserId() {
@@ -63,6 +73,7 @@ public class Notification {
     public String toString() {
         return "Notification{" +
                 "notificationId=" + notificationId +
+                ", userFullId='" + userFullId + '\'' +
                 ", userId=" + userId +
                 ", notificationMessage='"
                 + (notificationMessage != null

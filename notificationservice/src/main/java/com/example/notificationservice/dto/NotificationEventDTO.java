@@ -3,7 +3,8 @@ package com.example.notificationservice.dto;
 import java.io.Serializable;
 
 public class NotificationEventDTO implements Serializable {
-    private Long studentId;
+    private String studentFullId;
+    private Long studentId; // Keep for backward compatibility
     private Long classId;
     private String courseCode;
     private String courseName;
@@ -13,14 +14,24 @@ public class NotificationEventDTO implements Serializable {
     public NotificationEventDTO() {
     }
 
-    public NotificationEventDTO(Long studentId, Long classId, String courseCode, String courseName, String message,
+    public NotificationEventDTO(String studentFullId, Long studentId, Long classId, String courseCode,
+            String courseName, String message,
             String eventType) {
+        this.studentFullId = studentFullId;
         this.studentId = studentId;
         this.classId = classId;
         this.courseCode = courseCode;
         this.courseName = courseName;
         this.message = message;
         this.eventType = eventType;
+    }
+
+    public String getStudentFullId() {
+        return studentFullId;
+    }
+
+    public void setStudentFullId(String studentFullId) {
+        this.studentFullId = studentFullId;
     }
 
     public Long getStudentId() {
@@ -74,7 +85,8 @@ public class NotificationEventDTO implements Serializable {
     @Override
     public String toString() {
         return "NotificationEventDTO{" +
-                "studentId=" + studentId +
+                "studentFullId='" + studentFullId + '\'' +
+                ", studentId=" + studentId +
                 ", classId=" + classId +
                 ", courseCode='" + courseCode + '\'' +
                 ", courseName='" + courseName + '\'' +

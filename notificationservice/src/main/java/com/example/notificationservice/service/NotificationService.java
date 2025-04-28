@@ -32,15 +32,21 @@ public class NotificationService {
             throw new IllegalArgumentException("NotificationEventDTO cannot be null");
         }
 
-        if (eventDTO.getStudentId() == null) {
-            logger.error("StudentId is null in NotificationEventDTO");
-            throw new IllegalArgumentException("StudentId cannot be null");
+        if (eventDTO.getStudentFullId() == null) {
+            logger.error("StudentFullId is null in NotificationEventDTO");
+            throw new IllegalArgumentException("StudentFullId cannot be null");
         }
 
-        logger.debug("StudentId: {}, Message: {}", eventDTO.getStudentId(), eventDTO.getMessage());
+        logger.debug("StudentFullId: {}, Message: {}", eventDTO.getStudentFullId(), eventDTO.getMessage());
 
         Notification notification = new Notification();
-        notification.setUserId(eventDTO.getStudentId());
+        notification.setUserFullId(eventDTO.getStudentFullId());
+
+        // For backward compatibility, also set userId if available
+        if (eventDTO.getStudentId() != null) {
+            notification.setUserId(eventDTO.getStudentId());
+        }
+
         notification.setNotificationMessage(eventDTO.getMessage());
         notification.setCreatedAt(Timestamp.from(Instant.now()));
 
@@ -54,14 +60,22 @@ public class NotificationService {
         notification.setSentAt(Timestamp.from(Instant.now()));
         notificationRepository.save(notification);
 
-        // Send notification to the specific user topic
+        // Send notification to the specific user topic - use userFullId if available,
+        // otherwise fall back to userId
+        String userIdentifier = notification.getUserFullId() != null ? notification.getUserFullId()
+                : notification.getUserId().toString();
+
         messagingTemplate.convertAndSend(
-                "/topic/user/" + notification.getUserId(),
+                "/topic/user/" + userIdentifier,
                 notification);
     }
 
     public List<Notification> getUserNotifications(Long userId) {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
+    }
+
+    public List<Notification> getUserNotificationsByFullId(String userFullId) {
+        return notificationRepository.findByUserFullIdOrderByCreatedAtDesc(userFullId);
     }
 
     public void markAsSent(Long notificationId) {
