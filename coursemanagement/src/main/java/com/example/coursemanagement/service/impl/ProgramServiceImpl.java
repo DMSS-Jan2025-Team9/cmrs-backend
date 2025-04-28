@@ -62,6 +62,11 @@ public class ProgramServiceImpl implements ProgramService {
         );
     }
 
-
-
+    public List<CourseDTO> getCoursesByProgramId(Integer programId) {
+        return programRepository.findById(programId)
+                .map(program -> program.getCourses().stream()
+                        .map(this::mapCourseToDto)
+                        .collect(Collectors.toList()))
+                .orElseThrow(() -> new RuntimeException("Program not found with ID: " + programId));
+    }
 }

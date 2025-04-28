@@ -12,6 +12,7 @@ import com.example.coursemanagement.exception.ResourceNotFoundException;
 import com.example.coursemanagement.model.Course;
 import com.example.coursemanagement.model.Program;
 import com.example.coursemanagement.model.ProgramCourse;
+import com.example.coursemanagement.repository.ClassScheduleRepository;
 import com.example.coursemanagement.repository.CourseRepository;
 import com.example.coursemanagement.repository.ProgramCourseRepository;
 import com.example.coursemanagement.repository.ProgramRepository;
@@ -23,16 +24,19 @@ public class CourseServiceImpl implements CourseService{
     private final CourseRepository courseRepository;
     private final ProgramRepository programRepository;
     private final ProgramCourseRepository programCourseRepository;
+    private final ClassScheduleRepository classScheduleRepository;
     private static final String COURSE = "course";
     private static final String PROGRAM = "program";
 	
     public CourseServiceImpl(CourseRepository courseRepository, 
                             ProgramRepository programRepository,
-                            ProgramCourseRepository programCourseRepository) {
+                            ProgramCourseRepository programCourseRepository,
+                            ClassScheduleRepository classScheduleRepository) {
         super();
         this.courseRepository = courseRepository;
         this.programRepository = programRepository;
         this.programCourseRepository = programCourseRepository;
+        this.classScheduleRepository = classScheduleRepository;
     }
     
     @Override
@@ -213,5 +217,21 @@ public class CourseServiceImpl implements CourseService{
             throw new ResourceNotFoundException(COURSE, "courseId with program association", courseId.toString());
         }
         return programCourses.get(0).getProgramId();
+    }
+
+    /**
+     * Deletes a course by its ID and removes any program-course mappings
+     * 
+     * @param courseId the ID of the course to delete
+     * @throws ResourceNotFoundException if the course does not exist
+     */
+    public void deleteCourse(int courseId) {
+        Course course = getCourseById(courseId);
+        if (course == null) {
+            throw new ResourceNotFoundException("Course with id " + courseId + " not found");
+        }  
+        classScheduleRepository.deleteAllByCourseId(courseId);
+        programCourseRepository.deleteAllByCourseId(courseId);
+        courseRepository.delete(course);
     }
 }

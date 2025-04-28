@@ -11,6 +11,8 @@ public interface ClassScheduleService {
     ClassSchedule getClassScheduleById(int classId);
     ClassSchedule addClassSchedule(ClassSchedule course);
     ClassSchedule editClassSchedule(ClassSchedule course);
+    boolean deleteClassSchedule(int classId);
+    
     boolean existsByCourseAndDayOfWeekAndStartTimeAndEndTime(Integer courseId, String dayOfWeek, LocalTime startTime,
             LocalTime endTime);
 

@@ -13,4 +13,5 @@ public interface ProgramService {
     public List<ProgramDto> getAllPrograms();
     public ProgramDto mapToDto(Program program);
     public CourseDTO mapCourseToDto(Course course);
+    public List<CourseDTO> getCoursesByProgramId(Integer programId) ;
 }
