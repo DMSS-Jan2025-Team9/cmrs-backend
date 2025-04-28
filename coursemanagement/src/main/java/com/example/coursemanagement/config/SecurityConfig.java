@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/classSchedule/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/program/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/classes/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/classes/**").permitAll()
                         // Admin and staff only - create/update/delete operations
                         .requestMatchers(HttpMethod.POST, "/api/courses/**").hasRole("admin")
                         .requestMatchers(HttpMethod.PUT, "/api/courses/**").hasRole("admin")
