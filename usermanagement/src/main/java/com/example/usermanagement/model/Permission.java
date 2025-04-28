@@ -9,7 +9,7 @@ public class Permission {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long permissionId;
+    private Integer permissionId;
 
     private String permissionName;
 
@@ -20,11 +20,11 @@ public class Permission {
     private Set<Role> roles;
 
     // Getters and Setters
-    public Long getPermissionId() {
+    public Integer getPermissionId() {
         return permissionId;
     }
 
-    public void setPermissionId(Long permissionId) {
+    public void setPermissionId(Integer permissionId) {
         this.permissionId = permissionId;
     }
 

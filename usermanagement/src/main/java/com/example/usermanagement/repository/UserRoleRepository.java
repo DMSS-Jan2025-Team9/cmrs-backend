@@ -12,7 +12,7 @@ public class UserRoleRepository {
     private EntityManager entityManager;
 
     @Transactional
-    public void assignStudentRole(Long userId) {
+    public void assignStudentRole(Integer userId) {
         entityManager.createNativeQuery("INSERT INTO user_role (user_id, role_id) VALUES (:userId, 2)")
                 .setParameter("userId", userId)
                 .executeUpdate();

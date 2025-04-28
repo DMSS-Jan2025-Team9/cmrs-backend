@@ -55,7 +55,7 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
 
         // 2. Fetch program name
         if (student.getProgramId() != null) {
-            String url = UriComponentsBuilder.fromHttpUrl(programApiUrl)
+            String url = UriComponentsBuilder.fromUriString(programApiUrl)
                     .pathSegment(student.getProgramId().toString())
                     .toUriString();
             ProgramResponse programResponse = restTemplate.getForObject(url, ProgramResponse.class);

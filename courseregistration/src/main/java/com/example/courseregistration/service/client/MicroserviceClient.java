@@ -3,6 +3,7 @@ package com.example.courseregistration.service.client;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import com.example.courseregistration.dto.CourseClassDTO;
+import com.example.courseregistration.dto.StudentDTO;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
@@ -15,7 +16,7 @@ import java.util.Map;
 public class MicroserviceClient {
     private final RestTemplate rest = new RestTemplate();
     private static final String classAPI = "http://localhost:8081/api/classes/{classId}";
-    private static final String studentAPI = "http://localhost:8085/api/students/{studentId}";
+    private static final String studentAPI = "http://localhost:8085/api/students//studentFullId/{studentFullId}";
 
     public CourseClassDTO fetchClass(Long classId) {
     try {
@@ -45,18 +46,43 @@ public class MicroserviceClient {
         rest.put(classAPI, payload, dto.getClassId());
     }
 
-    public void validateStudentExists(Long studentId) {
+    public void validateStudentExists(String studentFullId) {
         try {
-            rest.getForEntity(studentAPI, String.class, studentId);
+            rest.getForEntity(studentAPI, String.class, studentFullId);
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
                 throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
-                    "Student with ID " + studentId + " does not exist"
+                    "Student with Full Id " + studentFullId + " does not exist"
                 );
             }
             throw e;
         }
     }
+
+    public StudentDTO fetchStudentByFullId(String studentFullId) {
+        try {
+            StudentDTO dto = rest.getForObject(
+                studentAPI,       
+                StudentDTO.class,
+                studentFullId
+            );
+
+            if (dto == null) {
+                throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Student not found: " + studentFullId
+                );
+            }
+            return dto;
+
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Student not found: " + studentFullId
+            );
+        }
+    }
+
 
 }

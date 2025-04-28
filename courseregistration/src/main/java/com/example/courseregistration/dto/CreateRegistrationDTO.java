@@ -2,15 +2,15 @@ package com.example.courseregistration.dto;
 import java.util.List;
 
 public class CreateRegistrationDTO {
-    private List<Long> studentIds; 
+    private List<String> studentFullIds; 
     private Long classId;
 
-    public List<Long> getStudentIds() {
-        return studentIds;
+    public List<String> getStudentFullIds() {
+        return studentFullIds;
     }
 
-    public void setStudentIds(List<Long> studentIds) {
-        this.studentIds = studentIds;
+    public void setStudentFullIds(List<String> studentFullIds) {
+        this.studentFullIds = studentFullIds;
     }
 
     public Long getClassId() {
