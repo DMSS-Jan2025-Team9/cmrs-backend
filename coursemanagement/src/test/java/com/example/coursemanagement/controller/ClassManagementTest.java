@@ -682,6 +682,65 @@ class ClassManagementTest {
     }
     
     @Test
+    void deleteClassSchedule() throws Exception {
+        // Mock service to return true (successful deletion)
+        when(classScheduleService.deleteClassSchedule(1)).thenReturn(true);
+        
+        // Perform the request
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/classSchedule/deleteClassSchedule/1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+        
+        // Verify service was called
+        verify(classScheduleService).deleteClassSchedule(1);
+    }
+
+    @Test
+    void deleteClassScheduleNotFound() throws Exception {
+        // Mock service to throw ResourceNotFoundException
+        when(classScheduleService.deleteClassSchedule(999))
+                .thenThrow(new ResourceNotFoundException("Class Schedule", "classId", "999"));
+        
+        // Perform the request
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/classSchedule/deleteClassSchedule/999")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Class schedule not found"))
+                .andExpect(jsonPath("$.message").exists());
+        
+        // Verify service was called
+        verify(classScheduleService).deleteClassSchedule(999);
+    }
+
+    @Test
+    void deleteClassScheduleInvalidIdFormat() throws Exception {
+        // Test with non-numeric ID
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/classSchedule/deleteClassSchedule/abc")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+        
+        // Verify service was not called
+        verify(classScheduleService, never()).deleteClassSchedule(any(Integer.class));
+    }
+
+    @Test
+    void deleteClassScheduleInternalServerError() throws Exception {
+        // Mock service to throw a runtime exception
+        when(classScheduleService.deleteClassSchedule(1))
+                .thenThrow(new RuntimeException("Unexpected server error"));
+        
+        // Perform the request
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/classSchedule/deleteClassSchedule/1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Delete failed"))
+                .andExpect(jsonPath("$.message").value("Unexpected server error"));
+        
+        // Verify service was called
+        verify(classScheduleService).deleteClassSchedule(1);
+    }
+
+    @Test
     void testInternalServerError() throws Exception {
         // Create a test DTO
         ClassScheduleDTO testDTO = new ClassScheduleDTO(

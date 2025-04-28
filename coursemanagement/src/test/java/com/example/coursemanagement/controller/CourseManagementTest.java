@@ -13,6 +13,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -734,5 +738,68 @@ class CourseManagementTest {
       
       verify(courseService).getCourseByIdWithProgram(courseId);
       verify(courseService).getProgramIdForCourse(courseId);
+    }
+
+    @Test
+    void deleteCourse() throws Exception {
+        // Mock service to return true (successful deletion)
+        when(courseService.getCourseById(1)).thenReturn(course1);
+        doNothing().when(courseService).deleteCourse(1);
+        
+        // Perform the request
+        mockMvc.perform(delete("/api/courses/deleteCourse/1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+        
+        // Verify service was called
+        verify(courseService).getCourseById(1);
+        verify(courseService).deleteCourse(1);
+    }
+
+    @Test
+    void deleteCourseNotFound() throws Exception {
+        // Mock service to return null (course not found)
+        when(courseService.getCourseById(999)).thenReturn(null);
+        
+        // Perform the request
+        mockMvc.perform(delete("/api/courses/deleteCourse/999")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Resource not found"))
+                .andExpect(jsonPath("$.message").value("Course with id 999 not found"));
+        
+        // Verify getCourseById was called but deleteCourse was not
+        verify(courseService).getCourseById(999);
+        verify(courseService, never()).deleteCourse(999);
+    }
+
+    @Test
+    void deleteCourseInvalidIdFormat() throws Exception {
+        // Test with non-numeric ID
+        mockMvc.perform(delete("/api/courses/deleteCourse/abc")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+        
+        // Verify service was not called
+        verify(courseService, never()).getCourseById(any(Integer.class));
+        verify(courseService, never()).deleteCourse(any(Integer.class));
+    }
+
+    @Test
+    void deleteCourseResourceNotFoundException() throws Exception {
+        // Mock getCourseById to return a course but deleteCourse to throw ResourceNotFoundException
+        when(courseService.getCourseById(1)).thenReturn(course1);
+        doThrow(new ResourceNotFoundException("Course with id 1 not found"))
+            .when(courseService).deleteCourse(1);
+        
+        // Perform the request
+        mockMvc.perform(delete("/api/courses/deleteCourse/1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Resource not found"));
+        
+        // Verify both methods were called
+        verify(courseService).getCourseById(1);
+        verify(courseService).deleteCourse(1);
     }
 }

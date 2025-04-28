@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.coursemanagement.dto.CourseDTO;
 import com.example.coursemanagement.dto.ProgramDto;
 import com.example.coursemanagement.service.ProgramService;
 
@@ -33,6 +34,12 @@ public class ProgramController {
     @GetMapping
     public List<ProgramDto> getAllPrograms() {
         return programService.getAllPrograms();
+    }
+
+    @GetMapping("/{programId}/courses")
+    public List<CourseDTO> getCoursesByProgramId(@PathVariable Integer programId) {
+        // Fetch the courses associated with the programId using the ProgramService
+        return programService.getCoursesByProgramId(programId);
     }
 }
 
