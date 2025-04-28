@@ -4,8 +4,10 @@ import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.coursemanagement.model.ClassSchedule;
 
@@ -34,6 +36,11 @@ public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, In
         @Param("startTime") LocalTime startTime,
         @Param("endTime") LocalTime endTime,
         @Param("classId") Integer classId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM ClassSchedule cs WHERE cs.course.courseId = :courseId")
+    void deleteAllByCourseId(@Param("courseId") int courseId);
     
     
 }

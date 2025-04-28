@@ -19,4 +19,5 @@ public interface CourseService {
     Course editCourseWithProgram(Course course, Integer programId);
     Course addCourse(Course course, Integer programId);
     Integer getProgramIdForCourse(Integer courseId);
+    void deleteCourse(int courseId);
 } 

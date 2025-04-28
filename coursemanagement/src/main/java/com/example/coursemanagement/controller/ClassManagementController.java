@@ -5,6 +5,7 @@ import java.util.List;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -131,6 +132,29 @@ public class ClassManagementController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }    
+
+    @DeleteMapping("/deleteClassSchedule/{classId}")
+    public ResponseEntity<?> deleteClassSchedule(@PathVariable int classId) {
+        try {
+            boolean deleted = classScheduleService.deleteClassSchedule(classId);
+            if (deleted) {
+                return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body("Class schedule deleted successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("Delete failed", "Class schedule not found"));
+            }
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("Class schedule not found", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("Delete failed", e.getMessage()));
+        }
+    }
 
     @GetMapping("/full")
     public ResponseEntity<List<ClassScheduleDTO>> getFullClasses() {

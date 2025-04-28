@@ -109,6 +109,17 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
         return classScheduleRepository.save(existingClass);
     }
 
+    @Override
+    public boolean deleteClassSchedule(int classId) {
+        ClassSchedule classSchedule = classScheduleRepository.getClassScheduleById(classId);
+        if (classSchedule == null) {
+            throw new ResourceNotFoundException(CLASSSCHEDULE, "classId", classId + "");
+        }
+        
+        classScheduleRepository.delete(classSchedule);
+        return true;
+    }
+
     /**
      * Validates that the total capacity of all classes for a course doesn't exceed 
      * the course's maximum capacity.

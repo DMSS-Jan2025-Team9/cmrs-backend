@@ -6,6 +6,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -156,6 +157,33 @@ public class CourseManagementController {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ErrorResponse("An unexpected error occurred", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/deleteCourse/{courseId}")
+    public ResponseEntity<?> deleteCourse(@PathVariable int courseId) {
+        try {
+            // Check if course exists before attempting to delete
+            Course existingCourse = courseService.getCourseById(courseId);
+            if (existingCourse == null) {
+                return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("Resource not found", "Course with id " + courseId + " not found"));
+            }
+            
+            // Delete the course
+            courseService.deleteCourse(courseId);
+            
+            // Return success response with no content
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse("Resource not found", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse("An unexpected error occurred", e.getMessage()));
         }
     }
 }
