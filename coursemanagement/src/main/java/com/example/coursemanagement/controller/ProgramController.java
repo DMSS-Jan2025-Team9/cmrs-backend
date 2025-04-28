@@ -36,7 +36,7 @@ public class ProgramController {
         return programService.getAllPrograms();
     }
 
-    @GetMapping("/programs/{programId}/courses")
+    @GetMapping("/{programId}/courses")
     public List<CourseDTO> getCoursesByProgramId(@PathVariable Integer programId) {
         // Fetch the courses associated with the programId using the ProgramService
         return programService.getCoursesByProgramId(programId);
