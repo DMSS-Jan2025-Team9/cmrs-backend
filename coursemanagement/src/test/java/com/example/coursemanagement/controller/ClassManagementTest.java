@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -264,6 +265,7 @@ class ClassManagementTest {
     }
 
     @Test
+    @WithMockUser(roles = "admin")
     void addClassSchedule() throws Exception {
         // Create a new classSchedule and DTO for the request
         ClassSchedule newClassSchedule = new ClassSchedule(
@@ -307,6 +309,7 @@ class ClassManagementTest {
     }
 
     @Test
+    @WithMockUser(roles = "admin")
     void editClassSchedule() throws Exception {       
         ClassSchedule updatedClassSchedule = new ClassSchedule(
             1, 
@@ -367,6 +370,7 @@ class ClassManagementTest {
     }
 
     @Test
+    @WithMockUser(roles = "admin")
     void editClassScheduleNotFound() throws Exception {
         ClassScheduleDTO updatedClassScheduleDTO = new ClassScheduleDTO(
             999, 
@@ -414,6 +418,7 @@ class ClassManagementTest {
     }
     
     @Test
+    @WithMockUser(roles = "admin")
     void testAddClassScheduleWithInvalidCapacity() throws Exception {
         // Create DTO with invalid capacity (vacancy > maxCapacity)
         ClassScheduleDTO invalidCapacityDTO = new ClassScheduleDTO(
@@ -454,6 +459,7 @@ class ClassManagementTest {
     }
     
     @Test
+    @WithMockUser(roles = "admin")
     void testAddClassScheduleWithNegativeCapacity() throws Exception {
         // Create DTO with negative capacity
         ClassScheduleDTO negativeCapacityDTO = new ClassScheduleDTO(
@@ -494,6 +500,7 @@ class ClassManagementTest {
     }
     
     @Test
+    @WithMockUser(roles = "admin")
     void testAddClassScheduleWithInvalidTimeRange() throws Exception {
         // Create DTO with invalid time range (start after end)
         ClassScheduleDTO invalidTimeDTO = new ClassScheduleDTO(
@@ -534,6 +541,7 @@ class ClassManagementTest {
     }
     
     @Test
+    @WithMockUser(roles = "admin")
     void testAddClassScheduleDuplicateSchedule() throws Exception {
         // Create a duplicate schedule DTO
         ClassScheduleDTO duplicateDTO = new ClassScheduleDTO(
@@ -574,6 +582,7 @@ class ClassManagementTest {
     }
     
     @Test
+    @WithMockUser(roles = "admin")
     void testEditClassScheduleInvalidCapacity() throws Exception {
         // Create update DTO with invalid capacity
         ClassScheduleDTO invalidCapacityDTO = new ClassScheduleDTO(
@@ -605,6 +614,7 @@ class ClassManagementTest {
     }
     
     @Test
+    @WithMockUser(roles = "admin")
     void testEditClassScheduleInvalidTimeRange() throws Exception {
         // Create update DTO with invalid time range
         ClassScheduleDTO invalidTimeDTO = new ClassScheduleDTO(
@@ -636,6 +646,7 @@ class ClassManagementTest {
     }
     
     @Test
+    @WithMockUser(roles = "admin")
     void testGetAllClassSchedulesForNonExistentCourse() throws Exception {
         // Mock service to throw exception for non-existent course
         when(classScheduleService.getAllClassSchedulesForCourse(999))
@@ -651,6 +662,7 @@ class ClassManagementTest {
     }
     
     @Test
+    @WithMockUser(roles = "admin")
     void testEditClassScheduleDuplicateSchedule() throws Exception {
         // Create update DTO that would result in duplicate
         ClassScheduleDTO duplicateDTO = new ClassScheduleDTO(
@@ -682,6 +694,7 @@ class ClassManagementTest {
     }
     
     @Test
+    @WithMockUser(roles = "admin")
     void deleteClassSchedule() throws Exception {
         // Mock service to return true (successful deletion)
         when(classScheduleService.deleteClassSchedule(1)).thenReturn(true);
@@ -696,6 +709,7 @@ class ClassManagementTest {
     }
 
     @Test
+    @WithMockUser(roles = "admin")
     void deleteClassScheduleNotFound() throws Exception {
         // Mock service to throw ResourceNotFoundException
         when(classScheduleService.deleteClassSchedule(999))
@@ -713,6 +727,7 @@ class ClassManagementTest {
     }
 
     @Test
+    @WithMockUser(roles = "admin")
     void deleteClassScheduleInvalidIdFormat() throws Exception {
         // Test with non-numeric ID
         mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/classSchedule/deleteClassSchedule/abc")
@@ -724,6 +739,7 @@ class ClassManagementTest {
     }
 
     @Test
+    @WithMockUser(roles = "admin")
     void deleteClassScheduleInternalServerError() throws Exception {
         // Mock service to throw a runtime exception
         when(classScheduleService.deleteClassSchedule(1))
@@ -741,6 +757,7 @@ class ClassManagementTest {
     }
 
     @Test
+    @WithMockUser(roles = "admin")
     void testInternalServerError() throws Exception {
         // Create a test DTO
         ClassScheduleDTO testDTO = new ClassScheduleDTO(
