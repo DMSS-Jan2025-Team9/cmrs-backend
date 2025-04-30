@@ -1,21 +1,22 @@
 package com.example.courseregistration.service.client;
 
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-import com.example.courseregistration.dto.CourseClassDTO;
-import com.example.courseregistration.dto.StudentDTO;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.example.courseregistration.dto.CourseClassDTO;
+import com.example.courseregistration.dto.StudentDTO;
 
 //Helper function to interact with Microservices
 @Component
 public class MicroserviceClient {
     private final RestTemplate rest = new RestTemplate();
-    private static final String classAPI = "http://localhost:8081/api/classes/{classId}";
+    private static final String classAPI = "http://localhost:8081/api/classSchedule/classId/{classId}";
     private static final String studentAPI = "http://localhost:8085/api/students//studentFullId/{studentFullId}";
 
     public CourseClassDTO fetchClass(Long classId) {
