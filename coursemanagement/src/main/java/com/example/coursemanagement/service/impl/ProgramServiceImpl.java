@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.coursemanagement.dto.CourseDTO;
 import com.example.coursemanagement.dto.ProgramDto;
+import com.example.coursemanagement.exception.ResourceNotFoundException;
 import com.example.coursemanagement.model.Course;
 import com.example.coursemanagement.model.Program;
 import com.example.coursemanagement.repository.ProgramRepository;
@@ -17,6 +18,7 @@ import com.example.coursemanagement.service.ProgramService;
 public class ProgramServiceImpl implements ProgramService {
 
     private final ProgramRepository programRepository;
+    private static final String PROGRAM = "program";
 
     @Autowired
     public ProgramServiceImpl(ProgramRepository programRepository) {
@@ -27,7 +29,7 @@ public class ProgramServiceImpl implements ProgramService {
     public ProgramDto getProgramById(Integer programId) {
         return programRepository.findById(programId)
                 .map(this::mapToDto)
-                .orElseThrow(() -> new RuntimeException("Program not found with ID: " + programId));
+                .orElseThrow(() -> new ResourceNotFoundException(PROGRAM, "programId", programId.toString())); 
     }
 
     public List<ProgramDto> getAllPrograms() {
@@ -67,6 +69,6 @@ public class ProgramServiceImpl implements ProgramService {
                 .map(program -> program.getCourses().stream()
                         .map(this::mapCourseToDto)
                         .collect(Collectors.toList()))
-                .orElseThrow(() -> new RuntimeException("Program not found with ID: " + programId));
+                .orElseThrow(() -> new ResourceNotFoundException(PROGRAM, "programId", programId.toString()));
     }
 }

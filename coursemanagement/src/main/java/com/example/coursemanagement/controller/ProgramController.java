@@ -23,14 +23,14 @@ public class ProgramController {
         this.programService = programService;
     }
 
-    // ✅ Return ProgramDto instead of entity
+    // Return ProgramDto instead of entity
     @GetMapping("/{programId}")
     public ProgramDto getProgramById(@PathVariable Integer programId) {
         // Fetch the program details by programId using the ProgramService
         return programService.getProgramById(programId);
     }
 
-    // ✅ Return list of ProgramDto
+    //Return list of ProgramDto
     @GetMapping
     public List<ProgramDto> getAllPrograms() {
         return programService.getAllPrograms();
