@@ -24,14 +24,14 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
     private final NameCleaningStrategy nameCleaningStrategy;
     private final UserService userService;
     private final RestTemplate restTemplate;
-    private final String programApiUrl = "http://localhost:8081/api/program/";
+    private final String programApiUrl = "http://coursemanagement-service:8081/api/program/";
     private final String jobId;
     private final UserRoleRepository userRoleRepository;
 
     public StudentProcessor(NameCleaningStrategy nameCleaningStrategy,
-                            UserService userService,
-                            @Value("#{jobParameters['jobId']}") String jobId,
-                            UserRoleRepository userRoleRepository) {
+            UserService userService,
+            @Value("#{jobParameters['jobId']}") String jobId,
+            UserRoleRepository userRoleRepository) {
         this.validationChain = new StudentValidationChain()
                 .addHandler(new FirstNameValidator())
                 .addHandler(new LastNameValidator());
@@ -82,7 +82,7 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
             String paddedId = (idLong < 10) ? String.format("%02d", idLong) : idLong.toString();
 
             int randomPadding = 1000 + (int) (Math.random() * 9000); // Generates 1000–9999
-            String fullStudentId = "U" + paddedId + randomPadding;   // e.g., U010234 or U101234
+            String fullStudentId = "U" + paddedId + randomPadding; // e.g., U010234 or U101234
             student.setStudentFullId(fullStudentId);
 
             savedUser.setUsername(fullStudentId);

@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Entity
+@Table(name = "\"user\"")
 public class User {
 
     @Id
@@ -28,11 +29,7 @@ public class User {
 
     @JsonManagedReference(value = "user-role")
     @ManyToMany
-    @JoinTable(
-        name = "user_role",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
+    @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles;
 
     // Getters and Setters
@@ -101,8 +98,9 @@ public class User {
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", roles=" + (roles != null ? roles.stream()
-                .map(Role::getRoleName)
-                .collect(Collectors.joining(", ")) : "No Roles") +
+                        .map(Role::getRoleName)
+                        .collect(Collectors.joining(", ")) : "No Roles")
+                +
                 '}';
     }
 }

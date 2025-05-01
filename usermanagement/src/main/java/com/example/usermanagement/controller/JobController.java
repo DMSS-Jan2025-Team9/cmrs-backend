@@ -14,6 +14,7 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,7 +31,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/jobs")
 public class JobController {
 
-
     private final JobLauncher jobLauncher;
 
     private final Job job;
@@ -38,33 +38,51 @@ public class JobController {
     private final UserService userService;
 
     // Constructor Injection (Best Practice)
-    public JobController(JobLauncher jobLauncher, Job job, UserService userService, StudentRepository studentRepository) {
+    public JobController(JobLauncher jobLauncher, Job job, UserService userService,
+            StudentRepository studentRepository) {
         this.jobLauncher = jobLauncher;
         this.job = job;
         this.userService = userService;
         this.studentRepository = studentRepository;
     }
 
-
-//    @PostMapping("/importStudents")
-//    public void importCsvToDBJob() {
-//        JobParameters jobParameters = new JobParametersBuilder()
-//                .addLong("startAt", System.currentTimeMillis()).toJobParameters();
-//        try {
-//            jobLauncher.run(job, jobParameters);
-//        } catch (JobExecutionAlreadyRunningException | JobRestartException | JobInstanceAlreadyCompleteException |
-//                 JobParametersInvalidException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    // @PostMapping("/importStudents")
+    // public void importCsvToDBJob() {
+    // JobParameters jobParameters = new JobParametersBuilder()
+    // .addLong("startAt", System.currentTimeMillis()).toJobParameters();
+    // try {
+    // jobLauncher.run(job, jobParameters);
+    // } catch (JobExecutionAlreadyRunningException | JobRestartException |
+    // JobInstanceAlreadyCompleteException |
+    // JobParametersInvalidException e) {
+    // e.printStackTrace();
+    // }
+    // }
 
     @PostMapping("/importStudents")
     @Operation(summary = "Upload CSV and trigger batch job", description = "Uploads a CSV file to be processed by the batch job.")
     public ResponseEntity<Object> importCsvToDBJob(
             @RequestParam("csvFile") MultipartFile file) throws IOException {
 
-        // Save the file temporarily to disk or process it directly
-        File tempFile = new File("C:/tmp/cmrs-students-list/" + file.getOriginalFilename());
+        // Use a relative path that will work in any environment
+        String baseDirectory = System.getProperty("java.io.tmpdir");
+        String relativePath = "cmrs-students-list";
+        String directoryPath = new File(baseDirectory, relativePath).getAbsolutePath();
+
+        // Create a File object for the directory
+        File directory = new File(directoryPath);
+
+        // Check if directory exists, create it if it doesn't
+        if (!directory.exists()) {
+            boolean created = directory.mkdirs();
+            if (!created) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Failed to create directory for file upload");
+            }
+        }
+
+        // Save the file temporarily to disk
+        File tempFile = new File(directory, file.getOriginalFilename());
         file.transferTo(tempFile);
 
         String jobId = "job_" + System.currentTimeMillis(); // Unique job ID
@@ -78,24 +96,12 @@ public class JobController {
 
         try {
             jobLauncher.run(job, jobParameters);
-        } catch (JobExecutionAlreadyRunningException | JobRestartException | JobInstanceAlreadyCompleteException |
-                 JobParametersInvalidException e) {
+        } catch (JobExecutionAlreadyRunningException | JobRestartException | JobInstanceAlreadyCompleteException
+                | JobParametersInvalidException e) {
             e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to launch job: " + e.getMessage());
         }
-
-        // Fetch the data from the student table (assuming you have a repository or service to do so)
-//        List<Student> students = userService.getAllStudents(); // Adjust as necessary for your setup
-//        for (Student student : students) {
-//            System.out.println(student);
-//        }
-//        return ResponseEntity.ok(students); // Return the student list after job completion
-
-        // Fetch only the students processed in this job
-//        List<Student> students = studentRepository.findByJobId(jobId);  // Fetch only this job's students
-//        System.out.println("students: " + students);
-//        System.out.println("job id: " + jobId);
-//        return ResponseEntity.ok(students);  // Return only this job’s students
-
 
         List<Student> students = studentRepository.findByJobId(jobId);
 
@@ -104,8 +110,6 @@ public class JobController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(studentDtos);
-
     }
-
 
 }
