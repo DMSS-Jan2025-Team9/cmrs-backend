@@ -1,5 +1,6 @@
 package com.example.coursemanagement.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -44,8 +45,11 @@ public class CourseServiceImpl implements CourseService{
        return courseRepository.findAll();
     }
 
+    @Override
     public List<Course> findAllActiveCourses() {
-        return courseRepository.findByStatus("active");
+        Date currentDate = new Date(); // Current date as java.util.Date
+        return courseRepository.findByStatusAndRegistrationStartBeforeAndRegistrationEndAfter(
+            "active", currentDate, currentDate);
     }
 
     @Override

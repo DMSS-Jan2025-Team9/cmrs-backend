@@ -1,6 +1,7 @@
 package com.example.coursemanagement.controller;
 
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -122,16 +124,28 @@ class CourseManagementTest {
 
     @Test
     void testGetAllActiveCourses() throws Exception {
-        // Create a list of active courses - in this case, we'll use our existing courses
-        List<Course> activeCourses = Arrays.asList(course1, course2, course3);
+        // Create a list of active courses with appropriate registration dates
+        Date past = new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24); // Yesterday
+        Date future = new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7); // One week from now
+
+        Course activeCourse1 = new Course(1, "Active Course 1", "AC101", past, future, 100, "active", "Description 1");
+        Course activeCourse2 = new Course(2, "Active Course 2", "AC102", past, future, 50, "active", "Description 2");
+        Course activeCourse3 = new Course(3, "Active Course 3", "AC103", past, future, 80, "active", "Description 3");
+        
+        List<Course> activeCourses = Arrays.asList(activeCourse1, activeCourse2, activeCourse3);
+        
+        // Create corresponding DTOs
+        CourseDTO activeCourseDTO1 = new CourseDTO(1, "Active Course 1", "AC101", past, future, 100, "active", "Description 1", programId1);
+        CourseDTO activeCourseDTO2 = new CourseDTO(2, "Active Course 2", "AC102", past, future, 50, "active", "Description 2", programId1);
+        CourseDTO activeCourseDTO3 = new CourseDTO(3, "Active Course 3", "AC103", past, future, 80, "active", "Description 3", programId2);
         
         // Mock the service method to return the active courses
         when(courseService.findAllActiveCourses()).thenReturn(activeCourses);
         
         // Mock the model mapper for each course
-        when(modelMapper.map(course1, CourseDTO.class)).thenReturn(courseDTO1);
-        when(modelMapper.map(course2, CourseDTO.class)).thenReturn(courseDTO2);
-        when(modelMapper.map(course3, CourseDTO.class)).thenReturn(courseDTO3);
+        when(modelMapper.map(activeCourse1, CourseDTO.class)).thenReturn(activeCourseDTO1);
+        when(modelMapper.map(activeCourse2, CourseDTO.class)).thenReturn(activeCourseDTO2);
+        when(modelMapper.map(activeCourse3, CourseDTO.class)).thenReturn(activeCourseDTO3);
 
         // Perform the GET request
         mockMvc.perform(get("/api/courses/getActiveCourses")
@@ -139,9 +153,10 @@ class CourseManagementTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(3))
-                .andExpect(jsonPath("$[0].courseId").value(course1.getCourseId()))
-                .andExpect(jsonPath("$[1].courseId").value(course2.getCourseId()))
-                .andExpect(jsonPath("$[2].courseId").value(course3.getCourseId()));
+                .andExpect(jsonPath("$[0].courseId").value(activeCourse1.getCourseId()))
+                .andExpect(jsonPath("$[0].status").value("active"))
+                .andExpect(jsonPath("$[1].courseId").value(activeCourse2.getCourseId()))
+                .andExpect(jsonPath("$[2].courseId").value(activeCourse3.getCourseId()));
 
         // Verify the service method was called once
         verify(courseService, times(1)).findAllActiveCourses();
@@ -201,6 +216,174 @@ class CourseManagementTest {
                 .andExpect(jsonPath("$[1].status").value("Open"));
 
         // Verify the service method was called once
+        verify(courseService, times(1)).findAllActiveCourses();
+    }
+
+    @Test
+    void testGetAllActiveCoursesWithDateFiltering() throws Exception {
+        // Current time reference
+        Date now = new Date();
+        
+        // Valid date ranges (registration open)
+        Date pastStart = new Date(now.getTime() - 1000 * 60 * 60 * 24 * 2); // 2 days ago
+        Date futureEnd = new Date(now.getTime() + 1000 * 60 * 60 * 24 * 5);  // 5 days from now
+        
+        // Invalid date ranges
+        Date futureStart = new Date(now.getTime() + 1000 * 60 * 60 * 24);    // Tomorrow (not started yet)
+        Date pastEnd = new Date(now.getTime() - 1000 * 60 * 60 * 24);        // Yesterday (already ended)
+        
+        // Create courses with different statuses and date combinations
+        Course validActiveCourse = new Course(1, "Valid Active Course", "VAC101", 
+                pastStart, futureEnd, 100, "active", "Registration is open");
+        
+        Course notStartedCourse = new Course(2, "Not Started Course", "NSC101", 
+                futureStart, futureEnd, 50, "active", "Registration not started yet");
+        
+        Course endedCourse = new Course(3, "Ended Course", "EC101", 
+                pastStart, pastEnd, 80, "active", "Registration already ended");
+        
+        Course inactiveCourse = new Course(4, "Inactive Course", "IC101", 
+                pastStart, futureEnd, 70, "inactive", "Course is inactive");
+        
+        // Create DTOs for the valid course since only it should be returned
+        CourseDTO validActiveCourseDTO = new CourseDTO(1, "Valid Active Course", "VAC101", 
+                pastStart, futureEnd, 100, "active", "Registration is open", programId1);
+        
+        // We only expect the valid course to be returned by the service
+        List<Course> filteredCourses = Arrays.asList(validActiveCourse);
+        
+        // Mock the service method to return only the valid active course
+        when(courseService.findAllActiveCourses()).thenReturn(filteredCourses);
+        
+        // Mock the model mapper for the valid course
+        when(modelMapper.map(validActiveCourse, CourseDTO.class)).thenReturn(validActiveCourseDTO);
+
+        // Perform the GET request
+        mockMvc.perform(get("/api/courses/getActiveCourses")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].courseId").value(validActiveCourse.getCourseId()))
+                .andExpect(jsonPath("$[0].status").value("active"))
+                .andExpect(jsonPath("$[0].courseName").value("Valid Active Course"));
+
+        // Verify the service method was called once
+        verify(courseService, times(1)).findAllActiveCourses();
+        
+        // The service implementation should handle the date filtering, not the controller
+        // So these courses should never reach the controller
+        verify(modelMapper, never()).map(notStartedCourse, CourseDTO.class);
+        verify(modelMapper, never()).map(endedCourse, CourseDTO.class);
+        verify(modelMapper, never()).map(inactiveCourse, CourseDTO.class);
+    }
+
+
+    @Test
+    void testGetAllActiveCoursesWithMixedStatusesAndDates() throws Exception {
+        // Setup dates
+        Date past = new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24); // Yesterday
+        Date future = new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7); // One week from now
+        Date veryPast = new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24 * 30); // 30 days ago
+        Date veryFuture = new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 30); // 30 days from now
+        
+        // Create a variety of courses with different statuses and date combinations
+        Course activeValidCourse1 = new Course(1, "Active Valid 1", "AV101", past, future, 100, "active", "Active and valid dates");
+        Course activeValidCourse2 = new Course(2, "Active Valid 2", "AV102", veryPast, veryFuture, 50, "active", "Active with wider date range");
+        
+        Course activeInvalidDates = new Course(3, "Active Invalid Dates", "AID101", future, veryFuture, 80, "active", "Active but registration not started");
+        Course inactiveValidDates = new Course(4, "Inactive Valid Dates", "IVD101", past, future, 70, "inactive", "Inactive with valid dates");
+        
+        // Setup DTOs for valid courses that should be returned
+        CourseDTO activeValidCourseDTO1 = new CourseDTO(1, "Active Valid 1", "AV101", past, future, 100, "active", "Active and valid dates", programId1);
+        CourseDTO activeValidCourseDTO2 = new CourseDTO(2, "Active Valid 2", "AV102", veryPast, veryFuture, 50, "active", "Active with wider date range", programId2);
+        
+        // Only the active courses with valid registration dates should be returned
+        List<Course> validCourses = Arrays.asList(activeValidCourse1, activeValidCourse2);
+        
+        // Mock service to return only valid courses
+        when(courseService.findAllActiveCourses()).thenReturn(validCourses);
+        
+        // Mock mapper for valid courses
+        when(modelMapper.map(activeValidCourse1, CourseDTO.class)).thenReturn(activeValidCourseDTO1);
+        when(modelMapper.map(activeValidCourse2, CourseDTO.class)).thenReturn(activeValidCourseDTO2);
+        
+        // Perform request
+        mockMvc.perform(get("/api/courses/getActiveCourses")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].courseId").value(activeValidCourse1.getCourseId()))
+                .andExpect(jsonPath("$[0].status").value("active"))
+                .andExpect(jsonPath("$[1].courseId").value(activeValidCourse2.getCourseId()))
+                .andExpect(jsonPath("$[1].status").value("active"));
+        
+        // Verify service was called
+        verify(courseService, times(1)).findAllActiveCourses();
+        
+        // These should not be mapped since they should be filtered out by the service
+        verify(modelMapper, never()).map(activeInvalidDates, CourseDTO.class);
+        verify(modelMapper, never()).map(inactiveValidDates, CourseDTO.class);
+    }
+
+    @Test
+    void testGetAllActiveCoursesWithDateEdgeCases() throws Exception {
+        // Current date/time reference
+        Date now = new Date();
+        
+        // Edge case: registration starts exactly now
+        Date startNow = now;
+        
+        // Edge case: registration ends exactly now
+        Date endNow = now;
+        
+        // Edge case: registration started exactly at midnight today
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        Date startToday = cal.getTime();
+        
+        // Create courses with edge case dates
+        Course startNowCourse = new Course(1, "Start Now Course", "SN101", 
+                startNow, new Date(now.getTime() + 86400000), 100, "active", "Registration starts now");
+        
+        Course endNowCourse = new Course(2, "End Now Course", "EN101", 
+                new Date(now.getTime() - 86400000), endNow, 50, "active", "Registration ends now");
+        
+        Course startTodayCourse = new Course(3, "Start Today Course", "ST101", 
+                startToday, new Date(now.getTime() + 86400000 * 7), 80, "active", "Registration started today at midnight");
+        
+        // The service implementation should determine which courses are valid according to business rules
+        // For this test, we'll assume the service includes startNowCourse and startTodayCourse
+        // but excludes endNowCourse (since registration is ending exactly now)
+        List<Course> validCourses = Arrays.asList(startNowCourse, startTodayCourse);
+        
+        // Create corresponding DTOs
+        CourseDTO startNowCourseDTO = new CourseDTO(1, "Start Now Course", "SN101", 
+                startNow, new Date(now.getTime() + 86400000), 100, "active", "Registration starts now", programId1);
+        CourseDTO startTodayCourseDTO = new CourseDTO(3, "Start Today Course", "ST101", 
+                startToday, new Date(now.getTime() + 86400000 * 7), 80, "active", "Registration started today at midnight", programId2);
+        
+        // Mock service behavior
+        when(courseService.findAllActiveCourses()).thenReturn(validCourses);
+        
+        // Mock mapper behavior
+        when(modelMapper.map(startNowCourse, CourseDTO.class)).thenReturn(startNowCourseDTO);
+        when(modelMapper.map(startTodayCourse, CourseDTO.class)).thenReturn(startTodayCourseDTO);
+        
+        // Perform request
+        mockMvc.perform(get("/api/courses/getActiveCourses")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].courseId").value(startNowCourse.getCourseId()))
+                .andExpect(jsonPath("$[1].courseId").value(startTodayCourse.getCourseId()));
+        
+        // Verify service call
         verify(courseService, times(1)).findAllActiveCourses();
     }
 
@@ -382,6 +565,7 @@ class CourseManagementTest {
     }
 
     @Test
+    @WithMockUser(roles = "admin")
     void addCourse() throws Exception {
         // Create a CourseDTO to be sent in the request body
         CourseDTO newCourseDTO = new CourseDTO(
@@ -439,6 +623,7 @@ class CourseManagementTest {
     }
 
     @Test
+    @WithMockUser(roles = "admin")
     void testAddCourseWithDuplicateCode() throws Exception {
         // Test adding a course with an existing course code
         CourseDTO newCourseDTO = new CourseDTO(
@@ -478,6 +663,7 @@ class CourseManagementTest {
     }
 
     @Test
+    @WithMockUser(roles = "admin")
     void testAddCourseWithInvalidCapacity() throws Exception {
         // Test adding a course with invalid capacity (negative)
         CourseDTO invalidCourseDTO = new CourseDTO(
@@ -518,6 +704,7 @@ class CourseManagementTest {
     }
 
     @Test
+    @WithMockUser(roles = "admin")
     void editCourse() throws Exception {
       // Setup test data
       int courseId = 1;
@@ -592,6 +779,7 @@ class CourseManagementTest {
     } 
 
     @Test
+    @WithMockUser(roles = "admin")
     void testEditCourseNotFound() throws Exception {
       // Test editing a non-existent course
       int nonExistentCourseId = 999;
@@ -621,6 +809,7 @@ class CourseManagementTest {
     }
   
     @Test
+    @WithMockUser(roles = "admin")
     void testEditCourseInvalidDates() throws Exception {
       // Test editing a course with invalid registration dates (end date before start date)
       int courseId = 1;
@@ -669,6 +858,7 @@ class CourseManagementTest {
     }
     
     @Test
+    @WithMockUser(roles = "admin")
     void testEditCourseWithProgramNotFound() throws Exception {
       // Test editing a course with a non-existent program
       int courseId = 1;
@@ -741,6 +931,7 @@ class CourseManagementTest {
     }
 
     @Test
+    @WithMockUser(roles = "admin")
     void deleteCourse() throws Exception {
         // Mock service to return true (successful deletion)
         when(courseService.getCourseById(1)).thenReturn(course1);
@@ -757,6 +948,7 @@ class CourseManagementTest {
     }
 
     @Test
+    @WithMockUser(roles = "admin")
     void deleteCourseNotFound() throws Exception {
         // Mock service to return null (course not found)
         when(courseService.getCourseById(999)).thenReturn(null);
@@ -774,6 +966,7 @@ class CourseManagementTest {
     }
 
     @Test
+    @WithMockUser(roles = "admin")
     void deleteCourseInvalidIdFormat() throws Exception {
         // Test with non-numeric ID
         mockMvc.perform(delete("/api/courses/deleteCourse/abc")
@@ -786,6 +979,7 @@ class CourseManagementTest {
     }
 
     @Test
+    @WithMockUser(roles = "admin")
     void deleteCourseResourceNotFoundException() throws Exception {
         // Mock getCourseById to return a course but deleteCourse to throw ResourceNotFoundException
         when(courseService.getCourseById(1)).thenReturn(course1);

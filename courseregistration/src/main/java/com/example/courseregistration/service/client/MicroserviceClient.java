@@ -1,7 +1,14 @@
 package com.example.courseregistration.service.client;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.example.courseregistration.dto.CourseClassDTO;
 import com.example.courseregistration.dto.StudentDTO;
 import org.springframework.web.client.HttpClientErrorException;
