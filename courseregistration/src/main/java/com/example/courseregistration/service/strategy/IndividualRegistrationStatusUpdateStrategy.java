@@ -6,26 +6,35 @@ import com.example.courseregistration.dto.UpdateRegistrationStatusDTO;
 import com.example.courseregistration.model.Registration;
 import com.example.courseregistration.repository.CourseRegistrationRepository;
 import com.example.courseregistration.service.NotificationPublisherService;
+import com.example.courseregistration.service.WaitlistNotificationService;
 import com.example.courseregistration.service.client.MicroserviceClient;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.example.courseregistration.dto.StudentDTO;
 
 @Service
 public class IndividualRegistrationStatusUpdateStrategy implements RegistrationStatusUpdateStrategy {
+    private static final Logger logger = LoggerFactory.getLogger(IndividualRegistrationStatusUpdateStrategy.class);
+
     private final CourseRegistrationRepository courseRegistrationRepository;
     private final MicroserviceClient microserviceClient;
     private final NotificationPublisherService notificationPublisherService;
+    private final WaitlistNotificationService waitlistNotificationService;
 
     public IndividualRegistrationStatusUpdateStrategy(
             CourseRegistrationRepository courseRegistrationRepository,
             MicroserviceClient microserviceClient,
-            NotificationPublisherService notificationPublisherService) {
+            NotificationPublisherService notificationPublisherService,
+            WaitlistNotificationService waitlistNotificationService) {
         this.courseRegistrationRepository = courseRegistrationRepository;
         this.microserviceClient = microserviceClient;
         this.notificationPublisherService = notificationPublisherService;
+        this.waitlistNotificationService = waitlistNotificationService;
     }
 
     @Override
@@ -71,7 +80,7 @@ public class IndividualRegistrationStatusUpdateStrategy implements RegistrationS
             microserviceClient.updateVacancy(courseClass, courseClass.getVacancy() + 1);
 
             // Notify waitlisted students if there is now a vacancy
-            notifyWaitlistedStudents(reg.getClassId(), courseClass);
+            waitlistNotificationService.notifyWaitlistedStudents(reg.getClassId(), courseClass);
         }
 
         // Update the status and save
@@ -79,18 +88,6 @@ public class IndividualRegistrationStatusUpdateStrategy implements RegistrationS
         Registration updatedReg = courseRegistrationRepository.save(reg);
 
         return Collections.singletonList(mapToDTO(updatedReg));
-    }
-
-    private void notifyWaitlistedStudents(Long classId, CourseClassDTO courseClass) {
-        // Find students who are waitlisted for this class
-        List<Registration> waitlistedRegs = courseRegistrationRepository.filterRegistration(
-                null, null, classId, "Waitlisted", null);
-
-        // Notify each waitlisted student about the vacancy
-        for (Registration waitlistedReg : waitlistedRegs) {
-            notificationPublisherService.publishVacancyAvailableNotification(
-                    waitlistedReg.getStudentId(), courseClass);
-        }
     }
 
     private RegistrationDTO mapToDTO(Registration reg) {

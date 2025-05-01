@@ -10,7 +10,7 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long notificationId;
 
-    private String userFullId;
+    private String studentFullId;
 
     private Long userId; // Keep for backward compatibility
 
@@ -19,6 +19,8 @@ public class Notification {
     private Timestamp createdAt;
 
     private Timestamp sentAt;
+
+    private Timestamp readAt;
 
     // Getters and Setters
     public Long getNotificationId() {
@@ -29,12 +31,12 @@ public class Notification {
         this.notificationId = notificationId;
     }
 
-    public String getUserFullId() {
-        return userFullId;
+    public String getStudentFullId() {
+        return studentFullId;
     }
 
-    public void setUserFullId(String userFullId) {
-        this.userFullId = userFullId;
+    public void setStudentFullId(String studentFullId) {
+        this.studentFullId = studentFullId;
     }
 
     public Long getUserId() {
@@ -69,11 +71,19 @@ public class Notification {
         this.sentAt = sentAt;
     }
 
+    public Timestamp getReadAt() {
+        return readAt;
+    }
+
+    public void setReadAt(Timestamp readAt) {
+        this.readAt = readAt;
+    }
+
     @Override
     public String toString() {
         return "Notification{" +
                 "notificationId=" + notificationId +
-                ", userFullId='" + userFullId + '\'' +
+                ", studentFullId='" + studentFullId + '\'' +
                 ", userId=" + userId +
                 ", notificationMessage='"
                 + (notificationMessage != null
@@ -82,6 +92,7 @@ public class Notification {
                 + '\'' +
                 ", createdAt=" + createdAt +
                 ", sentAt=" + sentAt +
+                ", readAt=" + readAt +
                 '}';
     }
 }

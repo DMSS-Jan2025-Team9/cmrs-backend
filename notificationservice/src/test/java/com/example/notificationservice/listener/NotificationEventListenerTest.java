@@ -31,6 +31,7 @@ public class NotificationEventListenerTest {
     public void setup() {
         eventDTO = new NotificationEventDTO();
         eventDTO.setStudentId(1L);
+        eventDTO.setStudentFullId("U7656");
         eventDTO.setClassId(101L);
         eventDTO.setCourseCode("CS101");
         eventDTO.setCourseName("Introduction to Computer Science");

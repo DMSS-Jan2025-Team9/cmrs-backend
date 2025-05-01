@@ -21,11 +21,12 @@ public class MicroserviceClient {
     private final RestTemplate rest = new RestTemplate();
     // private static final String classAPI =
     // "http://localhost:8081/api/classes/{classId}";
-    private static final String classAPI = "http://coursemanagement-service:8081/api/classes/{classId}"; 
-    private static final String courseAPI = "http://coursemanagement-service:8081/api/courses/{courseId}"; 
-                                                                                                           
+    private static final String classAPI = "http://coursemanagement-service:8081/api/classes/{classId}";
+    private static final String courseAPI = "http://coursemanagement-service:8081/api/courses/{courseId}";
+
     private static final String studentAPI = "http://usermanagement-service:8085/api/students/studentFullId/{studentFullId}";
     private static final String studentIdAPI = "http://usermanagement-service:8085/api/students/{studentId}";
+    private static final String courseDetailsAPI = "http://coursemanagement-service:8081/api/courses/courseId/{courseId}";
 
     public CourseClassDTO fetchClass(Long classId) {
         try {
@@ -43,7 +44,7 @@ public class MicroserviceClient {
                 logger.debug("Course details missing, fetching course with ID: {}", dto.getCourseId());
                 try {
                     // Fetch the course details
-                    Map<String, Object> courseDetails = rest.getForObject(courseAPI, Map.class, dto.getCourseId());
+                    Map<String, Object> courseDetails = fetchCourseDetails(dto.getCourseId());
 
                     if (courseDetails != null) {
                         // Set the courseCode and courseName
@@ -141,6 +142,37 @@ public class MicroserviceClient {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
                     "Student not found with ID: " + studentId);
+        }
+    }
+
+    /**
+     * Fetches detailed course information by courseId
+     *
+     * @param courseId the ID of the course to fetch
+     * @return Map containing course details or null if not found
+     */
+    public Map<String, Object> fetchCourseDetails(Long courseId) {
+        try {
+            logger.debug("Fetching course details for courseId: {}", courseId);
+            Map<String, Object> courseDetails = rest.getForObject(
+                    courseDetailsAPI,
+                    Map.class,
+                    courseId);
+
+            if (courseDetails == null) {
+                logger.warn("No course details found for courseId: {}", courseId);
+                return null;
+            }
+
+            logger.debug("Fetched course details: {}", courseDetails);
+            return courseDetails;
+
+        } catch (HttpClientErrorException.NotFound e) {
+            logger.warn("Course not found with ID: {}", courseId);
+            return null;
+        } catch (Exception e) {
+            logger.error("Error fetching course details for courseId {}: {}", courseId, e.getMessage());
+            return null;
         }
     }
 }

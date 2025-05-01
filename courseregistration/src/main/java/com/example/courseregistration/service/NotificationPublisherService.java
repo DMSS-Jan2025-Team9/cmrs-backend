@@ -9,6 +9,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.Map;
 
 @Service
 public class NotificationPublisherService {
@@ -34,15 +35,12 @@ public class NotificationPublisherService {
         logger.debug("Publishing waitlist notification for student {} and class {}", studentFullId,
                 courseClass.getClassId());
 
-        // Ensure we have course details
+        // Ensure we have complete course details
+        ensureCourseDetailsAreComplete(courseClass);
+
+        // Set proper course code and name
         String courseCode = courseClass.getCourseCode();
         String courseName = courseClass.getCourseName();
-
-        if (courseCode == null || courseName == null) {
-            logger.warn("Course details missing in courseClass object. CourseId: {}", courseClass.getCourseId());
-            courseCode = courseCode != null ? courseCode : "COURSE-" + courseClass.getCourseId();
-            courseName = courseName != null ? courseName : "Course " + courseClass.getCourseId();
-        }
 
         logger.debug("Using course details: code={}, name={}", courseCode, courseName);
 
@@ -96,15 +94,12 @@ public class NotificationPublisherService {
         logger.debug("Publishing vacancy notification for student {} and class {}", studentFullId,
                 courseClass.getClassId());
 
-        // Ensure we have course details
+        // Ensure we have complete course details
+        ensureCourseDetailsAreComplete(courseClass);
+
+        // Set proper course code and name
         String courseCode = courseClass.getCourseCode();
         String courseName = courseClass.getCourseName();
-
-        if (courseCode == null || courseName == null) {
-            logger.warn("Course details missing in courseClass object. CourseId: {}", courseClass.getCourseId());
-            courseCode = courseCode != null ? courseCode : "COURSE-" + courseClass.getCourseId();
-            courseName = courseName != null ? courseName : "Course " + courseClass.getCourseId();
-        }
 
         logger.debug("Using course details: code={}, name={}", courseCode, courseName);
 
@@ -144,5 +139,40 @@ public class NotificationPublisherService {
         }
 
         publishVacancyAvailableNotification(studentFullId, studentId, courseClass);
+    }
+
+    /**
+     * Helper method to ensure course details are complete
+     * Attempts to fetch course details if missing
+     */
+    private void ensureCourseDetailsAreComplete(CourseClassDTO courseClass) {
+        if (courseClass.getCourseCode() == null || courseClass.getCourseName() == null ||
+                courseClass.getCourseCode().startsWith("COURSE-")) {
+
+            logger.info("Course details missing or generic, fetching complete course details for courseId: {}",
+                    courseClass.getCourseId());
+
+            try {
+                // Re-fetch the course details to ensure we have the latest information
+                Map<String, Object> courseDetails = microserviceClient.fetchCourseDetails(courseClass.getCourseId());
+
+                if (courseDetails != null) {
+                    // Update the courseClass object with the fetched details
+                    if (courseDetails.containsKey("courseCode")) {
+                        courseClass.setCourseCode((String) courseDetails.get("courseCode"));
+                        logger.debug("Updated courseCode to {}", courseClass.getCourseCode());
+                    }
+
+                    if (courseDetails.containsKey("courseName")) {
+                        courseClass.setCourseName((String) courseDetails.get("courseName"));
+                        logger.debug("Updated courseName to {}", courseClass.getCourseName());
+                    }
+                } else {
+                    logger.warn("Could not fetch course details for courseId: {}", courseClass.getCourseId());
+                }
+            } catch (Exception e) {
+                logger.error("Error fetching course details: {}", e.getMessage(), e);
+            }
+        }
     }
 }

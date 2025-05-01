@@ -7,10 +7,13 @@ import com.example.courseregistration.dto.UpdateRegistrationStatusDTO;
 import com.example.courseregistration.dto.CourseClassDTO;
 import com.example.courseregistration.service.CourseRegistrationService;
 import com.example.courseregistration.service.NotificationPublisherService;
+import com.example.courseregistration.service.WaitlistNotificationService;
 import com.example.courseregistration.service.client.MicroserviceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -19,17 +22,22 @@ import java.util.Map;
 @RequestMapping("/api/courseRegistration")
 public class CourseRegistrationController {
 
+    private static final Logger logger = LoggerFactory.getLogger(CourseRegistrationController.class);
+
     private final CourseRegistrationService courseRegistrationService;
     private final NotificationPublisherService notificationPublisherService;
     private final MicroserviceClient microserviceClient;
+    private final WaitlistNotificationService waitlistNotificationService;
 
     public CourseRegistrationController(
             CourseRegistrationService courseRegistrationService,
             NotificationPublisherService notificationPublisherService,
-            MicroserviceClient microserviceClient) {
+            MicroserviceClient microserviceClient,
+            WaitlistNotificationService waitlistNotificationService) {
         this.courseRegistrationService = courseRegistrationService;
         this.notificationPublisherService = notificationPublisherService;
         this.microserviceClient = microserviceClient;
+        this.waitlistNotificationService = waitlistNotificationService;
     }
 
     @GetMapping
@@ -122,11 +130,44 @@ public class CourseRegistrationController {
             @RequestParam Long classId,
             @RequestParam int vacancy) {
 
+        // Get the current class info
         CourseClassDTO courseClass = microserviceClient.fetchClass(classId);
+        int currentVacancy = courseClass.getVacancy();
+
+        logger.info("Updating vacancy for class {} from {} to {}", classId, currentVacancy, vacancy);
+
+        // Update the vacancy
         microserviceClient.updateVacancy(courseClass, vacancy);
 
         // Fetch the updated class data
         CourseClassDTO updatedClass = microserviceClient.fetchClass(classId);
+
+        // If the vacancy has increased, notify waitlisted students
+        if (vacancy > currentVacancy) {
+            logger.info("Vacancy increased from {} to {}, notifying waitlisted students", currentVacancy, vacancy);
+            waitlistNotificationService.notifyWaitlistedStudents(classId, updatedClass);
+        }
+
         return ResponseEntity.ok(updatedClass);
+    }
+
+    /**
+     * Endpoint to manually notify all waitlisted students for a class
+     * 
+     * @param classId The ID of the class to notify waitlisted students for
+     * @return ResponseEntity with status
+     */
+    @PostMapping("/notify-waitlisted")
+    public ResponseEntity<Map<String, String>> notifyAllWaitlistedStudents(
+            @RequestParam Long classId) {
+
+        CourseClassDTO courseClass = microserviceClient.fetchClass(classId);
+
+        // Notify all waitlisted students
+        waitlistNotificationService.notifyWaitlistedStudents(classId, courseClass);
+
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "message", "Notification sent to all waitlisted students for class " + classId));
     }
 }
