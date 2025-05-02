@@ -6,9 +6,9 @@ on:
       - feature/devsecops
 
 env:
-  AWS_REGION: ${{ vars.AWS_REGION }}                   # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}           # set this to your Amazon ECR repository name
-  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}                 # set this to your Amazon ECS cluster name
+  AWS_REGION: ap-southeast-1                    # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: ecr-cmrs-app                  # set this to your Amazon ECR repository name
+  ECS_CLUSTER: cmrs-ecs-cluster                 # set this to your Amazon ECS cluster name
  
  
 jobs:
