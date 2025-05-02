@@ -1,0 +1,110 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# GitHub recommends pinning actions to a commit SHA.
+# To get a newer version, you will need to update the SHA.
+# You can also reference a tag or branch, but the action may change without warning.
+
+name: Deploy All Microservices to Amazon ECS
+
+on:
+  push:
+    branches:
+      - feature/devsecops
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}                   # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}           # set this to your Amazon ECR repository name
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}                 # set this to your Amazon ECS cluster name
+ 
+ 
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: dev
+    
+    strategy:
+      matrix:
+        service:
+          - name: user-management
+            path: user-management
+            task-def: .aws/user-management-task.json
+            container-name: user-management
+            ecs-service: user-management
+            ecs-cluster: ${{ env.ECS_CLUSTER }}
+
+          - name: course-management
+            path: course-management
+            task-def: .aws/course-management-task.json
+            container-name: course-management
+            ecs-service: course-management
+            ecs-cluster: ${{ env.ECS_CLUSTER }}
+            
+          - name: course-registration
+            path: course-registration
+            task-def: .aws/course-registration-task.json
+            container-name: course-registration
+            ecs-service: course-registration
+            ecs-cluster: ${{ env.ECS_CLUSTER }}
+            
+          - name: notification
+            path: notification
+            task-def: .aws/notification-task.json
+            container-name: notification
+            ecs-service: notification
+            ecs-cluster: ${{ env.ECS_CLUSTER }}
+            
+          - name: course-recommendation
+            path: course-recommendation
+            task-def: .aws/course-recommendation-task.json
+            container-name: course-recommendation
+            ecs-service: course-recommendation
+            ecs-cluster: ${{ env.ECS_CLUSTER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Build a docker container and
+          # push it to ECR so that it can
+          # be deployed to ECS.
+          IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY/${{ matrix.service.name }}:$IMAGE_TAG
+          docker build -t $IMAGE_URI ${{ matrix.service.path }}
+          docker push $IMAGE_URI
+          echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
+
+      - name: Render new task definition
+        id: render-task
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ matrix.service.task-def }}
+          container-name: ${{ matrix.service.container-name }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-task.outputs.task-definition }}
+          service: ${{ matrix.service.ecs-service }}
+          cluster: ${{ matrix.service.ecs-cluster }}
+          wait-for-service-stability: true
