@@ -10,6 +10,8 @@ public class RegistrationDTO {
     private String registrationStatus;
     private Long groupRegistrationId;
 
+    public RegistrationDTO() {}
+
     public RegistrationDTO(Long registrationId, Long studentId, Long classId, LocalDateTime registeredAt,String registrationStatus,Long groupRegistrationId) {
         this.registrationId = registrationId;
         this.studentId = studentId;
@@ -41,5 +43,9 @@ public class RegistrationDTO {
 
     public Long getGroupRegistrationId() {
         return groupRegistrationId;
+    }
+
+    public void setRegistrationId(Long registrationId) {
+        this.registrationId = registrationId;
     }
 }
