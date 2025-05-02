@@ -16,6 +16,7 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
     environment: dev
+    timeout-minutes: 30
     
     strategy:
       matrix:
@@ -74,16 +75,18 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
         run: |
-          # Build a docker container and
-          # push it to ECR so that it can
-          # be deployed to ECS.
-          IMAGE_URI=$ECR_REGISTRY/${{ matrix.service.ecr }}:$IMAGE_TAG
+          # Generate a timestamp for the image tag
+          TIMESTAMP=$(date -u +"%Y%m%d_%H%M%S")
+          IMAGE_URI=$ECR_REGISTRY/${{ matrix.service.ecr }}:$TIMESTAMP
+          echo "Building image: $IMAGE_URI"
+
+          # Build the Docker image and push it to ECR
           docker build -t $IMAGE_URI ${{ matrix.service.path }}
           docker push $IMAGE_URI
-          echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
-          echo "$GITHUB_OUTPUT" 
+
+          # Save the image URI for use in later steps
+          echo "image=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
       - name: Render new task definition
         id: render-task
