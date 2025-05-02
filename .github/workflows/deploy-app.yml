@@ -25,35 +25,30 @@ jobs:
             task-def: .aws/user-management-task.json
             container-name: user-management
             ecs-service: user-management
-            ecs-cluster: ${{ env.ECS_CLUSTER }}
 
           - name: course-management
             path: course-management
             task-def: .aws/course-management-task.json
             container-name: course-management
             ecs-service: course-management
-            ecs-cluster: ${{ env.ECS_CLUSTER }}
             
           - name: course-registration
             path: course-registration
             task-def: .aws/course-registration-task.json
             container-name: course-registration
             ecs-service: course-registration
-            ecs-cluster: ${{ env.ECS_CLUSTER }}
             
           - name: notification
             path: notification
             task-def: .aws/notification-task.json
             container-name: notification
             ecs-service: notification
-            ecs-cluster: ${{ env.ECS_CLUSTER }}
             
           - name: course-recommendation
             path: course-recommendation
             task-def: .aws/course-recommendation-task.json
             container-name: course-recommendation
             ecs-service: course-recommendation
-            ecs-cluster: ${{ env.ECS_CLUSTER }}
 
     steps:
       - name: Checkout
@@ -97,5 +92,5 @@ jobs:
         with:
           task-definition: ${{ steps.render-task.outputs.task-definition }}
           service: ${{ matrix.service.ecs-service }}
-          cluster: ${{ matrix.service.ecs-cluster }}
+          cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
