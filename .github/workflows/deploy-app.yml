@@ -21,31 +21,31 @@ jobs:
       matrix:
         service:
           - name: user-management
-            path: user-management
+            path: usermanagement # source code path to build the Dockerfile
             task-def: .aws/user-management-task.json
             container-name: user-management
             ecs-service: user-management
 
           - name: course-management
-            path: course-management
+            path: coursemanagement # source code path to build the Dockerfile
             task-def: .aws/course-management-task.json
             container-name: course-management
             ecs-service: course-management
             
           - name: course-registration
-            path: course-registration
+            path: courseregistration # source code path to build the Dockerfile
             task-def: .aws/course-registration-task.json
             container-name: course-registration
             ecs-service: course-registration
             
           - name: notification
-            path: notification
+            path: notificationservice # source code path to build the Dockerfile
             task-def: .aws/notification-task.json
             container-name: notification
             ecs-service: notification
             
           - name: course-recommendation
-            path: course-recommendation
+            path: courserecommendation # source code path to build the Dockerfile
             task-def: .aws/course-recommendation-task.json
             container-name: course-recommendation
             ecs-service: course-recommendation
@@ -78,6 +78,7 @@ jobs:
           docker build -t $IMAGE_URI ${{ matrix.service.path }}
           docker push $IMAGE_URI
           echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
+          echo "$GITHUB_OUTPUT" 
 
       - name: Render new task definition
         id: render-task
