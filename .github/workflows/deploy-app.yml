@@ -78,7 +78,8 @@ jobs:
         run: |
           # Generate a timestamp for the image tag
           TIMESTAMP=$(date -u +"%Y%m%d_%H%M%S")
-          IMAGE_URI=$ECR_REGISTRY/${{ matrix.service.ecr }}:$TIMESTAMP
+          # IMAGE_URI=$ECR_REGISTRY/${{ matrix.service.ecr }}:$TIMESTAMP
+          IMAGE_URI=$ECR_REGISTRY/${{ matrix.service.ecr }}:v1.0.0
           echo "Building image: $IMAGE_URI"
 
           # Build the Docker image and push it to ECR
