@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notification WebSocket Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .card {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      h1,
+      h2,
+      h3 {
+        color: #333;
+      }
+      button {
+        background-color: #4caf50;
+        border: none;
+        color: white;
+        padding: 10px 15px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      input,
+      select {
+        padding: 8px;
+        margin: 5px 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        width: 100%;
+      }
+      .notification {
+        background-color: #f8f9fa;
+        border-left: 4px solid #28a745;
+        padding: 15px;
+        margin: 10px 0;
+      }
+      .waitlisted {
+        border-left-color: #ffc107;
+      }
+      .vacancy {
+        border-left-color: #28a745;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Notification WebSocket Test</h1>
+
+      <div class="card">
+        <h2>WebSocket Connection</h2>
+        <div>
+          <label for="userId">User ID:</label>
+          <input type="number" id="userId" value="1" min="1" />
+          <button id="connectButton">Connect</button>
+          <button id="disconnectButton" disabled>Disconnect</button>
+        </div>
+        <div id="connectionStatus">Status: Disconnected</div>
+      </div>
+
+      <div class="card">
+        <h2>Send Test Notification</h2>
+        <div>
+          <label for="messageType">Message Type:</label>
+          <select id="messageType">
+            <option value="WAITLISTED">Waitlisted</option>
+            <option value="VACANCY_AVAILABLE">Vacancy Available</option>
+            <option value="CUSTOM">Custom Message</option>
+          </select>
+
+          <label for="classId">Class ID:</label>
+          <input type="number" id="classId" value="101" min="1" />
+
+          <label for="customMessage">Custom Message (for Custom type):</label>
+          <input
+            type="text"
+            id="customMessage"
+            placeholder="Enter custom message"
+          />
+
+          <button id="sendNotificationButton">Send Notification</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Notifications</h2>
+        <button id="clearNotificationsButton">Clear Notifications</button>
+        <div id="notificationsContainer"></div>
+      </div>
+    </div>
+
+    <script>
+      // WebSocket connection
+      let stompClient = null;
+      let connected = false;
+
+      // DOM elements
+      const connectButton = document.getElementById("connectButton");
+      const disconnectButton = document.getElementById("disconnectButton");
+      const connectionStatus = document.getElementById("connectionStatus");
+      const userIdInput = document.getElementById("userId");
+      const messageTypeSelect = document.getElementById("messageType");
+      const classIdInput = document.getElementById("classId");
+      const customMessageInput = document.getElementById("customMessage");
+      const sendNotificationButton = document.getElementById(
+        "sendNotificationButton"
+      );
+      const notificationsContainer = document.getElementById(
+        "notificationsContainer"
+      );
+      const clearNotificationsButton = document.getElementById(
+        "clearNotificationsButton"
+      );
+
+      // Event listeners
+      connectButton.addEventListener("click", connect);
+      disconnectButton.addEventListener("click", disconnect);
+      sendNotificationButton.addEventListener("click", sendTestNotification);
+      clearNotificationsButton.addEventListener("click", clearNotifications);
+
+      // Connect to WebSocket
+      function connect() {
+        const userId = userIdInput.value;
+        if (!userId) {
+          alert("Please enter a valid User ID");
+          return;
+        }
+
+        const socket = new SockJS("/ws-notifications");
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect(
+          {},
+          function (frame) {
+            console.log("Connected: " + frame);
+            connected = true;
+
+            // Update UI
+            connectButton.disabled = true;
+            disconnectButton.disabled = false;
+            connectionStatus.textContent = `Status: Connected as User ${userId}`;
+            connectionStatus.style.color = "green";
+
+            // Subscribe to user notifications
+            stompClient.subscribe(
+              "/topic/user/" + userId,
+              function (notification) {
+                console.log("Received notification:", notification);
+                displayNotification(JSON.parse(notification.body));
+              }
+            );
+          },
+          function (error) {
+            console.error("Error connecting:", error);
+            connectionStatus.textContent =
+              "Status: Connection failed! See console for details.";
+            connectionStatus.style.color = "red";
+          }
+        );
+      }
+
+      // Disconnect from WebSocket
+      function disconnect() {
+        if (stompClient !== null) {
+          stompClient.disconnect();
+          stompClient = null;
+          connected = false;
+
+          // Update UI
+          connectButton.disabled = false;
+          disconnectButton.disabled = true;
+          connectionStatus.textContent = "Status: Disconnected";
+          connectionStatus.style.color = "black";
+        }
+      }
+
+      // Send test notification via REST API
+      function sendTestNotification() {
+        const userId = userIdInput.value;
+        const messageType = messageTypeSelect.value;
+        const classId = classIdInput.value;
+        let message = "";
+
+        if (!connected) {
+          alert("Please connect to WebSocket first");
+          return;
+        }
+
+        // Prepare request based on message type
+        let url;
+        let requestParams;
+
+        if (messageType === "CUSTOM") {
+          message = customMessageInput.value || "Test notification";
+          url = `/api/notifications/test/create?userId=${userId}&message=${encodeURIComponent(
+            message
+          )}`;
+          requestParams = {};
+        } else {
+          url = `/api/notifications/test/event?studentId=${userId}&classId=${classId}&eventType=${messageType}`;
+          requestParams = {};
+        }
+
+        // Send the request
+        fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("Notification sent:", data);
+          })
+          .catch((error) => {
+            console.error("Error sending notification:", error);
+            alert("Error sending notification: " + error.message);
+          });
+      }
+
+      // Display notification in the UI
+      function displayNotification(notification) {
+        const notifDiv = document.createElement("div");
+        notifDiv.className = "notification";
+
+        if (notification.eventType === "WAITLISTED") {
+          notifDiv.classList.add("waitlisted");
+        } else if (notification.eventType === "VACANCY_AVAILABLE") {
+          notifDiv.classList.add("vacancy");
+        }
+
+        // Determine what to display based on the notification structure
+        let notifContent = "";
+
+        if (notification.notificationMessage) {
+          // From the database model
+          notifContent = `
+                    <h3>Notification #${
+                      notification.notificationId || "New"
+                    }</h3>
+                    <p>${notification.notificationMessage}</p>
+                    <p><small>Created: ${new Date(
+                      notification.createdAt
+                    ).toLocaleString()}</small></p>
+                    ${
+                      notification.sentAt
+                        ? `<p><small>Sent: ${new Date(
+                            notification.sentAt
+                          ).toLocaleString()}</small></p>`
+                        : ""
+                    }
+                `;
+        } else if (notification.message) {
+          // Direct WebSocket message
+          notifContent = `
+                    <h3>Direct Message</h3>
+                    <p>${notification.message}</p>
+                    <p><small>Time: ${new Date(
+                      notification.timestamp
+                    ).toLocaleString()}</small></p>
+                `;
+        } else {
+          // Generic fallback
+          notifContent = `<pre>${JSON.stringify(notification, null, 2)}</pre>`;
+        }
+
+        notifDiv.innerHTML = notifContent;
+        notificationsContainer.prepend(notifDiv);
+      }
+
+      // Clear all notifications from the UI
+      function clearNotifications() {
+        notificationsContainer.innerHTML = "";
+      }
+    </script>
+  </body>
+</html>
