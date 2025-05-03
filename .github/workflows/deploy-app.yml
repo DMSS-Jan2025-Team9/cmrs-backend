@@ -11,6 +11,7 @@ on:
       - 'courseregistration/**'
       - 'notificationservice/**'
       - 'courserecommendation/**'
+      - '.github/workflows/deploy-app.yml'
 
 env:
   AWS_REGION: ap-southeast-1                    # set this to your preferred AWS region, e.g. us-west-1
@@ -28,10 +29,11 @@ jobs:
       - name: Get changed folders
         id: set-matrix
         run: |
-          CHANGED=$(git diff --name-only origin/main...HEAD | awk -F/ '{print $1}' | sort -u)
-          echo "Changed folders: $CHANGED"
+          CHANGED=$(git diff --name-only origin/main...HEAD)
+          echo "Changed files:"
+          echo "$CHANGED"
 
-          # Define mapping of services
+          # Define service config
           SERVICES='[
             {"name":"user-management", "path":"usermanagement", "task-def":".aws/user-management-task.json", "container-name":"user-management", "ecs-service":"user-management", "ecr":"ecr-cmrs-user-management"},
             {"name":"course-management", "path":"coursemanagement", "task-def":".aws/course-management-task.json", "container-name":"course-management", "ecs-service":"course-management", "ecr":"ecr-cmrs-course-management"},
@@ -40,7 +42,19 @@ jobs:
             {"name":"course-recommendation", "path":"courserecommendation", "task-def":".aws/course-recommendation-task.json", "container-name":"course-recommendation", "ecs-service":"course-recommendation", "ecr":"ecr-cmrs-course-recommendation"}
           ]'
 
-          FILTERED=$(echo $SERVICES | jq --argjson changed "$(echo \"$CHANGED\" | jq -R -s -c 'split("\n")')" '[.[] | select($changed | index(.path))]')
+          # If deploy-app.yml changed, deploy all services
+          if echo "$CHANGED" | grep -q ".github/workflows/deploy-app.yml"; then
+            echo "Workflow file changed. Triggering all services."
+            echo "matrix=$SERVICES" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Get top-level folders that changed
+          FOLDERS=$(echo "$CHANGED" | awk -F/ '{print $1}' | sort -u)
+          echo "Changed folders: $FOLDERS"
+
+          # Build matrix of affected services
+          FILTERED=$(echo "$SERVICES" | jq --argjson changed "$(echo \"$FOLDERS\" | jq -R -s -c 'split("\n")')" '[.[] | select($changed | index(.path))]')
           echo "matrix=$FILTERED" >> "$GITHUB_OUTPUT"
 
   deploy:
