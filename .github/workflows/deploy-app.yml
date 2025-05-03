@@ -68,7 +68,7 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
@@ -92,16 +92,26 @@ jobs:
 
       - name: Render new task definition
         id: render-task
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        uses: aws-actions/amazon-ecs-render-task-definition@v2
         with:
           task-definition: ${{ matrix.service.task-def }}
           container-name: ${{ matrix.service.container-name }}
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy to ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.render-task.outputs.task-definition }}
           service: ${{ matrix.service.ecs-service }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
+          run-task: true
+          enable-ecs-managed-tags: true
+          wait-for-task-stopped: true
+          run-task-tags: >
+            [
+              {"key": "Environment", "value": "dev"},
+              {"key": "Project", "value": "CMRS"},
+              {"key": "Service", "value": "${{ matrix.service.ecs-service }}"},
+              {"key": "Version", "value": "${{ steps.build-image.outputs.image }}"}
+            ]
