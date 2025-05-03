@@ -131,9 +131,4 @@ jobs:
           wait-for-service-stability: true
           enable-ecs-managed-tags: true
           wait-for-task-stopped: true
-          run-task-tags: ${{ toJson([
-            { "key": "Environment", "value": "dev" },
-            { "key": "Project", "value": "CMRS" },
-            { "key": "Service", "value": matrix.service.ecs-service },
-            { "key": "Version", "value": steps.build-image.outputs.image }
-          ]) }}
+          run-task-tags: ${{ toJson([{ "key": "Environment", "value": "dev" },{ "key": "Project", "value": "CMRS" },{ "key": "Service", "value": matrix.service.ecs-service },{ "key": "Version", "value": steps.build-image.outputs.image }]) }}
