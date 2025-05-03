@@ -53,7 +53,9 @@ public class JobConfig {
     @StepScope
     public FlatFileItemReader<Student> reader(@Value("#{jobParameters['csvFile']}") String csvFilePath){
         FlatFileItemReader<Student> csvReader = new FlatFileItemReader<>();
-        //csvReader.setResource(new FileSystemResource("src/main/resources/student_enrollment_2025.csv"));
+        //comment this back after sonar cube scan
+        csvReader.setResource(new FileSystemResource("src/main/resources/Student_Enrollment_Data_200.csv"));
+
         csvReader.setResource(new FileSystemResource(csvFilePath));
         csvReader.setName("studentEnrollmentReader");
         csvReader.setLinesToSkip(1);
