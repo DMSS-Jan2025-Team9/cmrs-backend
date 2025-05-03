@@ -28,7 +28,8 @@ public class MicroserviceClient {
     private final RestTemplate rest = new RestTemplate();
     // private static final String classAPI =
     // "http://localhost:8081/api/classes/{classId}";
-    private static final String classAPI = "http://coursemanagement-service:8081/api/classes/{classId}";
+    private static final String classAPIGet = "http://coursemanagement-service:8081/api/classSchedule/classId/{classId}";
+    private static final String classAPIPut = "http://coursemanagement-service:8081//api/classSchedule/editClassSchedule/{classId}";
     private static final String courseAPI = "http://coursemanagement-service:8081/api/courses/{courseId}";
 
     private static final String studentAPI = "http://usermanagement-service:8085/api/students/studentFullId/{studentFullId}";
@@ -38,7 +39,7 @@ public class MicroserviceClient {
     public CourseClassDTO fetchClass(Long classId) {
         try {
             logger.debug("Fetching class with ID: {}", classId);
-            CourseClassDTO dto = rest.getForObject(classAPI, CourseClassDTO.class, classId);
+            CourseClassDTO dto = rest.getForObject(classAPIGet, CourseClassDTO.class, classId);
 
             if (dto == null) {
                 logger.error("Class not found: {}", classId);
@@ -93,7 +94,7 @@ public class MicroserviceClient {
         payload.put("maxCapacity", dto.getMaxCapacity());
         payload.put("vacancy", newVacancy);
 
-        rest.put(classAPI, payload, dto.getClassId());
+        rest.put(classAPIPut, payload, dto.getClassId());
     }
 
     public void validateStudentExists(String studentFullId) {
