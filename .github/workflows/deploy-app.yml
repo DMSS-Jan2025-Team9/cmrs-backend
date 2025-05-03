@@ -114,13 +114,15 @@ jobs:
           # Save the image URI for use in later steps
           echo "image=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
-          # Save the tags for use in later steps
-          echo "tags=${{ toJson([
-            { 'key': 'Environment', 'value': 'dev' },
-            { 'key': 'Project', 'value': 'CMRS' },
-            { 'key': 'Service', 'value': matrix.service.ecs-service },
-            { 'key': 'Version', 'value': steps.build-image.outputs.image }
-          ]) }}" >> "$GITHUB_OUTPUT"
+          # Save the tags JSON manually for later use
+          TAGS_JSON=$(jq -n \
+            --arg env "dev" \
+            --arg proj "CMRS" \
+            --arg service "${{ matrix.service.ecs-service }}" \
+            --arg version "$IMAGE_URI" \
+            '[{key: "Environment", value: $env}, {key: "Project", value: $proj}, {key: "Service", value: $service}, {key: "Version", value: $version}]')
+
+          echo "tags=$TAGS_JSON" >> "$GITHUB_OUTPUT"
 
       - name: Render new task definition
         id: render-task
