@@ -31,13 +31,33 @@ public class HealthLogger {
 
     private void logHealthComponent(String name, HealthComponent component) {
         if (component instanceof Health health) {
-            logger.info("Health Check [" + name + "]: " + health.getStatus());
+            // Build the log string for the health check
+            StringBuilder healthLog = new StringBuilder("Health Check [" + name + "]: " + health.getStatus());
             for (Map.Entry<String, Object> entry : health.getDetails().entrySet()) {
-                logger.info("  - " + entry.getKey() + ": " + entry.getValue());
+                healthLog.append(" | ").append(entry.getKey()).append(": ").append(entry.getValue());
             }
+            // Log the health check in one line
+            logger.info(healthLog.toString());
         } else if (component instanceof CompositeHealth composite) {
-            logger.info("Composite Health [" + name + "]: " + composite.getStatus());
-            composite.getComponents().forEach(this::logHealthComponent);
+            // Log the overall status of the composite health
+            StringBuilder compositeLog = new StringBuilder("Composite Health [" + name + "]: " + composite.getStatus());
+    
+            // Check if the components are iterable
+            Object components = composite.getComponents();
+            if (components instanceof Iterable<?>) {
+                // Cast safely after type check
+                Iterable<HealthComponent> iterableComponents = (Iterable<HealthComponent>) components;
+                // Iterate over each component if it's iterable
+                for (HealthComponent subComponent : iterableComponents) {
+                    logHealthComponent(name, subComponent);
+                }
+            } else {
+                // Handle the case where components are not iterable
+                logger.warn("Composite Health [" + name + "] components are not iterable: " + components);
+            }
+
+            // Log the composite health status in one line
+            logger.info(compositeLog.toString());
         }
     }
 
