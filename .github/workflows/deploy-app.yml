@@ -114,14 +114,18 @@ jobs:
           # Save the image URI for use in later steps
           echo "image=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
+      - name: Set tag for ECR tasks
+        id: set-tag
+        env:
+          proj: cmrs
+          ecs-env: dev
+          ecs-service-name: ${{ matrix.service.ecs-service }}
+          version: ${{ steps.build-image.outputs.image }}
+        run: |
           # Save the tags JSON manually for later use
-          TAGS_JSON=$(jq -n \
-            --arg env "dev" \
-            --arg proj "CMRS" \
-            --arg service "${{ matrix.service.ecs-service }}" \
-            --arg version "$IMAGE_URI" \
-            '[{key: "Environment", value: $env}, {key: "Project", value: $proj}, {key: "Service", value: $service}, {key: "Version", value: $version}]')
-
+          TAGS_JSON=$(printf '[{"key": "Environment", "value": "%s"}, {"key": "Project", "value": "%s"}, {"key": "Service", "value": "%s"}, {"key": "Version", "value": "%s"}]' \
+            "$ecs-env" "$proj" "$ecs-service-name" "$version")
+          
           echo "tags=$TAGS_JSON" >> "$GITHUB_OUTPUT"
 
       - name: Render new task definition
@@ -141,4 +145,4 @@ jobs:
           wait-for-service-stability: true
           enable-ecs-managed-tags: true
           wait-for-task-stopped: true
-          run-task-tags: ${{ steps.build-image.outputs.tags }}
+          run-task-tags: ${{ steps.set-tag.outputs.tags }}
