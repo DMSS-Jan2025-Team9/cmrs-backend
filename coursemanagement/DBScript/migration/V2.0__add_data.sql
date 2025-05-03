@@ -1,4 +1,5 @@
 -- V2__add_data.sql
+USE course_db;
 
 -- Insert sample data into course table
 INSERT INTO course (course_name, course_code, registration_start, registration_end, max_capacity, status, course_desc)
