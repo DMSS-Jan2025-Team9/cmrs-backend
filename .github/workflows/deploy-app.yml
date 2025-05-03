@@ -1,5 +1,7 @@
 # This GitHub Actions workflow automates the continuous deployment of microservices to Amazon ECS. 
-# It supports selective deployment by detecting changes in individual microservice folders and only deploying the affected services.
+# It supports selective deployment by :
+# 1) detecting changes in deploy-app.yml and deploy the services, or
+# 2) individual microservice folders and only deploying the affected services
 
 name: Deploy Changed Microservices to Amazon ECS
 
