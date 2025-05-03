@@ -24,7 +24,7 @@ env:
 
 jobs:
   detect-changes:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -70,7 +70,7 @@ jobs:
   deploy:
     name: Deploy Services
     needs: detect-changes
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     environment: dev
     timeout-minutes: 30
     
