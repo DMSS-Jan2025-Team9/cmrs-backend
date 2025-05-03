@@ -24,7 +24,7 @@ env:
 
 jobs:
   detect-changes:
-    runs-on: self-hosted
+    runs-on: self-hosted # use self hosted runner
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
