@@ -114,6 +114,9 @@ jobs:
           # Save the image URI for use in later steps
           echo "image=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
+          # Save the tags for use in later steps
+          echo "tags=${{ toJson([{ "key": "Environment", "value": "dev" },{ "key": "Project", "value": "CMRS" },{ "key": "Service", "value": matrix.service.ecs-service },{ "key": "Version", "value": steps.build-image.outputs.image }]) }} >> "$GITHUB_OUTPUT"
+
       - name: Render new task definition
         id: render-task
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -131,4 +134,4 @@ jobs:
           wait-for-service-stability: true
           enable-ecs-managed-tags: true
           wait-for-task-stopped: true
-          run-task-tags: ${{ toJson([{ "key": "Environment", "value": "dev" },{ "key": "Project", "value": "CMRS" },{ "key": "Service", "value": matrix.service.ecs-service },{ "key": "Version", "value": steps.build-image.outputs.image }]) }}
+          run-task-tags: ${{ steps.build-image.outputs.tags }}
