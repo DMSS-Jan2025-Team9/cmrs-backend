@@ -1,4 +1,4 @@
-package com.example.courserecommendation;
+package com.example.courseregistration;
 
 import java.util.Map;
 

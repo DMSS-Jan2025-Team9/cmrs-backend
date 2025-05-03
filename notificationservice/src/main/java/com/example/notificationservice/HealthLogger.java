@@ -1,4 +1,4 @@
-package com.example.courserecommendation;
+package com.example.notificationservice;
 
 import java.util.Map;
 
