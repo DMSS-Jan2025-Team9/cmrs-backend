@@ -44,7 +44,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/courses/**").hasRole("admin")
                         .requestMatchers(HttpMethod.DELETE, "/api/courses/**").hasRole("admin")
                         .requestMatchers(HttpMethod.POST, "/api/classSchedule/**").hasRole("admin")
-                        .requestMatchers(HttpMethod.PUT, "/api/classSchedule/**").hasRole("admin")
+                        .requestMatchers(HttpMethod.PUT, "/api/classSchedule/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/classSchedule/**").hasRole("admin")
                         .requestMatchers(HttpMethod.POST, "/api/program/**").hasRole("admin")
                         .requestMatchers(HttpMethod.PUT, "/api/program/**").hasRole("admin")
