@@ -30,13 +30,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fetch origin/main
-        run: git fetch origin main
+      - name: Fetch origin feature/devsecops
+        run: git fetch origin feature/devsecops
 
       - name: Get changed folders
         id: set-matrix
         run: |
-          CHANGED=$(git diff --name-only origin/main...HEAD)
+          CHANGED=$(git diff --name-only origin/feature/devsecops...HEAD)
           echo "Changed files:"
           echo "$CHANGED"
 
