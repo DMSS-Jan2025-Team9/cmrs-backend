@@ -30,21 +30,22 @@ jobs:
           # - service: usermanagement
           #   db_name: user_management_db
     
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: password123
-          MYSQL_DATABASE: ${{ matrix.db_name }}
-          MYSQL_USER: sonaruser
-          MYSQL_PASSWORD: sonarpass
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
+    # Disable this docker service because localhost dont have mysqladmin. Will enable after integrate with aws resource
+    # services:
+    #   mysql:
+    #     image: mysql:8.0
+    #     env:
+    #       MYSQL_ROOT_PASSWORD: password123
+    #       MYSQL_DATABASE: ${{ matrix.db_name }}
+    #       MYSQL_USER: sonaruser
+    #       MYSQL_PASSWORD: sonarpass
+    #     ports:
+    #       - 3306:3306
+    #     options: >-
+    #       --health-cmd="mysqladmin ping"
+    #       --health-interval=10s
+    #       --health-timeout=5s
+    #       --health-retries=3
     
     steps:
       - uses: actions/checkout@v4

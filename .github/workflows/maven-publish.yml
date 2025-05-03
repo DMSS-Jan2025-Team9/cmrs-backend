@@ -30,20 +30,20 @@ jobs:
 
     runs-on: self-hosted
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: password123
-          MYSQL_DATABASE: ${{ matrix.db_name }}
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-        if: ${{ contains(github.ref, 'feature/devsecops') }}  # Only for release branches
+    # Disable this docker service because localhost dont have mysqladmin. Will enable after integrate with aws resource
+    # services:
+    #   mysql:
+    #     image: mysql:8.0
+    #     env:
+    #       MYSQL_ROOT_PASSWORD: password123
+    #       MYSQL_DATABASE: ${{ matrix.db_name }}
+    #     ports:
+    #       - 3306:3306
+    #     options: >-
+    #       --health-cmd="mysqladmin ping"
+    #       --health-interval=10s
+    #       --health-timeout=5s
+    #       --health-retries=3
 
     steps:
       - uses: actions/checkout@v4
