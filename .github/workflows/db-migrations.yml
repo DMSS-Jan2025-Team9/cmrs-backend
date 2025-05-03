@@ -1,0 +1,33 @@
+name: Run Flyway Migrations
+
+on:
+  push:
+    branches:
+      - feature/devsecops
+    paths:
+      - 'usermanagement/DBScript/migration/**'
+      - 'coursemanagement/DBScript/migration/**'
+      - 'courseregistration/DBScript/migration/**'
+      - 'notificationservice/DBScript/migration/**'
+      - 'courserecommendation/DBScript/migration/**'
+      - '.github/workflows/deploy-app.yml'
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flyway CLI
+        uses: flyway/flyway-action@v2
+        with:
+          url: jdbc:mysql://${{ secrets.RDS_HOST }}:3306
+          user: ${{ secrets.DB_USER }}
+          password: ${{ secrets.DB_PASSWORD }}
+          locations: filesystem:./src/main/resources/db/migration
+
+      - name: Run Flyway Migrations
+        run: |
+          flyway migrate
