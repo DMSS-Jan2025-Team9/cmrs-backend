@@ -45,4 +45,4 @@ jobs:
           user: ${{ secrets.DB_USER }}
           password: ${{ secrets.DB_PASSWORD }}
           locations: filesystem:${{ matrix.service.migration_path }}
-          extraArgs: "-X -baselineOnMigrate=true"
+          extraArgs: -baselineOnMigrate=true
