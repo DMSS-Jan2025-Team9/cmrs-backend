@@ -113,7 +113,7 @@ jobs:
 
       - name: Render new task definition
         id: render-task
-        uses: aws-actions/amazon-ecs-render-task-definition@v2
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ${{ matrix.service.task-def }}
           container-name: ${{ matrix.service.container-name }}
