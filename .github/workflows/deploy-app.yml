@@ -38,6 +38,7 @@ jobs:
       - name: Get changed folders
         id: set-matrix
         run: |
+          # Get list of changed files
           CHANGED=$(git diff --name-only origin/feature/devsecops...HEAD)
           echo "Changed files:"
           echo "$CHANGED"
