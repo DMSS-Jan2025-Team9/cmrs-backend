@@ -1,6 +1,8 @@
+# This GitHub Actions workflow automates the continuous deployment of microservices to Amazon ECS. 
+# It supports selective deployment by detecting changes in individual microservice folders and only deploying the affected services.
+
 name: Deploy Changed Microservices to Amazon ECS
 
-# Detect Folder Changes & Trigger Specific Job
 on:
   push:
     branches:
@@ -15,7 +17,7 @@ on:
 
 env:
   AWS_REGION: ap-southeast-1                    # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: ecr-cmrs                  # set this to your Amazon ECR repository name
+  ECR_REPOSITORY: ecr-cmrs                      # set this to your Amazon ECR repository name
   ECS_CLUSTER: cmrs-ecs-cluster                 # set this to your Amazon ECS cluster name
 
 jobs:
@@ -50,17 +52,17 @@ jobs:
           # If deploy-app.yml changed, deploy all services
           if echo "$CHANGED" | grep -q ".github/workflows/deploy-app.yml"; then
             echo "Workflow file changed. Triggering all services."
-            echo "matrix=$SERVICES" >> "$GITHUB_OUTPUT"
+            echo "matrix=$(echo "$SERVICES" | jq -c)" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           # Get top-level folders that changed
-          FOLDERS=$(echo "$CHANGED" | awk -F/ '{print $1}' | sort -u)
+          FOLDERS=$(echo "$CHANGED" | awk -F/ '{print $1}' | sort -u | jq -R . | jq -s .)
           echo "Changed folders: $FOLDERS"
 
           # Build matrix of affected services
-          FILTERED=$(echo "$SERVICES" | jq --argjson changed "$(echo \"$FOLDERS\" | jq -R -s -c 'split("\n")')" '[.[] | select($changed | index(.path))]')
-          echo "matrix=$FILTERED" >> "$GITHUB_OUTPUT"
+          FILTERED=$(echo "$SERVICES" | jq --argjson changed "$FOLDERS" '[.[] | select($changed | index(.path))]')
+          echo "matrix=$(echo "$FILTERED" | jq -c)" >> "$GITHUB_OUTPUT"
 
   deploy:
     name: Deploy Services
