@@ -1,6 +1,6 @@
 # This GitHub Actions workflow only redeploy the microservices to Amazon ECS. 
 
-name: Deploy Changed Microservices to Amazon ECS
+name: Redeploy Microservices to Amazon ECS
 
 on:
   push:
@@ -37,11 +37,11 @@ jobs:
 
           # Define service config
           SERVICES='[
-            {"name":"user-management", "path":"usermanagement", "task-def":".aws/user-management-task.json", "container-name":"user-management", "ecs-service":"user-management", "ecr":"ecr-cmrs-user-management", "image":"20250503_162010"},
-            {"name":"course-management", "path":"coursemanagement", "task-def":".aws/course-management-task.json", "container-name":"course-management", "ecs-service":"course-management", "ecr":"ecr-cmrs-course-management", "image":"20250503_162458"},
-            {"name":"course-registration", "path":"courseregistration", "task-def":".aws/course-registration-task.json", "container-name":"course-registration", "ecs-service":"course-registration", "ecr":"ecr-cmrs-course-registration", "image":"20250503_162010"},
-            {"name":"notification", "path":"notificationservice", "task-def":".aws/notification-task.json", "container-name":"notification", "ecs-service":"notification", "ecr":"ecr-cmrs-notification", "image":"20250503_162455"},
-            {"name":"course-recommendation", "path":"courserecommendation", "task-def":".aws/course-recommendation-task.json", "container-name":"course-recommendation", "ecs-service":"course-recommendation", "ecr":"ecr-cmrs-course-recommendation", "image":"20250503_162458"}
+            {"name":"user-management", "path":"usermanagement", "task-def":".aws/user-management-task.json", "container-name":"user-management", "ecs-service":"user-management", "ecr":"ecr-cmrs-user-management", "image":"585008058878.dkr.ecr.ap-southeast-1.amazonaws.com/ecr-cmrs-user-management:20250503_162010"},
+            {"name":"course-management", "path":"coursemanagement", "task-def":".aws/course-management-task.json", "container-name":"course-management", "ecs-service":"course-management", "ecr":"ecr-cmrs-course-management", "image":"585008058878.dkr.ecr.ap-southeast-1.amazonaws.com/ecr-cmrs-course-management:20250503_162010"},
+            {"name":"course-registration", "path":"courseregistration", "task-def":".aws/course-registration-task.json", "container-name":"course-registration", "ecs-service":"course-registration", "ecr":"ecr-cmrs-course-registration", "image":"585008058878.dkr.ecr.ap-southeast-1.amazonaws.com/ecr-cmrs-course-registration:20250503_162010"},
+            {"name":"notification", "path":"notificationservice", "task-def":".aws/notification-task.json", "container-name":"notification", "ecs-service":"notification", "ecr":"ecr-cmrs-notification", "image":"585008058878.dkr.ecr.ap-southeast-1.amazonaws.com/ecr-cmrs-notification:20250503_162455"},
+            {"name":"course-recommendation", "path":"courserecommendation", "task-def":".aws/course-recommendation-task.json", "container-name":"course-recommendation", "ecs-service":"course-recommendation", "ecr":"ecr-cmrs-course-recommendation", "image":"585008058878.dkr.ecr.ap-southeast-1.amazonaws.com/ecr-cmrs-course-recommendation:20250503_162458"}
           ]'
 
           # If deploy-app.yml changed, deploy all services
