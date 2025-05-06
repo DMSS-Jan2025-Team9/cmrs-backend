@@ -14,7 +14,7 @@ on:
  
 jobs:
   flyway-migrate:
-    runs-on: self-hosted
+    runs-on: [self-hosted, cmrs-github-runner-01]
     strategy:
       matrix:
         service:
