@@ -53,6 +53,14 @@ jobs:
             {"name":"course-recommendation", "path":"courserecommendation", "task-def":".aws/course-recommendation-task.json", "container-name":"course-recommendation", "ecs-service":"course-recommendation", "ecr":"ecr-cmrs-course-recommendation"}
           ]'
 
+          # Exclude migration paths from the list of changes
+          EXCLUDED_PATHS=('usermanagement/DBScript/migration/**' 'coursemanagement/DBScript/migration/**' 'courseregistration/DBScript/migration/**' 'notificationservice/DBScript/migration/**' 'courserecommendation/DBScript/migration/**')
+
+          # Filter out the paths we don't want to trigger deployments for
+          CHANGED=$(echo "$CHANGED" | grep -v -E "$(IFS=\|; echo "${EXCLUDED_PATHS[*]}")")
+          echo "Filtered changed files (excluding migrations):"
+          echo "$CHANGED"
+
           # If deploy-app.yml changed, deploy all services
           if echo "$CHANGED" | grep -q ".github/workflows/deploy-app.yml"; then
             echo "Workflow file changed. Triggering all services."

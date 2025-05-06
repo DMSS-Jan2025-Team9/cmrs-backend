@@ -24,6 +24,12 @@ INSERT INTO `role_permission` (role_id,permission_id)
 VALUES (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10);
 
 
+INSERT INTO `user` (user_id,username,password,email,created_at,updated_at)
+VALUES (3,'S035464','$2a$10$.vh4pg2LP/P9ZPFTp8AS3uTaRe37gEfDGjB5WA3G6kRqyvzko5UZG','S035464@staff.university.edu','2025-04-26 10:50:09','2025-04-26 10:50:09')
+,(4,'U042582','$2a$10$TB0HDZBa2WL8oLN4GluN1u3VjwWeiH0EZx6idVOZigiu6rh/I.CDW','U042582@university.edu','2025-04-26 11:00:43','2025-04-26 11:00:43')
+,(5,'U058904','$2a$10$CVfdeQRicBav7ZRu8xt4XeiXCKVlYu8K3OmczPyoA8eMdiUdpkvJu','U058904@university.edu','2025-04-26 11:04:39','2025-04-26 11:04:39');
+
+
 INSERT INTO `staff` (staff_id,user_id,name,staff_full_id,department,position)
 VALUES (1,3,'Test Admin','S035464','Test','Admin','Computing','Associate Professor');
 
@@ -31,11 +37,6 @@ VALUES (1,3,'Test Admin','S035464','Test','Admin','Computing','Associate Profess
 INSERT INTO `student` (student_id,user_id,name,program_id,enrolled_at,first_name,job_id,last_name,program_name,student_full_id)
 VALUES (2,5,'Test Student',1,'2025-04-26 11:04:39','Test',NULL,'Student','Bachelor of Computer Science','U058904');
 
-
-INSERT INTO `user` (user_id,username,password,email,created_at,updated_at)
-VALUES (3,'S035464','$2a$10$.vh4pg2LP/P9ZPFTp8AS3uTaRe37gEfDGjB5WA3G6kRqyvzko5UZG','S035464@staff.university.edu','2025-04-26 10:50:09','2025-04-26 10:50:09')
-,(4,'U042582','$2a$10$TB0HDZBa2WL8oLN4GluN1u3VjwWeiH0EZx6idVOZigiu6rh/I.CDW','U042582@university.edu','2025-04-26 11:00:43','2025-04-26 11:00:43')
-,(5,'U058904','$2a$10$CVfdeQRicBav7ZRu8xt4XeiXCKVlYu8K3OmczPyoA8eMdiUdpkvJu','U058904@university.edu','2025-04-26 11:04:39','2025-04-26 11:04:39');
 
 
 INSERT INTO `user_role` (user_id,role_id)
