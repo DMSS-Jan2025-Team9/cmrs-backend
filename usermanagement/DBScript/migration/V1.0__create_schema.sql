@@ -68,11 +68,11 @@ CREATE TABLE `permission` (
 -- Dumping data for table `permission`
 --
 
-LOCK TABLES `permission` WRITE;
-/*!40000 ALTER TABLE `permission` DISABLE KEYS */;
-INSERT INTO `permission` VALUES (1,'view_course','Permission to view courses'),(2,'create_course','Permission to create courses'),(3,'register_course','Permission to register for courses'),(4,'view_users','Permission to view user list'),(5,'manage_user_roles','Permission to assign roles to users'),(6,'view_roles','Permission to view role list'),(7,'manage_roles','Permission to create/update/delete roles'),(8,'view_permissions','Permission to view permissions list'),(9,'manage_permissions','Permission to create/update/delete permissions'),(10,'manage_role_permissions','Permission to assign permissions to roles');
-/*!40000 ALTER TABLE `permission` ENABLE KEYS */;
-UNLOCK TABLES;
+-- LOCK TABLES `permission` WRITE;
+-- /*!40000 ALTER TABLE `permission` DISABLE KEYS */;
+-- INSERT INTO `permission` VALUES (1,'view_course','Permission to view courses'),(2,'create_course','Permission to create courses'),(3,'register_course','Permission to register for courses'),(4,'view_users','Permission to view user list'),(5,'manage_user_roles','Permission to assign roles to users'),(6,'view_roles','Permission to view role list'),(7,'manage_roles','Permission to create/update/delete roles'),(8,'view_permissions','Permission to view permissions list'),(9,'manage_permissions','Permission to create/update/delete permissions'),(10,'manage_role_permissions','Permission to assign permissions to roles');
+-- /*!40000 ALTER TABLE `permission` ENABLE KEYS */;
+-- UNLOCK TABLES;
 
 --
 -- Table structure for table `role`
@@ -94,11 +94,11 @@ CREATE TABLE `role` (
 -- Dumping data for table `role`
 --
 
-LOCK TABLES `role` WRITE;
-/*!40000 ALTER TABLE `role` DISABLE KEYS */;
-INSERT INTO `role` VALUES (1,'admin','Administrator with full access rights'),(2,'student','Regular user who can view and register for courses');
-/*!40000 ALTER TABLE `role` ENABLE KEYS */;
-UNLOCK TABLES;
+-- LOCK TABLES `role` WRITE;
+-- /*!40000 ALTER TABLE `role` DISABLE KEYS */;
+-- INSERT INTO `role` VALUES (1,'admin','Administrator with full access rights'),(2,'student','Regular user who can view and register for courses');
+-- /*!40000 ALTER TABLE `role` ENABLE KEYS */;
+-- UNLOCK TABLES;
 
 --
 -- Table structure for table `role_permission`
@@ -121,11 +121,11 @@ CREATE TABLE `role_permission` (
 -- Dumping data for table `role_permission`
 --
 
-LOCK TABLES `role_permission` WRITE;
-/*!40000 ALTER TABLE `role_permission` DISABLE KEYS */;
-INSERT INTO `role_permission` VALUES (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10);
-/*!40000 ALTER TABLE `role_permission` ENABLE KEYS */;
-UNLOCK TABLES;
+-- LOCK TABLES `role_permission` WRITE;
+-- /*!40000 ALTER TABLE `role_permission` DISABLE KEYS */;
+-- INSERT INTO `role_permission` VALUES (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10);
+-- /*!40000 ALTER TABLE `role_permission` ENABLE KEYS */;
+-- UNLOCK TABLES;
 
 --
 -- Table structure for table `staff`
@@ -153,11 +153,11 @@ CREATE TABLE `staff` (
 -- Dumping data for table `staff`
 --
 
-LOCK TABLES `staff` WRITE;
-/*!40000 ALTER TABLE `staff` DISABLE KEYS */;
-INSERT INTO `staff` VALUES (1,3,'Test Admin','S035464','Test','Admin','Computing','Associate Professor');
-/*!40000 ALTER TABLE `staff` ENABLE KEYS */;
-UNLOCK TABLES;
+-- LOCK TABLES `staff` WRITE;
+-- /*!40000 ALTER TABLE `staff` DISABLE KEYS */;
+-- INSERT INTO `staff` VALUES (1,3,'Test Admin','S035464','Test','Admin','Computing','Associate Professor');
+-- /*!40000 ALTER TABLE `staff` ENABLE KEYS */;
+-- UNLOCK TABLES;
 
 --
 -- Table structure for table `student`
@@ -187,11 +187,11 @@ CREATE TABLE `student` (
 -- Dumping data for table `student`
 --
 
-LOCK TABLES `student` WRITE;
-/*!40000 ALTER TABLE `student` DISABLE KEYS */;
-INSERT INTO `student` VALUES (2,5,'Test Student',1,'2025-04-26 11:04:39','Test',NULL,'Student','Bachelor of Computer Science','U058904');
-/*!40000 ALTER TABLE `student` ENABLE KEYS */;
-UNLOCK TABLES;
+-- LOCK TABLES `student` WRITE;
+-- /*!40000 ALTER TABLE `student` DISABLE KEYS */;
+-- INSERT INTO `student` VALUES (2,5,'Test Student',1,'2025-04-26 11:04:39','Test',NULL,'Student','Bachelor of Computer Science','U058904');
+-- /*!40000 ALTER TABLE `student` ENABLE KEYS */;
+-- UNLOCK TABLES;
 
 --
 -- Table structure for table `user`
@@ -217,11 +217,11 @@ CREATE TABLE `user` (
 -- Dumping data for table `user`
 --
 
-LOCK TABLES `user` WRITE;
-/*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (3,'S035464','$2a$10$.vh4pg2LP/P9ZPFTp8AS3uTaRe37gEfDGjB5WA3G6kRqyvzko5UZG','S035464@staff.university.edu','2025-04-26 10:50:09','2025-04-26 10:50:09'),(4,'U042582','$2a$10$TB0HDZBa2WL8oLN4GluN1u3VjwWeiH0EZx6idVOZigiu6rh/I.CDW','U042582@university.edu','2025-04-26 11:00:43','2025-04-26 11:00:43'),(5,'U058904','$2a$10$CVfdeQRicBav7ZRu8xt4XeiXCKVlYu8K3OmczPyoA8eMdiUdpkvJu','U058904@university.edu','2025-04-26 11:04:39','2025-04-26 11:04:39');
-/*!40000 ALTER TABLE `user` ENABLE KEYS */;
-UNLOCK TABLES;
+-- LOCK TABLES `user` WRITE;
+-- /*!40000 ALTER TABLE `user` DISABLE KEYS */;
+-- INSERT INTO `user` VALUES (3,'S035464','$2a$10$.vh4pg2LP/P9ZPFTp8AS3uTaRe37gEfDGjB5WA3G6kRqyvzko5UZG','S035464@staff.university.edu','2025-04-26 10:50:09','2025-04-26 10:50:09'),(4,'U042582','$2a$10$TB0HDZBa2WL8oLN4GluN1u3VjwWeiH0EZx6idVOZigiu6rh/I.CDW','U042582@university.edu','2025-04-26 11:00:43','2025-04-26 11:00:43'),(5,'U058904','$2a$10$CVfdeQRicBav7ZRu8xt4XeiXCKVlYu8K3OmczPyoA8eMdiUdpkvJu','U058904@university.edu','2025-04-26 11:04:39','2025-04-26 11:04:39');
+-- /*!40000 ALTER TABLE `user` ENABLE KEYS */;
+-- UNLOCK TABLES;
 
 --
 -- Table structure for table `user_role`
@@ -244,11 +244,11 @@ CREATE TABLE `user_role` (
 -- Dumping data for table `user_role`
 --
 
-LOCK TABLES `user_role` WRITE;
-/*!40000 ALTER TABLE `user_role` DISABLE KEYS */;
-INSERT INTO `user_role` VALUES (1,1),(3,1),(1,2),(4,2),(5,2);
-/*!40000 ALTER TABLE `user_role` ENABLE KEYS */;
-UNLOCK TABLES;
+-- LOCK TABLES `user_role` WRITE;
+-- /*!40000 ALTER TABLE `user_role` DISABLE KEYS */;
+-- INSERT INTO `user_role` VALUES (1,1),(3,1),(1,2),(4,2),(5,2);
+-- /*!40000 ALTER TABLE `user_role` ENABLE KEYS */;
+-- UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
