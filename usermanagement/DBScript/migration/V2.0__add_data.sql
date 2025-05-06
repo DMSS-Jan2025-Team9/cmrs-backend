@@ -30,7 +30,7 @@ VALUES (3,'S035464','$2a$10$.vh4pg2LP/P9ZPFTp8AS3uTaRe37gEfDGjB5WA3G6kRqyvzko5UZ
 ,(5,'U058904','$2a$10$CVfdeQRicBav7ZRu8xt4XeiXCKVlYu8K3OmczPyoA8eMdiUdpkvJu','U058904@university.edu','2025-04-26 11:04:39','2025-04-26 11:04:39');
 
 
-INSERT INTO `staff` (staff_id,user_id,name,staff_full_id,department,position)
+INSERT INTO `staff` (staff_id, user_id, name, staff_full_id, first_name, last_name, department, position)
 VALUES (1,3,'Test Admin','S035464','Test','Admin','Computing','Associate Professor');
 
 
