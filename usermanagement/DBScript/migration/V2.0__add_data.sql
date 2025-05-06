@@ -25,7 +25,10 @@ VALUES (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10);
 
 
 INSERT INTO `user` (user_id,username,password,email,created_at,updated_at)
-VALUES (3,'S035464','$2a$10$.vh4pg2LP/P9ZPFTp8AS3uTaRe37gEfDGjB5WA3G6kRqyvzko5UZG','S035464@staff.university.edu','2025-04-26 10:50:09','2025-04-26 10:50:09')
+VALUES 
+ (1,'S101010','$2a$10$.vh4pg2LP/P9ZPFTp8AS3uTaRe37gEfDGjB5WA3G6kRqyvzko5UZG','S101010@staff.university.edu','2025-04-26 10:50:09','2025-04-26 10:50:09')
+,(2,'S202020','$2a$10$.vh4pg2LP/P9ZPFTp8AS3uTaRe37gEfDGjB5WA3G6kRqyvzko5UZG','U202020@university.edu','2025-04-26 10:50:09','2025-04-26 10:50:09')
+,(3,'S035464','$2a$10$.vh4pg2LP/P9ZPFTp8AS3uTaRe37gEfDGjB5WA3G6kRqyvzko5UZG','S035464@staff.university.edu','2025-04-26 10:50:09','2025-04-26 10:50:09')
 ,(4,'U042582','$2a$10$TB0HDZBa2WL8oLN4GluN1u3VjwWeiH0EZx6idVOZigiu6rh/I.CDW','U042582@university.edu','2025-04-26 11:00:43','2025-04-26 11:00:43')
 ,(5,'U058904','$2a$10$CVfdeQRicBav7ZRu8xt4XeiXCKVlYu8K3OmczPyoA8eMdiUdpkvJu','U058904@university.edu','2025-04-26 11:04:39','2025-04-26 11:04:39');
 
@@ -40,4 +43,4 @@ VALUES (2,5,'Test Student',1,'2025-04-26 11:04:39','Test',NULL,'Student','Bachel
 
 
 INSERT INTO `user_role` (user_id,role_id)
-VALUES (1,1),(3,1),(1,2),(4,2),(5,2);
+VALUES (1,1),(3,1),(2,2),(4,2),(5,2);
