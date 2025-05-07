@@ -167,7 +167,7 @@ jobs:
 
   deploy:
     name: Deploy Services
-    needs: detect-changes
+    needs: [detect-changes, build-and-push]
     runs-on: self-hosted
     timeout-minutes: 10
     
