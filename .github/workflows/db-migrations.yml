@@ -1,0 +1,48 @@
+name: Run Flyway Migrations
+
+on:
+  push:
+    branches:
+      - feature/devsecops
+    paths:
+      - 'usermanagement/DBScript/migration/**'
+      - 'coursemanagement/DBScript/migration/**'
+      - 'courseregistration/DBScript/migration/**'
+      - 'notificationservice/DBScript/migration/**'
+      - 'courserecommendation/DBScript/migration/**'
+      - '.github/workflows/db-migrations.yml'
+ 
+jobs:
+  flyway-migrate:
+    runs-on: [self-hosted, cmrs-github-runner-01]
+    strategy:
+      matrix:
+        service:
+          - name: usermanagement
+            db_name: user_management_db
+            migration_path: usermanagement/DBScript/migration
+          - name: coursemanagement
+            db_name: course_db
+            migration_path: coursemanagement/DBScript/migration
+          - name: courseregistration
+            db_name: registration_db
+            migration_path: courseregistration/DBScript/migration
+          - name: notificationservice
+            db_name: notification_db
+            migration_path: notificationservice/DBScript/migration
+          - name: courserecommendation
+            db_name: recommendation_db
+            migration_path: courserecommendation/DBScript/migration
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Flyway migration for ${{ matrix.service.name }}
+        uses: red-gate/FlywayGitHubAction@main
+        with:
+          url: jdbc:mysql://${{ secrets.RDS_HOST }}:3306/${{ matrix.service.db_name }}
+          user: ${{ secrets.DB_USER }}
+          password: ${{ secrets.DB_PASSWORD }}
+          locations: filesystem:${{ matrix.service.migration_path }}
+          extraArgs: -baselineOnMigrate=true

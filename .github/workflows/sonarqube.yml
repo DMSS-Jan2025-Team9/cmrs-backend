@@ -9,7 +9,7 @@ on:
 jobs:
   sonarqube:
     name: SonarQube Analysis
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     strategy:
       matrix:
         service: 
@@ -30,21 +30,22 @@ jobs:
           # - service: usermanagement
           #   db_name: user_management_db
     
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: password123
-          MYSQL_DATABASE: ${{ matrix.db_name }}
-          MYSQL_USER: sonaruser
-          MYSQL_PASSWORD: sonarpass
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
+    # Disable this docker service because localhost dont have mysqladmin. Will enable after integrate with aws resource
+    # services:
+    #   mysql:
+    #     image: mysql:8.0
+    #     env:
+    #       MYSQL_ROOT_PASSWORD: password123
+    #       MYSQL_DATABASE: ${{ matrix.db_name }}
+    #       MYSQL_USER: sonaruser
+    #       MYSQL_PASSWORD: sonarpass
+    #     ports:
+    #       - 3306:3306
+    #     options: >-
+    #       --health-cmd="mysqladmin ping"
+    #       --health-interval=10s
+    #       --health-timeout=5s
+    #       --health-retries=3
     
     steps:
       - uses: actions/checkout@v4
@@ -90,8 +91,8 @@ jobs:
         working-directory: ./${{ matrix.service }}
         env:
           DB_NAME: ${{ matrix.db_name }}
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ matrix.db_name }}?createDatabaseIfNotExist=true
-          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_URL: jdbc:mysql://cmrs-rds.ctu64mc28f1c.ap-southeast-1.rds.amazonaws.com:3306/${{ matrix.db_name }}?createDatabaseIfNotExist=true
+          SPRING_DATASOURCE_USERNAME: cmrs
           SPRING_DATASOURCE_PASSWORD: password123
           SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
           SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.MySQLDialect
