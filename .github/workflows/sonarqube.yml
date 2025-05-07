@@ -9,7 +9,7 @@ on:
 jobs:
   sonarqube:
     name: SonarQube Analysis
-    runs-on: self-hosted
+    runs-on: [self-hosted, cmrs-github-runner-03]
     strategy:
       matrix:
         service: 
