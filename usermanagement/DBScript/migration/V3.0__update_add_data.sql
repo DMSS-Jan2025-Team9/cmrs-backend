@@ -2,7 +2,7 @@ USE user_management_db;
 
 UPDATE `user` 
     set username = 'U202020'
-WHERE user_id = 2 and username = 'S202020'
+WHERE user_id = 2 and username = 'S202020';
 
 INSERT INTO `staff` (staff_id, user_id, name, staff_full_id, first_name, last_name, department, position)
 VALUES (2,1,'Test Admin 01','S101010','Test','Admin 01','Information System Engineering','Lecturer');
