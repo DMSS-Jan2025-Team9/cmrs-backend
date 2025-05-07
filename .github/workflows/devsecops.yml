@@ -22,7 +22,7 @@ on:
       - 'courseregistration/**'
       - 'notificationservice/**'
       - 'courserecommendation/**'
-      - '.github/workflows/deploy-app.yml'
+      - '.github/workflows/devsecops.yml'
       - '.aws/**'
 
 env:
