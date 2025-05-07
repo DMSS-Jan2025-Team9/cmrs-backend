@@ -1,10 +1,12 @@
-# ✅ CI (Build & Test)
-# Build Docker image and run unit tests inside the container
-# Push Docker image to ECR
-
 # ✅ Security (DevSecOps)
-# Static code analysis using GitHub's CodeQL (detects security bugs, bad patterns)
+# Static code analysis using SonarQube
 # Dependency vulnerability scanning with OWASP Dependency-Check
+
+# ✅ CI (Build and test)
+# Build Docker image 
+# Run JUnit tests inside the Docker container 
+# Push Docker image to ECR
+# Scan Docker image in ECR and access scan results
 
 # ✅ CD (Deploy)
 # Prepare ECS task definition with updated image
@@ -84,8 +86,8 @@ jobs:
           echo "matrix=$(echo "$FILTERED" | jq -c)" >> "$GITHUB_OUTPUT"
 
           
-  build-and-push:
-    name: Build and Push Docker Image
+  build-and-deploy:
+    name: Build and Deploy
     needs: detect-changes
     runs-on: self-hosted
     environment: dev
@@ -126,57 +128,26 @@ jobs:
 
           # Build the Docker image and push it to ECR
           docker build -t $IMAGE_URI ${{ matrix.service.path }}
+
+          # Run JUnit tests inside the Docker container 
+          docker run --rm $IMAGE_URI mvn test
+
+          # Push docker image to Amazon ECR
           docker push $IMAGE_URI
 
           # Save the image URI for use in later steps
           echo "image=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
-  security-scan:   # ➜ DevSecOps: Scan built images and dependencies
-    name: Code & Dependency Scan
-    needs: detect-changes
-    runs-on: self-hosted
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # Static analysis using GitHub's CodeQL (detects code-level vulnerabilities)
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+      - name: Scan Docker image in ECR
+        id: docker-scan
+        uses: alexjurkiewicz/ecr-scan-image@v1.7.1
         with:
-          languages: java
+          repository: myorg/myimage
+          tag: ${{ steps.build-image.outputs.image }}
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
-
-      # Dependency analysis using OWASP Dependency-Check (detects vulnerable libraries)
-      - name: Run OWASP Dependency-Check
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: "CMRS-Microservices"
-          path: "."
-          format: "HTML"
-          out: "dependency-check-report"
-
-      - name: Upload OWASP Report (for artifact review)
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-check-report
-          path: dependency-check-report
-
-  deploy:
-    name: Deploy Services
-    needs: [detect-changes, build-and-push]
-    runs-on: self-hosted
-    timeout-minutes: 10
-    
-    if: ${{ fromJson(needs.detect-changes.outputs.matrix) != '[]' }}
-    strategy:
-      matrix:
-        service: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
-
-    steps:
+      # Access scan results in later steps
+      - run: echo "${{ steps.docker-scan.outputs.total }} total vulnerabilities."
+          
       - name: Set tag for ECR tasks
         id: set-tag
         env:
@@ -209,3 +180,50 @@ jobs:
           enable-ecs-managed-tags: true
           wait-for-task-stopped: true
           run-task-tags: ${{ steps.set-tag.outputs.tags }}
+
+  security-scan:   # ➜ DevSecOps: Scan built images and dependencies
+    name: Code & Dependency Scan
+    needs: detect-changes
+    runs-on: self-hosted
+    timeout-minutes: 10
+
+    if: ${{ fromJson(needs.detect-changes.outputs.matrix) != '[]' }}
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Static analysis using SonarQube (detects code-level vulnerabilities)
+      - name: Run SonarQube Analysis
+        working-directory: ./${{ matrix.service }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          # Run the SonarQube analysis with detailed test reports
+          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+          -Dsonar.projectKey=${{ matrix.service }} \
+          -Dsonar.projectName='${{ matrix.service }}' \
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+          -Dsonar.tests=src/test \
+          -Dsonar.test.inclusions=**/*Test.java \
+          -Dsonar.java.coveragePlugin=jacoco \
+          -Dsonar.verbose=true
+
+      # Dependency analysis using OWASP Dependency-Check (detects vulnerable libraries)
+      - name: Run OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "CMRS-Microservices"
+          path: "."
+          format: "HTML"
+          out: "dependency-check-report"
+
+      - name: Upload OWASP Report (for artifact review)
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: dependency-check-report
