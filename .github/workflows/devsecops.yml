@@ -176,9 +176,9 @@ jobs:
           task-definition: ${{ steps.render-task.outputs.task-definition }}
           service: ${{ matrix.service.ecs-service }}
           cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: true
+          wait-for-service-stability: false
           enable-ecs-managed-tags: true
-          wait-for-task-stopped: true
+          wait-for-task-stopped: false
           run-task-tags: ${{ steps.set-tag.outputs.tags }}
 
   security-scan:   # ➜ DevSecOps: Scan built images and dependencies
@@ -198,15 +198,15 @@ jobs:
 
       # Static analysis using SonarQube (detects code-level vulnerabilities)
       - name: Run SonarQube Analysis
-        working-directory: ./${{ matrix.service }}
+        working-directory: ./${{ matrix.service.path }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           # Run the SonarQube analysis with detailed test reports
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-          -Dsonar.projectKey=${{ matrix.service }} \
-          -Dsonar.projectName='${{ matrix.service }}' \
+          -Dsonar.projectKey=${{ matrix.service.path }} \
+          -Dsonar.projectName='${{ matrix.service.path }}' \
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
           -Dsonar.tests=src/test \
           -Dsonar.test.inclusions=**/*Test.java \
