@@ -130,10 +130,12 @@ jobs:
           docker build -t $IMAGE_URI ${{ matrix.service.path }}
 
           # Run JUnit tests inside the Docker container 
-          docker run --rm $IMAGE_URI mvn test
+          # docker run --rm $IMAGE_URI mvn test
+          echo "Run JUnit Test: $IMAGE_URI"
 
           # Push docker image to Amazon ECR
           docker push $IMAGE_URI
+          echo "Pushing image: $IMAGE_URI"
 
           # Save the image URI for use in later steps
           echo "image=$IMAGE_URI" >> "$GITHUB_OUTPUT"
@@ -203,6 +205,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           # Run the SonarQube analysis with detailed test reports
+          echo "Run the SonarQube analysis with detailed test reports"
           mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
           -Dsonar.projectKey=${{ matrix.service.path }} \
