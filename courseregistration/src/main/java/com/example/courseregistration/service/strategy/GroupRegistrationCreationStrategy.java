@@ -6,17 +6,12 @@ import com.example.courseregistration.dto.RegistrationDTO;
 import com.example.courseregistration.dto.StudentDTO;
 import com.example.courseregistration.model.Registration;
 import com.example.courseregistration.repository.CourseRegistrationRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import com.example.courseregistration.service.client.MicroserviceClient;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class GroupRegistrationCreationStrategy implements RegistrationCreationStrategy {
