@@ -137,28 +137,6 @@ jobs:
           echo "tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
           echo "repository=$ECR_REGISTRY/$IMAGE_REPO" >> "$GITHUB_OUTPUT"
 
-      - name: Create container and extract JaCoCo report
-        env:
-          IMAGE_URI: ${{ steps.build-image.outputs.image }}
-        run: |
-          # Run the container in detached mode with a specific command
-          container_id=$(docker run -d --entrypoint mvn $IMAGE_URI clean test)
-
-          # Wait for the container to complete (this blocks until the container finishes)
-          docker wait $container_id
-
-          # Copy the JaCoCo report from the container to the host
-          docker cp $container_id:/app/target/site/jacoco ./coverage
-
-          # Remove the container after copying
-          docker rm $container_id
-  
-      - name: Upload JaCoCo coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: jacoco-report
-          path: coverage/jacoco
-
       - name: Scan Docker image in ECR
         id: docker-scan
         uses: alexjurkiewicz/ecr-scan-image@v3.0.0
