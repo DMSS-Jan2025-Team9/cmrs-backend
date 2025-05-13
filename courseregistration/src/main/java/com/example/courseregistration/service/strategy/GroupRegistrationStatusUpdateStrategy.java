@@ -9,13 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import com.example.courseregistration.service.client.MicroserviceClient;
 import java.util.stream.Collectors;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 import com.example.courseregistration.service.NotificationPublisherService;
 import com.example.courseregistration.service.WaitlistNotificationService;
-import com.example.courseregistration.dto.StudentDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
