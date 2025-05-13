@@ -132,7 +132,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}/coverage:/app/coverage \
             $IMAGE_URI \
-            bash -c "mvn test && cp -r target/site/jacoco /app/coverage" || {
+            bash -c "mvn clean test && cp -r target/site/jacoco /app/coverage && tail -f /dev/null" || {
               echo 'Tests failed or coverage not generated. Exiting...'
               exit 1
           }

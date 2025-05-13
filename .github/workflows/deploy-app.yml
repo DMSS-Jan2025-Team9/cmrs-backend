@@ -8,7 +8,7 @@ name: Deploy Changed Microservices to Amazon ECS
 on:
   push:
     branches:
-      - feature/devsecops
+      - "release/*" # This triggers on any branch starting with "release/"
     paths:
       - "usermanagement/**"
       - "coursemanagement/**"
