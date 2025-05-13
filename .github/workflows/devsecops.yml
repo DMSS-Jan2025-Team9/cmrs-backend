@@ -128,16 +128,6 @@ jobs:
           # Build the Docker image and push it to ECR
           docker build -t $IMAGE_URI ${{ matrix.service.path }}
 
-          # Run tests and copy JaCoCo report in a single container run
-          docker run --rm \
-            -v ${{ github.workspace }}/coverage:/app/coverage \
-            $IMAGE_URI \
-            bash -c "mvn clean test && cp -r target/site/jacoco /app/coverage && tail -f /dev/null" || {
-              echo 'Tests failed or coverage not generated. Exiting...'
-              exit 1
-          }
-          echo "Run JUnit Test: $IMAGE_URI"
-
           # Push docker image to Amazon ECR
           docker push $IMAGE_URI
           echo "Pushing image: $IMAGE_URI"
@@ -147,6 +137,20 @@ jobs:
           echo "tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
           echo "repository=$ECR_REGISTRY/$IMAGE_REPO" >> "$GITHUB_OUTPUT"
 
+      - name: Create container and extract JaCoCo report
+        run: |
+          # Create and start a container from the built image
+          container_id=$(docker create $IMAGE_URI)
+          
+          # Run the tests (this runs the `mvn clean test` inside the container)
+          docker start -a $container_id
+
+          # Copy the JaCoCo report from the container to the host
+          docker cp $container_id:/app/target/site/jacoco ./coverage
+
+          # Remove the container after copying
+          docker rm $container_id
+  
       - name: Upload JaCoCo coverage report
         uses: actions/upload-artifact@v4
         with:
@@ -158,7 +162,7 @@ jobs:
         uses: alexjurkiewicz/ecr-scan-image@v3.0.0
         with:
           repository: ${{ steps.build-image.outputs.repository }}
-          tag: ${{ steps.build-image.outputs.image }}
+          tag: ${{ steps.build-image.outputs.tag }}
 
       # Access scan results in later steps
       - run: echo "${{ steps.docker-scan.outputs.total }} total vulnerabilities."
@@ -198,7 +202,7 @@ jobs:
 
   security-scan: # ➜ DevSecOps: Scan built images and dependencies
     name: Code & Dependency Scan
-    needs: detect-changes
+    needs: build-and-deploy
     runs-on: [self-hosted, cmrs-github-runner-03]
     timeout-minutes: 10
 
@@ -228,6 +232,22 @@ jobs:
           -Dsonar.test.inclusions=**/*Test.java \
           -Dsonar.java.coveragePlugin=jacoco \
           -Dsonar.verbose=true
+          
+      # Get SonarQube analysis report
+      - name: Get SonarQube Analysis Report
+        run: |
+          SONAR_URL="${{ secrets.SONAR_HOST_URL }}"
+          SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}"
+          PROJECT_KEY="${{ matrix.service.path }}"
+          curl -u $SONAR_TOKEN: $SONAR_URL/api/issues/search?componentKeys=$PROJECT_KEY > sonar_report.json
+          mv sonar_report.json ./sonar_report.json
+
+      # Upload SonarQube report as artifact
+      - name: Upload SonarQube report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-report
+          path: ./sonar_report.json
 
       # Dependency analysis using OWASP Dependency-Check (detects vulnerable libraries)
       - name: Run OWASP Dependency-Check
