@@ -138,6 +138,8 @@ jobs:
           echo "repository=$ECR_REGISTRY/$IMAGE_REPO" >> "$GITHUB_OUTPUT"
 
       - name: Create container and extract JaCoCo report
+        env:
+          IMAGE_URI: ${{ steps.build-image.outputs.image }}
         run: |
           # Create and start a container from the built image
           container_id=$(docker create $IMAGE_URI)
@@ -264,16 +266,16 @@ jobs:
           name: dependency-check-report
           path: dependency-check-report
 
-  cleanup-runs:
-    needs: [build-and-deploy, security-scan]
-    if: always()
-    runs-on: self-hosted
-    steps:
-      - name: Delete older workflow runs
-        uses: Mattraks/delete-workflow-runs@v2
-        with:
-          token: ${{ github.token }}
-          repository: ${{ github.repository }}
-          retain_days: 2
-          keep_minimum_runs: 3
-          delete_workflow_pattern: devsecops.yml
+  # cleanup-runs:
+  #   needs: [build-and-deploy, security-scan]
+  #   if: always()
+  #   runs-on: self-hosted
+  #   steps:
+  #     - name: Delete older workflow runs
+  #       uses: Mattraks/delete-workflow-runs@v2
+  #       with:
+  #         token: ${{ github.token }}
+  #         repository: ${{ github.repository }}
+  #         retain_days: 2
+  #         keep_minimum_runs: 3
+  #         delete_workflow_pattern: devsecops.yml
