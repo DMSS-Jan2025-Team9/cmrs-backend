@@ -3,8 +3,8 @@
 # Dependency vulnerability scanning with OWASP Dependency-Check
 
 # ✅ CI (Build and test)
-# Build Docker image 
-# Run JUnit tests inside the Docker container 
+# Build Docker image
+# Run JUnit tests inside the Docker container
 # Push Docker image to ECR
 # Scan Docker image in ECR and access scan results
 
@@ -17,15 +17,15 @@ name: DevSecOps CI/CD Pipeline for releases
 on:
   push:
     branches:
-      - 'release/*'  # This triggers on any branch starting with "release/"
+      - "release/*" # This triggers on any branch starting with "release/"
     paths:
-      - 'usermanagement/**'
-      - 'coursemanagement/**'
-      - 'courseregistration/**'
-      - 'notificationservice/**'
-      - 'courserecommendation/**'
-      - '.github/workflows/devsecops.yml'
-      - '.aws/**'
+      - "usermanagement/**"
+      - "coursemanagement/**"
+      - "courseregistration/**"
+      - "notificationservice/**"
+      - "courserecommendation/**"
+      - ".github/workflows/devsecops.yml"
+      - ".aws/**"
 
 env:
   AWS_REGION: ap-southeast-1
@@ -38,7 +38,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4 
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -85,14 +85,13 @@ jobs:
           FILTERED=$(echo "$SERVICES" | jq --argjson changed "$FOLDERS" '[.[] | select($changed | index(.path))]')
           echo "matrix=$(echo "$FILTERED" | jq -c)" >> "$GITHUB_OUTPUT"
 
-          
   build-and-deploy:
     name: Build and Deploy
     needs: detect-changes
     runs-on: self-hosted
     environment: dev
     timeout-minutes: 10
-    
+
     if: ${{ fromJson(needs.detect-changes.outputs.matrix) != '[]' }}
     strategy:
       matrix:
@@ -121,7 +120,7 @@ jobs:
           # Generate a timestamp for the image tag
           TIMESTAMP=$(date -u +"%Y%m%d_%H%M%S")
           IMAGE_URI=$ECR_REGISTRY/${{ matrix.service.ecr }}:$TIMESTAMP
-          
+
           # IAC deployed image - v1.0.0
           #IMAGE_URI=$ECR_REGISTRY/${{ matrix.service.ecr }}:v1.0.0
           echo "Building image: $IMAGE_URI"
@@ -149,7 +148,7 @@ jobs:
 
       # Access scan results in later steps
       - run: echo "${{ steps.docker-scan.outputs.total }} total vulnerabilities."
-          
+
       - name: Set tag for ECR tasks
         id: set-tag
         env:
@@ -161,7 +160,7 @@ jobs:
           # Save the tags JSON manually for later use
           TAGS_JSON=$(printf '[{"key": "Environment", "value": "%s"}, {"key": "Project", "value": "%s"}, {"key": "Service", "value": "%s"}, {"key": "Version", "value": "%s"}]' \
             "$ecs-env" "$proj" "$ecs-service-name" "$version")
-          
+
           echo "tags=$TAGS_JSON" >> "$GITHUB_OUTPUT"
 
       - name: Render new task definition
@@ -183,7 +182,7 @@ jobs:
           wait-for-task-stopped: false
           run-task-tags: ${{ steps.set-tag.outputs.tags }}
 
-  security-scan:   # ➜ DevSecOps: Scan built images and dependencies
+  security-scan: # ➜ DevSecOps: Scan built images and dependencies
     name: Code & Dependency Scan
     needs: detect-changes
     runs-on: [self-hosted, cmrs-github-runner-03]
@@ -230,3 +229,17 @@ jobs:
         with:
           name: dependency-check-report
           path: dependency-check-report
+
+  cleanup-runs:
+    needs: [build-and-deploy, security-scan]
+    if: always()
+    runs-on: self-hosted
+    steps:
+      - name: Delete older workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 2
+          keep_minimum_runs: 3
+          delete_workflow_pattern: devsecops.yml

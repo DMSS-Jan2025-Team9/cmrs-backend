@@ -1,4 +1,4 @@
-# This GitHub Actions workflow automates the continuous deployment of microservices to Amazon ECS. 
+# This GitHub Actions workflow automates the continuous deployment of microservices to Amazon ECS.
 # It supports selective deployment by :
 # 1) detecting changes in deploy-app.yml and deploy the services, or
 # 2) individual microservice folders and only deploying the affected services
@@ -10,18 +10,18 @@ on:
     branches:
       - feature/devsecops
     paths:
-      - 'usermanagement/**'
-      - 'coursemanagement/**'
-      - 'courseregistration/**'
-      - 'notificationservice/**'
-      - 'courserecommendation/**'
-      - '.github/workflows/deploy-app.yml'
-      - '.aws/**'
+      - "usermanagement/**"
+      - "coursemanagement/**"
+      - "courseregistration/**"
+      - "notificationservice/**"
+      - "courserecommendation/**"
+      - ".github/workflows/deploy-app.yml"
+      - ".aws/**"
 
 env:
-  AWS_REGION: ap-southeast-1                    # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: ecr-cmrs                      # set this to your Amazon ECR repository name
-  ECS_CLUSTER: cmrs-ecs-cluster                 # set this to your Amazon ECS cluster name
+  AWS_REGION: ap-southeast-1 # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: ecr-cmrs # set this to your Amazon ECR repository name
+  ECS_CLUSTER: cmrs-ecs-cluster # set this to your Amazon ECS cluster name
 
 jobs:
   detect-changes:
@@ -29,7 +29,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4 
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -82,7 +82,7 @@ jobs:
     runs-on: self-hosted
     environment: dev
     timeout-minutes: 10
-    
+
     if: ${{ fromJson(needs.detect-changes.outputs.matrix) != '[]' }}
     strategy:
       matrix:
@@ -111,7 +111,7 @@ jobs:
           # Generate a timestamp for the image tag
           TIMESTAMP=$(date -u +"%Y%m%d_%H%M%S")
           IMAGE_URI=$ECR_REGISTRY/${{ matrix.service.ecr }}:$TIMESTAMP
-          
+
           # IAC deployed image - v1.0.0
           #IMAGE_URI=$ECR_REGISTRY/${{ matrix.service.ecr }}:v1.0.0
           echo "Building image: $IMAGE_URI"
@@ -134,7 +134,7 @@ jobs:
           # Save the tags JSON manually for later use
           TAGS_JSON=$(printf '[{"key": "Environment", "value": "%s"}, {"key": "Project", "value": "%s"}, {"key": "Service", "value": "%s"}, {"key": "Version", "value": "%s"}]' \
             "$ecs-env" "$proj" "$ecs-service-name" "$version")
-          
+
           echo "tags=$TAGS_JSON" >> "$GITHUB_OUTPUT"
 
       - name: Render new task definition
@@ -155,3 +155,17 @@ jobs:
           enable-ecs-managed-tags: true
           wait-for-task-stopped: true
           run-task-tags: ${{ steps.set-tag.outputs.tags }}
+
+  cleanup-runs:
+    needs: deploy
+    if: always()
+    runs-on: self-hosted
+    steps:
+      - name: Delete older workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 2
+          keep_minimum_runs: 3
+          delete_workflow_pattern: deploy-app.yml
