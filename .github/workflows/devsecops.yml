@@ -144,8 +144,11 @@ jobs:
           # Create and start a container from the built image
           container_id=$(docker create $IMAGE_URI)
           
-          # Run the tests (this runs the `mvn clean test` inside the container)
-          docker start -a $container_id
+          # Start the container and run `mvn clean test` in the background
+          docker start -d $container_id
+
+          # Wait for the container to complete (optional, depending on the use case)
+          docker wait $container_id
 
           # Copy the JaCoCo report from the container to the host
           docker cp $container_id:/app/target/site/jacoco ./coverage
