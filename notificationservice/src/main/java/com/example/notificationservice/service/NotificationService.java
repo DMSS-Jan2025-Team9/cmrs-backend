@@ -141,20 +141,20 @@ public class NotificationService {
         return updatedNotifications;
     }
 
-    /**
-     * Creates a notification and sends it immediately via WebSocket
-     * Used for manual testing
-     * 
-     * @param notification The notification to create and send
-     * @return The saved notification
-     */
-    public Notification createAndSendManualNotification(Notification notification) {
-        // Save the notification to the database
-        Notification savedNotification = notificationRepository.save(notification);
+    // /**
+    //  * Creates a notification and sends it immediately via WebSocket
+    //  * Used for manual testing
+    //  * 
+    //  * @param notification The notification to create and send
+    //  * @return The saved notification
+    //  */
+    // public Notification createAndSendManualNotification(Notification notification) {
+    //     // Save the notification to the database
+    //     Notification savedNotification = notificationRepository.save(notification);
 
-        // Send it via WebSocket
-        sendNotification(savedNotification);
+    //     // Send it via WebSocket
+    //     sendNotification(savedNotification);
 
-        return savedNotification;
-    }
+    //     return savedNotification;
+    // }
 }
