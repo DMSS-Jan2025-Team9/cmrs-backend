@@ -17,6 +17,7 @@ name: DevSecOps CI/CD Pipeline for releases
 on:
   push:
     branches:
+      - feature/devsecops
       - "release/*" # This triggers on any branch starting with "release/"
     paths:
       - "usermanagement/**"
@@ -119,31 +120,44 @@ jobs:
         run: |
           # Generate a timestamp for the image tag
           TIMESTAMP=$(date -u +"%Y%m%d_%H%M%S")
-          IMAGE_URI=$ECR_REGISTRY/${{ matrix.service.ecr }}:$TIMESTAMP
-
-          # IAC deployed image - v1.0.0
-          #IMAGE_URI=$ECR_REGISTRY/${{ matrix.service.ecr }}:v1.0.0
+          IMAGE_REPO=${{ matrix.service.ecr }}
+          IMAGE_TAG=$TIMESTAMP  # v1.0.0
+          IMAGE_URI=$ECR_REGISTRY/$IMAGE_REPO:$IMAGE_TAG
           echo "Building image: $IMAGE_URI"
 
           # Build the Docker image and push it to ECR
           docker build -t $IMAGE_URI ${{ matrix.service.path }}
 
-          # Run JUnit tests inside the Docker container 
-          # docker run --rm $IMAGE_URI mvn test
+          # Run tests and copy JaCoCo report in a single container run
+          docker run --rm \
+            -v ${{ github.workspace }}/coverage:/app/coverage \
+            $IMAGE_URI \
+            bash -c "mvn test && cp -r target/site/jacoco /app/coverage" || {
+              echo 'Tests failed or coverage not generated. Exiting...'
+              exit 1
+          }
           echo "Run JUnit Test: $IMAGE_URI"
 
           # Push docker image to Amazon ECR
           docker push $IMAGE_URI
           echo "Pushing image: $IMAGE_URI"
 
-          # Save the image URI for use in later steps
+          # Save the outputs
           echo "image=$IMAGE_URI" >> "$GITHUB_OUTPUT"
+          echo "tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "repository=$ECR_REGISTRY/$IMAGE_REPO" >> "$GITHUB_OUTPUT"
+
+      - name: Upload JaCoCo coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: coverage/jacoco
 
       - name: Scan Docker image in ECR
         id: docker-scan
-        uses: alexjurkiewicz/ecr-scan-image@v1.7.1
+        uses: alexjurkiewicz/ecr-scan-image@v3.0.0
         with:
-          repository: myorg/myimage
+          repository: ${{ steps.build-image.outputs.repository }}
           tag: ${{ steps.build-image.outputs.image }}
 
       # Access scan results in later steps
