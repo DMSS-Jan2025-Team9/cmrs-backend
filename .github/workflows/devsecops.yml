@@ -141,13 +141,10 @@ jobs:
         env:
           IMAGE_URI: ${{ steps.build-image.outputs.image }}
         run: |
-          # Create and start a container from the built image
-          container_id=$(docker create $IMAGE_URI)
-          
-          # Start the container and run `mvn clean test` in the background
-          docker start -d $container_id
+          # Run the container in detached mode with a specific command
+          container_id=$(docker run -d --entrypoint mvn $IMAGE_URI clean test)
 
-          # Wait for the container to complete (optional, depending on the use case)
+          # Wait for the container to complete (this blocks until the container finishes)
           docker wait $container_id
 
           # Copy the JaCoCo report from the container to the host
