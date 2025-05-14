@@ -182,7 +182,9 @@ jobs:
 
   security-scan: # ➜ DevSecOps: Scan built images and dependencies
     name: Code & Dependency Scan
-    needs: build-and-deploy
+    needs: 
+      - detect-changes
+      - build-and-deploy
     runs-on: [self-hosted, cmrs-github-runner-03]
     timeout-minutes: 10
 
