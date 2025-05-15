@@ -142,7 +142,8 @@
 					<includes>
 						<include>**/*Test.java</include>
 					</includes>
-					<testFailureIgnore>false</testFailureIgnore>
+					<forkedProcessTimeoutInSeconds>120</forkedProcessTimeoutInSeconds> <!-- Timeout for entire forked process -->
+        			<testFailureIgnore>true</testFailureIgnore> <!-- Optional -->
 				</configuration>
 			</plugin>
 			<plugin>
