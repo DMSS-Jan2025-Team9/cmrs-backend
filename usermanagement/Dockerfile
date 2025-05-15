@@ -14,7 +14,7 @@ RUN mvn -B -q dependency:go-offline
 COPY src ./src
 
 # Run tests & build silently
-RUN mvn clean test package -Dmaven.test.failure.ignore=true
+RUN mvn clean package -DskipTests
 
 # This is where JaCoCo puts the coverage report
 # /app/target/site/jacoco

@@ -91,7 +91,7 @@ jobs:
     needs: detect-changes
     runs-on: self-hosted
     environment: dev
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     if: ${{ fromJson(needs.detect-changes.outputs.matrix) != '[]' }}
     strategy:
