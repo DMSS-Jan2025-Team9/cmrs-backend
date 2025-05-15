@@ -205,7 +205,7 @@ jobs:
         run: |
           # Run the SonarQube analysis with detailed test reports
           echo "Run the SonarQube analysis with detailed test reports"
-          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          mvn clean verify -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
           -Dsonar.projectKey=${{ matrix.service.path }} \
           -Dsonar.projectName='${{ matrix.service.path }}' \
