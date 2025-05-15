@@ -24,7 +24,7 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
     private final NameCleaningStrategy nameCleaningStrategy;
     private final UserService userService;
     private final RestTemplate restTemplate;
-    private final String programApiUrl = "http://coursemanagement-service:8081/api/program/";
+    private final String programApiUrl = "https://app.cmrsapp.site/course-management/api/program/";
     private final String jobId;
     private final UserRoleRepository userRoleRepository;
 

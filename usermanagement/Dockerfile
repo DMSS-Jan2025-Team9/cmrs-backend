@@ -14,7 +14,7 @@ RUN mvn -B -q dependency:go-offline
 COPY src ./src
 
 # Run tests & build silently
-RUN mvn -B clean test package
+RUN mvn clean test package
 
 # This is where JaCoCo puts the coverage report
 # /app/target/site/jacoco
