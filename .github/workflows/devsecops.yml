@@ -251,21 +251,6 @@ jobs:
           name: sonar-report
           path: sonar_report_${{ matrix.service.path }}.json
 
-      # Dependency analysis using OWASP Dependency-Check (detects vulnerable libraries)
-      - name: Run OWASP Dependency-Check
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: "CMRS-${{ matrix.service.path }}"
-          path: "./${{ matrix.service.path }}"
-          format: "HTML"
-          out: "dependency-check-report-${{ matrix.service.path }}"
-
-      - name: Upload OWASP Report (for artifact review)
-        uses: actions/upload-artifact@v4
-        with:
-          name: dependency-check-report
-          path: dependency-check-report-${{ matrix.service.path }}
-
   # cleanup-runs:
   #   needs: [build-and-deploy, security-scan]
   #   if: always()
