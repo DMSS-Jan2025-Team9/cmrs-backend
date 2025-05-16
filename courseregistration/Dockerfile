@@ -7,14 +7,18 @@ WORKDIR /app
 # Copy pom.xml and download dependencies first (to cache them)
 COPY pom.xml .
 
-# This layer helps with Docker cache reuse
-RUN mvn dependency:go-offline
+# Silent dependency download
+RUN mvn -B -q dependency:go-offline
 
 # Copy rest of the source code
 COPY src ./src
 
-# Build the application (this runs mvn clean package)
-RUN mvn clean package -DskipTests
+# Run tests & build silently
+RUN mvn -B clean test package
+
+# This is where JaCoCo puts the coverage report
+# /app/target/site/jacoco
+
 
 
 # --- Stage 2: Run the application ---

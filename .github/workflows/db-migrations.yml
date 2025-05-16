@@ -5,13 +5,13 @@ on:
     branches:
       - feature/devsecops
     paths:
-      - 'usermanagement/DBScript/migration/**'
-      - 'coursemanagement/DBScript/migration/**'
-      - 'courseregistration/DBScript/migration/**'
-      - 'notificationservice/DBScript/migration/**'
-      - 'courserecommendation/DBScript/migration/**'
-      - '.github/workflows/db-migrations.yml'
- 
+      - "usermanagement/DBScript/migration/**"
+      - "coursemanagement/DBScript/migration/**"
+      - "courseregistration/DBScript/migration/**"
+      - "notificationservice/DBScript/migration/**"
+      - "courserecommendation/DBScript/migration/**"
+      - ".github/workflows/db-migrations.yml"
+
 jobs:
   flyway-migrate:
     runs-on: [self-hosted, cmrs-github-runner-01]
@@ -46,3 +46,17 @@ jobs:
           password: ${{ secrets.DB_PASSWORD }}
           locations: filesystem:${{ matrix.service.migration_path }}
           extraArgs: -baselineOnMigrate=true
+
+  cleanup-runs:
+    needs: flyway-migrate
+    if: always()
+    runs-on: [self-hosted, cmrs-github-runner-01]
+    steps:
+      - name: Delete older workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 1
+          keep_minimum_runs: 3
+          delete_workflow_pattern: db-migrations.yml
