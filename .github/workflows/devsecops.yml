@@ -248,7 +248,7 @@ jobs:
       - name: Upload SonarQube report artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sonar-report
+          name: sonar_report_${{ matrix.service.path }}.json
           path: sonar_report_${{ matrix.service.path }}.json
 
   # cleanup-runs:
