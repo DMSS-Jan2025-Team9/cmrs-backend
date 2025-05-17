@@ -38,7 +38,7 @@ public class SecurityConfig {
                 // cookies
                 // for session management, so it's not vulnerable to CSRF attacks
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests((authorize) -> authorize
+                .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // ⬇️ Allow health check without auth
                         .requestMatchers("/actuator/health").permitAll()

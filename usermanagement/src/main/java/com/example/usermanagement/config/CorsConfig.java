@@ -13,7 +13,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://wwww.cmrsapp.site") // Allow all origins
+                        .allowedOrigins("https://www.cmrsapp.site") // Allow all origins
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allow all HTTP methods
                         .allowedHeaders("*") // Allow all headers
                         .allowCredentials(false); // Disable credentials
