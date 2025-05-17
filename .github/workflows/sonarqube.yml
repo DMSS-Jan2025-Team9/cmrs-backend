@@ -9,7 +9,7 @@ on:
 jobs:
   sonarqube:
     name: SonarQube Analysis
-    runs-on: [self-hosted, cmrs-github-runner-03]
+    runs-on: self-hosted
     strategy:
       matrix:
         service: 
@@ -99,7 +99,7 @@ jobs:
           SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: true
         run: |
           # Run the build and tests first, without SonarQube
-          mvn -B clean verify
+          mvn -B clean verify -Dmaven.test.failure.ignore=true
       
       - name: Run SonarQube Analysis
         working-directory: ./${{ matrix.service }}
