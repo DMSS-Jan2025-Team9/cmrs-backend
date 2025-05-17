@@ -9,7 +9,7 @@ on:
 jobs:
   sonarqube:
     name: SonarQube Analysis
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, cmrs-github-runner-03]
     strategy:
       matrix:
         service: 
@@ -17,7 +17,7 @@ jobs:
           - courserecommendation
           - courseregistration
           - notificationservice
-          # - usermanagement
+          - usermanagement
         include:
           - service: coursemanagement 
             db_name: course_db
@@ -27,8 +27,8 @@ jobs:
             db_name: registration_db
           - service: notificationservice
             db_name: notification_db
-          # - service: usermanagement
-          #   db_name: user_management_db
+          - service: usermanagement
+            db_name: user_management_db
     
     services:
       mysql:
@@ -116,3 +116,19 @@ jobs:
           -Dsonar.test.inclusions=**/*Test.java \
           -Dsonar.java.coveragePlugin=jacoco \
           -Dsonar.verbose=true
+
+          
+      # Get SonarQube analysis report
+      - name: Get SonarQube Analysis Report
+        run: |
+          SONAR_URL="${{ secrets.SONAR_HOST_URL }}"
+          SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}"
+          PROJECT_KEY="${{ matrix.service }}"
+          curl -u $SONAR_TOKEN: $SONAR_URL/api/issues/search?componentKeys=$PROJECT_KEY > sonar_report_${{ matrix.service }}.json
+
+      # Upload SonarQube report as artifact
+      - name: Upload SonarQube report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar_report_${{ matrix.service }}.json
+          path: sonar_report_${{ matrix.service }}.json
