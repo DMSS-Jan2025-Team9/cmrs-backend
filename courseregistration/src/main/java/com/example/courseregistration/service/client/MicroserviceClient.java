@@ -11,14 +11,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.example.courseregistration.dto.CourseClassDTO;
 import com.example.courseregistration.dto.StudentDTO;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.Map;
+
 
 //Helper function to interact with Microservices
 @Component

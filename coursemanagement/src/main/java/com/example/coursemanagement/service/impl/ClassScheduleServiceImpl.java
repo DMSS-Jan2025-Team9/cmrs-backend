@@ -15,6 +15,10 @@ import com.example.coursemanagement.model.Course;
 import com.example.coursemanagement.repository.ClassScheduleRepository;
 import com.example.coursemanagement.repository.CourseRepository;
 import com.example.coursemanagement.service.ClassScheduleService;
+import com.example.coursemanagement.strategy.impl.FullClassesStrategy;
+import com.example.coursemanagement.strategy.impl.MostlyEmptyClassesStrategy;
+import com.example.coursemanagement.strategy.impl.NearFullClassesStrategy;
+import com.example.coursemanagement.strategy.VacancyFilterStrategy;
 
 @Service
 public class ClassScheduleServiceImpl implements ClassScheduleService {
@@ -166,52 +170,27 @@ public class ClassScheduleServiceImpl implements ClassScheduleService {
 	}
 
     @Override
-    public List<ClassSchedule> getFullClasses() {
-        // Get all class schedules from repository
+    public List<ClassSchedule> getClassesByVacancyFilter(VacancyFilterStrategy strategy) {
         List<ClassSchedule> allClassSchedules = classScheduleRepository.findAll();
-        
-        // Filter classes with 0 vacancy
         return allClassSchedules.stream()
-                .filter(classSchedule -> classSchedule.getVacancy() == 0)
+                .filter(strategy::matches)
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public List<ClassSchedule> getNearFullClasses() {
-        // Get all class schedules from repository
-        List<ClassSchedule> allClassSchedules = classScheduleRepository.findAll();
-        
-        // Filter classes with 20% or less vacancy
-        return allClassSchedules.stream()
-                .filter(classSchedule -> {
-                    int maxCapacity = classSchedule.getMaxCapacity();
-                    int vacancy = classSchedule.getVacancy();
-                    // Calculate vacancy percentage
-                    double vacancyPercentage = maxCapacity > 0 ? 
-                            ((double) vacancy / maxCapacity) * 100 : 0;
-                    // Return true if vacancy percentage is 20% or less
-                    return vacancyPercentage <= 20.0 && vacancy > 0;
-                })
-                .collect(Collectors.toList());
-    }
 
-    @Override
-    public List<ClassSchedule> getMostlyEmptyClasses() {
-        // Get all class schedules from repository
-        List<ClassSchedule> allClassSchedules = classScheduleRepository.findAll();
-        
-        // Filter classes with 80% or more vacancy
-        return allClassSchedules.stream()
-                .filter(classSchedule -> {
-                    int maxCapacity = classSchedule.getMaxCapacity();
-                    int vacancy = classSchedule.getVacancy();
-                    // Calculate vacancy percentage
-                    double vacancyPercentage = maxCapacity > 0 ? 
-                            ((double) vacancy / maxCapacity) * 100 : 0;
-                    // Return true if vacancy percentage is 80% or more
-                    return vacancyPercentage >= 80.0;
-                })
-                .collect(Collectors.toList());
-    }
+    // @Override
+    // public List<ClassSchedule> getFullClasses() {
+    //     return getClassesByVacancyFilter(new FullClassesStrategy());
+    // }
+
+    // @Override
+    // public List<ClassSchedule> getNearFullClasses() {
+    //     return getClassesByVacancyFilter(new NearFullClassesStrategy());
+    // }
+
+    // @Override
+    // public List<ClassSchedule> getMostlyEmptyClasses() {
+    //     return getClassesByVacancyFilter(new MostlyEmptyClassesStrategy());
+    // }
 
 }

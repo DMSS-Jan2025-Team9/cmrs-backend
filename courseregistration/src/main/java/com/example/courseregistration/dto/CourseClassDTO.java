@@ -1,6 +1,5 @@
 package com.example.courseregistration.dto;
 
-import java.util.List;
 import java.time.LocalTime;
 
 public class CourseClassDTO {

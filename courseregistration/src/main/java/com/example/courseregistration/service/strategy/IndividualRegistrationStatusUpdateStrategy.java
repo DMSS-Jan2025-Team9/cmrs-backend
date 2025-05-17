@@ -9,13 +9,11 @@ import com.example.courseregistration.service.NotificationPublisherService;
 import com.example.courseregistration.service.WaitlistNotificationService;
 import com.example.courseregistration.service.client.MicroserviceClient;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.example.courseregistration.dto.StudentDTO;
 
 @Service
 public class IndividualRegistrationStatusUpdateStrategy implements RegistrationStatusUpdateStrategy {
