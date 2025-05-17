@@ -2,7 +2,6 @@ package com.example.usermanagement.mapper;
 
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.example.usermanagement.dto.RoleDto;
@@ -11,8 +10,11 @@ import com.example.usermanagement.model.Role;
 @Component
 public class RoleMapper {
 
-    @Autowired
-    private PermissionMapper permissionMapper;
+    private final PermissionMapper permissionMapper;
+
+    public RoleMapper(PermissionMapper permissionMapper) {
+        this.permissionMapper = permissionMapper;
+    }
 
     public RoleDto mapRoleToDto(Role role) {
         RoleDto dto = new RoleDto();

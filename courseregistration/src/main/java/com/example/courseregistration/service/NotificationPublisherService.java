@@ -65,7 +65,7 @@ public class NotificationPublisherService {
     }
 
     /**
-     * Overloaded method for backward compatibility
+     * Overloaded method for backward compatibility (not in use)
      */
     public void publishWaitlistNotification(Long studentId, CourseClassDTO courseClass) {
         // For existing method calls, try to get the studentFullId if possible
@@ -124,7 +124,7 @@ public class NotificationPublisherService {
     }
 
     /**
-     * Overloaded method for backward compatibility
+     * Overloaded method for backward compatibility (not in use)
      */
     public void publishVacancyAvailableNotification(Long studentId, CourseClassDTO courseClass) {
         // For existing method calls, try to get the studentFullId if possible

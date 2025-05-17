@@ -71,130 +71,138 @@ public class NotificationController {
         return ResponseEntity.ok(updatedNotifications);
     }
 
-    /**
-     * Test endpoint to manually create a notification
-     * 
-     * @param studentFullId The student full ID to notify
-     * @param message       The notification message
-     * @return The created notification
-     */
-    @PostMapping("/createNotification")
-    public ResponseEntity<Notification> CreateNotification(
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) String studentFullId,
-            @RequestParam String message) {
+    // /**
+    //  * Test endpoint to manually create a notification
+    //  * 
+    //  * @param studentFullId The student full ID to notify
+    //  * @param message       The notification message
+    //  * @return The created notification
+    //  */
+    // @PostMapping("/createNotification")
+    // public ResponseEntity<Notification> CreateNotification(
+    //         @RequestParam(required = false) Long userId,
+    //         @RequestParam(required = false) String studentFullId,
+    //         @RequestParam String message) {
 
-        Notification notification = new Notification();
-        if (studentFullId != null) {
-            notification.setStudentFullId(studentFullId);
-        }
-        if (userId != null) {
-            notification.setUserId(userId);
-        }
-        notification.setNotificationMessage(message);
-        notification.setCreatedAt(Timestamp.from(Instant.now()));
+    //     Notification notification = new Notification();
+    //     if (studentFullId != null) {
+    //         notification.setStudentFullId(studentFullId);
+    //     }
+    //     if (userId != null) {
+    //         notification.setUserId(userId);
+    //     }
+    //     notification.setNotificationMessage(message);
+    //     notification.setCreatedAt(Timestamp.from(Instant.now()));
 
-        Notification savedNotification = notificationService.createAndSendManualNotification(notification);
-        return ResponseEntity.ok(savedNotification);
-    }
+    //     Notification savedNotification = notificationService.createAndSendManualNotification(notification);
+    //     return ResponseEntity.ok(savedNotification);
+    // }
 
-    /**
-     * Test endpoint to manually send a notification event
-     * 
-     * @param studentFullId The student full ID
-     * @param studentId     The student ID (for backward compatibility)
-     * @param classId       The class ID
-     * @param courseCode    The course code
-     * @param courseName    The course name
-     * @param eventType     The type of event (WAITLISTED or VACANCY_AVAILABLE)
-     * @return Success status
-     */
-    @PostMapping("/notificationEvent")
-    public ResponseEntity<Map<String, String>> NotificationEvent(
-            @RequestParam(required = false) Long studentId,
-            @RequestParam(required = false) String studentFullId,
-            @RequestParam Long classId,
-            @RequestParam(required = false) String courseCode,
-            @RequestParam(required = false) String courseName,
-            @RequestParam String eventType) {
+    // /**
+    // * Test endpoint to manually send a notification event
+    // *
+    // * @param studentFullId The student full ID
+    // * @param studentId The student ID (for backward compatibility)
+    // * @param classId The class ID
+    // * @param courseCode The course code
+    // * @param courseName The course name
+    // * @param eventType The type of event (WAITLISTED or VACANCY_AVAILABLE)
+    // * @return Success status
+    // */
+    // @PostMapping("/notificationEvent")
+    // public ResponseEntity<Map<String, String>> NotificationEvent(
+    // @RequestParam(required = false) Long studentId,
+    // @RequestParam(required = false) String studentFullId,
+    // @RequestParam Long classId,
+    // @RequestParam(required = false) String courseCode,
+    // @RequestParam(required = false) String courseName,
+    // @RequestParam String eventType) {
 
-        String message;
+    // String message;
 
-        // Default course information if not provided
-        String finalCourseCode = courseCode != null ? courseCode : "CS101";
-        String finalCourseName = courseName != null ? courseName : "Introduction to Programming";
+    // // Default course information if not provided
+    // String finalCourseCode = courseCode != null ? courseCode : "CS101";
+    // String finalCourseName = courseName != null ? courseName : "Introduction to
+    // Programming";
 
-        if (studentFullId == null && studentId == null) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "status", "error",
-                    "message", "Either studentId or studentFullId must be provided"));
-        }
+    // if (studentFullId == null && studentId == null) {
+    // return ResponseEntity.badRequest().body(Map.of(
+    // "status", "error",
+    // "message", "Either studentId or studentFullId must be provided"));
+    // }
 
-        if (eventType.equalsIgnoreCase("WAITLISTED")) {
-            message = "You have been waitlisted for " + finalCourseCode + " - " + finalCourseName;
-        } else if (eventType.equalsIgnoreCase("VACANCY_AVAILABLE")) {
-            message = "A vacancy is now available for " + finalCourseCode + " - " + finalCourseName
-                    + ". Please register now!";
-        } else {
-            message = "Notification test message for " + finalCourseCode + " - " + finalCourseName;
-        }
+    // if (eventType.equalsIgnoreCase("WAITLISTED")) {
+    // message = "You have been waitlisted for " + finalCourseCode + " - " +
+    // finalCourseName;
+    // } else if (eventType.equalsIgnoreCase("VACANCY_AVAILABLE")) {
+    // message = "A vacancy is now available for " + finalCourseCode + " - " +
+    // finalCourseName
+    // + ". Please register now!";
+    // } else {
+    // message = "Notification test message for " + finalCourseCode + " - " +
+    // finalCourseName;
+    // }
 
-        NotificationEventDTO eventDTO = new NotificationEventDTO(
-                studentFullId,
-                studentId,
-                classId,
-                finalCourseCode,
-                finalCourseName,
-                message,
-                eventType.toUpperCase());
+    // NotificationEventDTO eventDTO = new NotificationEventDTO(
+    // studentFullId,
+    // studentId,
+    // classId,
+    // finalCourseCode,
+    // finalCourseName,
+    // message,
+    // eventType.toUpperCase());
 
-        Notification notification = notificationService.createNotification(eventDTO);
-        notificationService.sendNotification(notification);
+    // Notification notification = notificationService.createNotification(eventDTO);
+    // notificationService.sendNotification(notification);
 
-        String studentIdentifier = studentFullId != null ? studentFullId : studentId.toString();
+    // String studentIdentifier = studentFullId != null ? studentFullId :
+    // studentId.toString();
 
-        return ResponseEntity.ok(Map.of(
-                "status", "success",
-                "message",
-                "Test notification sent for student " + studentIdentifier + " with event type " + eventType));
-    }
+    // return ResponseEntity.ok(Map.of(
+    // "status", "success",
+    // "message",
+    // "Test notification sent for student " + studentIdentifier + " with event type
+    // " + eventType));
+    // }
 
-    /**
-     * Test endpoint to directly send a message via WebSocket
-     * 
-     * @param userId  The user to send the message to
-     * @param message The message content
-     * @return Success status
-     */
-    @PostMapping("/websocket-message")
-    public ResponseEntity<Map<String, String>> sendWebSocketMessage(
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) String studentFullId,
-            @RequestParam String message) {
+    // /**
+    // * Test endpoint to directly send a message via WebSocket
+    // *
+    // * @param userId The user to send the message to
+    // * @param message The message content
+    // * @return Success status
+    // */
+    // @PostMapping("/websocket-message")
+    // public ResponseEntity<Map<String, String>> sendWebSocketMessage(
+    // @RequestParam(required = false) Long userId,
+    // @RequestParam(required = false) String studentFullId,
+    // @RequestParam String message) {
 
-        if (studentFullId == null && userId == null) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "status", "error",
-                    "message", "Either userId or studentFullId must be provided"));
-        }
+    // if (studentFullId == null && userId == null) {
+    // return ResponseEntity.badRequest().body(Map.of(
+    // "status", "error",
+    // "message", "Either userId or studentFullId must be provided"));
+    // }
 
-        String userIdentifier = studentFullId != null ? studentFullId : userId.toString();
+    // String userIdentifier = studentFullId != null ? studentFullId :
+    // userId.toString();
 
-        // Create a notification object
-        Notification notification = new Notification();
-        if (studentFullId != null)
-            notification.setStudentFullId(studentFullId);
-        if (userId != null)
-            notification.setUserId(userId);
-        notification.setNotificationMessage(message);
-        notification.setCreatedAt(Timestamp.from(Instant.now()));
-        notification.setSentAt(Timestamp.from(Instant.now()));
+    // // Create a notification object
+    // Notification notification = new Notification();
+    // if (studentFullId != null)
+    // notification.setStudentFullId(studentFullId);
+    // if (userId != null)
+    // notification.setUserId(userId);
+    // notification.setNotificationMessage(message);
+    // notification.setCreatedAt(Timestamp.from(Instant.now()));
+    // notification.setSentAt(Timestamp.from(Instant.now()));
 
-        // Send directly without saving to DB
-        messagingTemplate.convertAndSend("/topic/user/" + userIdentifier, notification);
+    // // Send directly without saving to DB
+    // messagingTemplate.convertAndSend("/topic/user/" + userIdentifier,
+    // notification);
 
-        return ResponseEntity.ok(Map.of(
-                "status", "success",
-                "message", "WebSocket message sent to user " + userIdentifier));
-    }
+    // return ResponseEntity.ok(Map.of(
+    // "status", "success",
+    // "message", "WebSocket message sent to user " + userIdentifier));
+    // }
 }

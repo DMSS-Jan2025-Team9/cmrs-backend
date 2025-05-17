@@ -1,6 +1,5 @@
 package com.example.usermanagement.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,15 +21,22 @@ import com.example.usermanagement.security.JwtAuthenticationFilter;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationEntryPoint jwtAuthEntryPoint;
+    private final JwtAuthenticationEntryPoint jwtAuthEntryPoint;
+    private final JwtAuthenticationFilter jwtAuthFilter;
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthFilter;
+    public SecurityConfig(JwtAuthenticationEntryPoint jwtAuthEntryPoint, JwtAuthenticationFilter jwtAuthFilter) {
+        this.jwtAuthEntryPoint = jwtAuthEntryPoint;
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // Disable CSRF protection as we are using stateless JWT tokens for
+                // authentication
+                // This is safe because JWT is sent in Authorization header and not using
+                // cookies
+                // for session management, so it's not vulnerable to CSRF attacks
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

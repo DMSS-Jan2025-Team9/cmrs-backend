@@ -2,7 +2,6 @@ package com.example.usermanagement.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,8 +26,11 @@ import com.example.usermanagement.service.StaffService;
 @RequestMapping("/api/staff")
 public class StaffController {
 
-    @Autowired
-    private StaffService staffService;
+    private final StaffService staffService;
+
+    public StaffController(StaffService staffService) {
+        this.staffService = staffService;
+    }
 
     @GetMapping("/all")
     // @PreAuthorize("hasRole('ROLE_admin')")
