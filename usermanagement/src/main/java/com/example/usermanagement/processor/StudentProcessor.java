@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import java.security.SecureRandom;
 
 @Component
 @StepScope
@@ -27,6 +28,7 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
     private final String programApiUrl = "http://coursemanagement-service:8081/api/program/";
     private final String jobId;
     private final UserRoleRepository userRoleRepository;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     public StudentProcessor(NameCleaningStrategy nameCleaningStrategy,
             UserService userService,
@@ -81,7 +83,7 @@ public class StudentProcessor implements ItemProcessor<Student, Student> {
             // Pad ID to 2 digits if it's less than 10
             String paddedId = (idLong < 10) ? String.format("%02d", idLong) : idLong.toString();
 
-            int randomPadding = 1000 + (int) (Math.random() * 9000); // Generates 1000–9999
+            int randomPadding = 1000 + secureRandom.nextInt(9000); // Generates 1000–9999
             String fullStudentId = "U" + paddedId + randomPadding; // e.g., U010234 or U101234
             student.setStudentFullId(fullStudentId);
 

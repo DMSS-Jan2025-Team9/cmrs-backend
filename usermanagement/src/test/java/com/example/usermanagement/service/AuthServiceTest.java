@@ -18,11 +18,15 @@ import com.example.usermanagement.security.JwtTokenProvider;
 import com.example.usermanagement.strategy.CompositeNameCleaningStrategy;
 import com.example.usermanagement.strategy.StaffEmailStrategy;
 import com.example.usermanagement.strategy.StudentEmailStrategy;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -37,10 +41,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @ActiveProfiles("test")
 public class AuthServiceTest {
 
@@ -79,6 +85,12 @@ public class AuthServiceTest {
 
     @InjectMocks
     private AuthService authService;
+
+    @BeforeEach
+    public void setup() {
+        // Always return an encoded password regardless of the input
+        doReturn("encodedPassword").when(passwordEncoder).encode(any());
+    }
 
     @Test
     public void testLoginSuccess() {
@@ -121,9 +133,6 @@ public class AuthServiceTest {
         roles.add(studentRole);
         when(roleRepository.findByRoleNameIn(Arrays.asList("ROLE_student"))).thenReturn(roles);
 
-        // Mock password encoder
-        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
-
         // Mock user repository
         User savedUser = new User();
         savedUser.setUserId(1);
@@ -164,9 +173,6 @@ public class AuthServiceTest {
         List<Role> roles = new ArrayList<>();
         roles.add(staffRole);
         when(roleRepository.findByRoleNameIn(Arrays.asList("ROLE_staff"))).thenReturn(roles);
-
-        // Mock password encoder
-        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
 
         // Mock user repository
         User savedUser = new User();
