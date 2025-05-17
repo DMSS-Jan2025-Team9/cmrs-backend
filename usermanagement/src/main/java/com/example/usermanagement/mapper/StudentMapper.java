@@ -102,6 +102,5 @@ public class StudentMapper {
             student.getUser().setEmail(dto.getEmail());
         }
 
-        // Note: Roles will be handled separately in the service layer
     }
 }

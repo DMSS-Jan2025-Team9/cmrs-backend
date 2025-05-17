@@ -19,7 +19,7 @@ class CorsConfigTest {
         when(registry.addMapping("/**")).thenReturn(registration);
         when(registration.allowedOrigins("*")).thenReturn(registration);
         when(registration.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS"))
-            .thenReturn(registration);
+                .thenReturn(registration);
         when(registration.allowedHeaders("*")).thenReturn(registration);
         when(registration.allowCredentials(false)).thenReturn(registration);
 

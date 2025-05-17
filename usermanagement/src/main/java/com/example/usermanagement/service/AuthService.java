@@ -15,7 +15,7 @@ import com.example.usermanagement.strategy.StudentEmailStrategy;
 import com.example.usermanagement.strategy.StaffEmailStrategy;
 import com.example.usermanagement.strategy.CompositeNameCleaningStrategy;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,55 +32,59 @@ import java.util.Set;
 
 @Service
 public class AuthService {
-    
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    
-    @Autowired
-    private UserRepository userRepository;
-    
-    @Autowired
-    private RoleRepository roleRepository;
 
-    @Autowired
-    private StudentRepository studentRepository;
+    private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final StudentRepository studentRepository;
+    private final StaffRepository staffRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtTokenProvider tokenProvider;
+    private final UserRegistrationFactory userRegistrationFactory;
+    private final StudentEmailStrategy studentEmailStrategy;
+    private final StaffEmailStrategy staffEmailStrategy;
+    private final CompositeNameCleaningStrategy compositeNameCleaningStrategy;
 
-    @Autowired
-    private StaffRepository staffRepository;
-    
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
-    
-    @Autowired
-    private JwtTokenProvider tokenProvider;
+    @Value("${app.default-temp-password:temp123}")
+    private String defaultTempPassword;
 
-    @Autowired
-    private UserRegistrationFactory userRegistrationFactory;
-
-    @Autowired
-    private StudentEmailStrategy studentEmailStrategy;
-
-    @Autowired
-    private StaffEmailStrategy staffEmailStrategy;
-
-    @Autowired
-    private CompositeNameCleaningStrategy compositeNameCleaningStrategy;
+    public AuthService(AuthenticationManager authenticationManager,
+            UserRepository userRepository,
+            RoleRepository roleRepository,
+            StudentRepository studentRepository,
+            StaffRepository staffRepository,
+            BCryptPasswordEncoder passwordEncoder,
+            JwtTokenProvider tokenProvider,
+            UserRegistrationFactory userRegistrationFactory,
+            StudentEmailStrategy studentEmailStrategy,
+            StaffEmailStrategy staffEmailStrategy,
+            CompositeNameCleaningStrategy compositeNameCleaningStrategy) {
+        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.studentRepository = studentRepository;
+        this.staffRepository = staffRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.tokenProvider = tokenProvider;
+        this.userRegistrationFactory = userRegistrationFactory;
+        this.studentEmailStrategy = studentEmailStrategy;
+        this.staffEmailStrategy = staffEmailStrategy;
+        this.compositeNameCleaningStrategy = compositeNameCleaningStrategy;
+    }
 
     public JwtAuthResponse login(LoginDto loginDto) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginDto.getUsername(),
-                        loginDto.getPassword()
-                )
-        );
-        
+                        loginDto.getPassword()));
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        
+
         String token = tokenProvider.generateToken(authentication);
-        
+
         JwtAuthResponse response = new JwtAuthResponse();
         response.setAccessToken(token);
-        
+
         return response;
     }
 
@@ -88,12 +92,12 @@ public class AuthService {
         User user = new User();
         user.setUsername(tempUsername);
         user.setEmail(tempEmail);
-        user.setPassword(passwordEncoder.encode("password"));
+        user.setPassword(passwordEncoder.encode(defaultTempPassword));
         user.setCreatedAt(new Date());
         user.setUpdatedAt(new Date());
         return user;
     }
-    
+
     private Set<Role> resolveRoles(List<String> roleNames) {
         List<Role> matchedRoles = roleRepository.findByRoleNameIn(roleNames);
         if (matchedRoles.isEmpty()) {
@@ -101,28 +105,27 @@ public class AuthService {
         }
         return new HashSet<>(matchedRoles);
     }
-    
+
     private String cleanFullName(String firstName, String lastName) {
         return compositeNameCleaningStrategy.clean(firstName) + " " + compositeNameCleaningStrategy.clean(lastName);
     }
-    
 
     public String registerStudent(UserRegistrationDto userRegistrationDto, StudentRegistrationDto studentDto) {
         User user = createBaseUser("Temp Student", "temp_student@mail.com");
         user.setRoles(resolveRoles(userRegistrationDto.getRole()));
-        
+
         User savedUser = userRepository.save(user);
-    
+
         String studentFullId = userRegistrationFactory.generateStudentId(savedUser.getUserId());
         String email = studentEmailStrategy.generateEmail(studentFullId);
         savedUser.setUsername(studentFullId);
         savedUser.setEmail(email);
         userRepository.save(savedUser);
-    
+
         String[] programInfo = studentDto.getProgramInfo().split(" ", 2);
         Long programId = Long.parseLong(programInfo[0]);
         String programName = programInfo[1];
-    
+
         Student student = new Student();
         student.setUser(savedUser);
         student.setFirstName(compositeNameCleaningStrategy.clean(studentDto.getFirstName()));
@@ -132,25 +135,24 @@ public class AuthService {
         student.setProgramName(programName);
         student.setStudentFullId(studentFullId);
         student.setEnrolledAt(new Date());
-    
+
         studentRepository.save(student);
-    
+
         return "Student registered successfully with ID: " + studentFullId;
     }
-    
 
     public String registerStaff(UserRegistrationDto userRegistrationDto, StaffRegistrationDto staffDto) {
         User user = createBaseUser("Temp Staff", "temp_staff@mail.com");
         user.setRoles(resolveRoles(userRegistrationDto.getRole()));
-    
+
         User savedUser = userRepository.save(user);
-    
+
         String staffFullId = userRegistrationFactory.generateStaffId(savedUser.getUserId());
         String email = staffEmailStrategy.generateEmail(staffFullId);
         savedUser.setUsername(staffFullId);
         savedUser.setEmail(email);
         userRepository.save(savedUser);
-    
+
         Staff staff = new Staff();
         staff.setUser(savedUser);
         staff.setFirstName(compositeNameCleaningStrategy.clean(staffDto.getFirstName()));
@@ -159,10 +161,9 @@ public class AuthService {
         staff.setDepartment(staffDto.getDepartment());
         staff.setPosition(staffDto.getPosition());
         staff.setStaffFullId(staffFullId);
-    
+
         staffRepository.save(staff);
-    
+
         return "Staff registered successfully with ID: " + staffFullId;
     }
-    
 }
