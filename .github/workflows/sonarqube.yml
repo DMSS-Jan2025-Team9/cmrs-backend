@@ -2,9 +2,9 @@ name: SonarQube Analysis
 
 on:
   push:
-    branches: ["feature/github-actions", "main"]
+    branches: ["feature/github-actions", "main", "hotfix/securityfindings"]
   pull_request:
-    branches: ["feature/github-actions", "main"]
+    branches: ["feature/github-actions", "main", "hotfix/securityfindings"]
 
 jobs:
   sonarqube:
