@@ -46,8 +46,8 @@ public class JwtTokenProviderTest {
     public void setUp() {
         // Set JWT properties
         ReflectionTestUtils.setField(jwtTokenProvider, "jwtSecret",
-                "testsecrettestsecrettestsecrettestsecrettestsecrettestsecret");
-        ReflectionTestUtils.setField(jwtTokenProvider, "jwtExpirationDate", 3600000L); // 1 hour
+                "daf66e01593f61a15b857cf433aae03a005812b31234e149036bcc8dee755dbb");
+        ReflectionTestUtils.setField(jwtTokenProvider, "jwtExpirationDate", 604800000L);
 
         // Set up user
         user = new User();
