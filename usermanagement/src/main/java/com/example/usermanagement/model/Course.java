@@ -28,10 +28,14 @@ public class Course {
 
     private String courseDesc;
 
-    public Course(){} // Default constructor
+    @OneToMany(mappedBy = "course")
+    private List<Class> classes;
+
+    public Course() {
+    } // Default constructor
 
     public Course(Integer courseId, String courseName, String courseCode, Date registrationStart,
-                  Date registrationEnd, int maxCapacity, String status, String courseDesc) {
+            Date registrationEnd, int maxCapacity, String status, String courseDesc) {
         this.courseId = courseId;
         this.courseName = courseName;
         this.courseCode = courseCode;
@@ -41,7 +45,6 @@ public class Course {
         this.status = status;
         this.courseDesc = courseDesc;
     }
-
 
     // Getters and Setters
     public Integer getCourseId() {
@@ -108,6 +111,11 @@ public class Course {
         this.courseDesc = courseDesc;
     }
 
-    @OneToMany(mappedBy="course")
-    private List<Class> classes;
+    public List<Class> getClasses() {
+        return classes;
+    }
+
+    public void setClasses(List<Class> classes) {
+        this.classes = classes;
+    }
 }

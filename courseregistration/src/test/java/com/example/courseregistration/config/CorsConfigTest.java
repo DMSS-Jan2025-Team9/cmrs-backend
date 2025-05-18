@@ -17,9 +17,9 @@ class CorsConfigTest {
 
         // Stub the fluent API
         when(registry.addMapping("/**")).thenReturn(registration);
-        when(registration.allowedOrigins("*")).thenReturn(registration);
+        when(registration.allowedOrigins("https://www.cmrsapp.site")).thenReturn(registration);
         when(registration.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS"))
-            .thenReturn(registration);
+                .thenReturn(registration);
         when(registration.allowedHeaders("*")).thenReturn(registration);
         when(registration.allowCredentials(false)).thenReturn(registration);
 
@@ -30,7 +30,7 @@ class CorsConfigTest {
 
         // Assert: verify that we added exactly the calls we expect
         verify(registry).addMapping("/**");
-        verify(registration).allowedOrigins("*");
+        verify(registration).allowedOrigins("https://www.cmrsapp.site");
         verify(registration).allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
         verify(registration).allowedHeaders("*");
         verify(registration).allowCredentials(false);
