@@ -23,13 +23,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class StudentServiceImpl implements StudentService {
-    @Autowired
     private final StudentRepository studentRepository;
-    @Autowired
     private final UserRepository userRepository;
-    @Autowired
     private final RoleRepository roleRepository;
-    @Autowired
     private final PasswordEncoder passwordEncoder;
 
     public StudentServiceImpl(StudentRepository studentRepository,

@@ -9,7 +9,6 @@ import com.example.usermanagement.mapper.StudentMapper;
 import com.example.usermanagement.model.Student;
 import com.example.usermanagement.repository.StudentRepository;
 import com.example.usermanagement.service.StudentService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,11 +21,13 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/students")
 public class StudentController {
 
-    @Autowired
-    private StudentRepository studentRepository;
+    private final StudentRepository studentRepository;
+    private final StudentService studentService;
 
-    @Autowired
-    private StudentService studentService;
+    public StudentController(StudentRepository studentRepository, StudentService studentService) {
+        this.studentRepository = studentRepository;
+        this.studentService = studentService;
+    }
 
     // Get all students
     // @GetMapping
@@ -123,7 +124,7 @@ public class StudentController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    //Get a single student bystudentFullId
+    // Get a single student bystudentFullId
     @GetMapping("/studentFullId/{studentFullId}")
     public ResponseEntity<StudentDto> getStudentByStudentFullId(@PathVariable String studentFullId) {
         return studentRepository.findBystudentFullId(studentFullId)
