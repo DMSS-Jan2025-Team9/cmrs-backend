@@ -38,15 +38,15 @@ class MicroserviceClientTest {
     private RestTemplate restTemplate;
 
     private static final String CLASS_API_GET =
-        "http://coursemanagement-service:8081/api/classSchedule/classId/{classId}";
+        "https://app.cmrsapp.site/course-management/api/classSchedule/classId/{classId}";
     private static final String CLASS_API_PUT =
-        "http://coursemanagement-service:8081//api/classSchedule/editClassSchedule/{classId}";
+        "https://app.cmrsapp.site/course-management//api/classSchedule/editClassSchedule/{classId}";
     private static final String COURSE_DETAILS_API =
-        "http://coursemanagement-service:8081/api/courses/courseId/{courseId}";
+        "https://app.cmrsapp.site/course-management/api/courses/courseId/{courseId}";
     private static final String STUDENT_API =
-        "http://usermanagement-service:8085/api/students/studentFullId/{studentFullId}";
+        "https://app.cmrsapp.site/user-management/api/students/studentFullId/{studentFullId}";
     private static final String STUDENT_ID_API =
-        "http://usermanagement-service:8085/api/students/{studentId}";
+        "https://app.cmrsapp.site/user-management/api/students/{studentId}";
 
     private static final Long CLASS_ID = 10L;
     private static final Long COURSE_ID = 20L;

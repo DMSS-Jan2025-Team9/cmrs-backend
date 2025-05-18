@@ -2,9 +2,11 @@ name: Maven Package
 
 on:
   push:
-    branches: ["**"]
+    branches:
+      - "main"
   pull_request:
-    branches: ["**"]
+    branches:
+      - "main"
 
 jobs:
   test-and-build:
@@ -28,21 +30,22 @@ jobs:
           - service: usermanagement
             db_name: user_management_db
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: password123
-          MYSQL_DATABASE: ${{ matrix.db_name }}
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
+    # Disable this docker service because localhost dont have mysqladmin. Will enable after integrate with aws resource
+    # services:
+    #   mysql:
+    #     image: mysql:8.0
+    #     env:
+    #       MYSQL_ROOT_PASSWORD: password123
+    #       MYSQL_DATABASE: ${{ matrix.db_name }}
+    #     ports:
+    #       - 3306:3306
+    #     options: >-
+    #       --health-cmd="mysqladmin ping"
+    #       --health-interval=10s
+    #       --health-timeout=5s
+    #       --health-retries=3
 
     steps:
       - uses: actions/checkout@v4
@@ -84,3 +87,16 @@ jobs:
             ${{ matrix.service }}/target/surefire-reports/
             ${{ matrix.service }}/target/failsafe-reports/
           retention-days: 3
+
+  cleanup-runs:
+    needs: test-and-build
+    runs-on: self-hosted
+    steps:
+      - name: Delete older workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 1
+          keep_minimum_runs: 3
+          delete_workflow_pattern: maven-publish.yml

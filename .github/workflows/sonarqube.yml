@@ -2,9 +2,9 @@ name: SonarQube Analysis
 
 on:
   push:
-    branches: ['feature/github-actions', 'main']
+    branches: ["feature/github-actions", "main"]
   pull_request:
-    branches: ['feature/github-actions', 'main']
+    branches: ["feature/github-actions", "main"]
 
 jobs:
   sonarqube:
@@ -12,14 +12,14 @@ jobs:
     runs-on: [self-hosted, cmrs-github-runner-03]
     strategy:
       matrix:
-        service: 
+        service:
           - coursemanagement
           - courserecommendation
           - courseregistration
           - notificationservice
           - usermanagement
         include:
-          - service: coursemanagement 
+          - service: coursemanagement
             db_name: course_db
           - service: courserecommendation
             db_name: recommendation_db
@@ -29,54 +29,55 @@ jobs:
             db_name: notification_db
           - service: usermanagement
             db_name: user_management_db
-    
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: password123
-          MYSQL_DATABASE: ${{ matrix.db_name }}
-          MYSQL_USER: sonaruser
-          MYSQL_PASSWORD: sonarpass
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-    
+
+    # Disable this docker service because localhost dont have mysqladmin. Will enable after integrate with aws resource
+    # services:
+    #   mysql:
+    #     image: mysql:8.0
+    #     env:
+    #       MYSQL_ROOT_PASSWORD: password123
+    #       MYSQL_DATABASE: ${{ matrix.db_name }}
+    #       MYSQL_USER: sonaruser
+    #       MYSQL_PASSWORD: sonarpass
+    #     ports:
+    #       - 3306:3306
+    #     options: >-
+    #       --health-cmd="mysqladmin ping"
+    #       --health-interval=10s
+    #       --health-timeout=5s
+    #       --health-retries=3
+
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: 21
-          distribution: 'temurin'
-          cache: 'maven'
-      
+          distribution: "temurin"
+          cache: "maven"
+
       - name: Cache SonarQube packages
         uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar-${{ matrix.service }}
           restore-keys: ${{ runner.os }}-sonar-${{ matrix.service }}
-      
+
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-      
+
       - name: Test SonarQube Connection
         run: |
           echo "Testing connection to SonarQube server via ngrok..."
           curl -v ${{ secrets.SONAR_HOST_URL }} --connect-timeout 10
-      
+
       - name: Initialize Database Schema
         run: |
           echo "Initializing database schema for ${{ matrix.service }}..."
@@ -85,7 +86,7 @@ jobs:
           GRANT ALL PRIVILEGES ON ${{ matrix.db_name }}.* TO 'sonaruser'@'%';
           FLUSH PRIVILEGES;
           "
-      
+
       - name: Build and Run Tests
         working-directory: ./${{ matrix.service }}
         env:
@@ -100,7 +101,7 @@ jobs:
         run: |
           # Run the build and tests first, without SonarQube
           mvn -B clean verify -Dmaven.test.failure.ignore=true
-      
+
       - name: Run SonarQube Analysis
         working-directory: ./${{ matrix.service }}
         env:

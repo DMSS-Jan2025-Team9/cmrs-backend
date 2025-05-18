@@ -7,20 +7,41 @@ WORKDIR /app
 # Copy pom.xml and download dependencies first (to cache them)
 COPY pom.xml .
 
-# This layer helps with Docker cache reuse
-RUN mvn dependency:go-offline
+# Silent dependency download
+RUN mvn -B -q dependency:go-offline
 
 # Copy rest of the source code
 COPY src ./src
 
-# Build the application (this runs mvn clean package)
-RUN mvn clean package -DskipTests
+# Run tests & build silently
+RUN mvn -B clean package -DskipTests
+
+# This is where JaCoCo puts the coverage report
+# /app/target/site/jacoco
+
+
 
 # --- Stage 2: Run the application ---
 FROM eclipse-temurin:21-jdk
 
-# Copy the jar from the build stage
-COPY --from=build /app/target/*.jar app.jar
+# Set working directory
+WORKDIR /app
 
-# Run the jar
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+# Copy the jar from the build stage
+COPY --from=build /app/target/*.jar /app/app.jar
+
+# Copy the SSL certificate into the container
+COPY Dockerbuild/cmrsapp-alb.pem /etc/ssl/certs/alb-certificate.pem
+
+# Verify Java home and cacerts location
+RUN echo "Java Home: $JAVA_HOME" && \
+    echo "Truststore location: $JAVA_HOME/lib/security/cacerts"
+
+# Import the SSL certificate into Java's cacerts truststore
+RUN keytool -import -trustcacerts -alias alb-cert \
+    -file /etc/ssl/certs/alb-certificate.pem \
+    -keystore $JAVA_HOME/lib/security/cacerts -storepass changeit -noprompt
+
+# Run the Spring Boot application
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+    

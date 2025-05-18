@@ -38,8 +38,11 @@ public class SecurityConfig {
                 // cookies
                 // for session management, so it's not vulnerable to CSRF attacks
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests((authorize) -> authorize
+                .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // ⬇️ Allow health check without auth
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/**").hasRole("admin") // optional: restrict other actuator endpoints
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/auth/register/**").permitAll()

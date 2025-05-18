@@ -52,6 +52,10 @@ public class JobConfig {
     @Bean
     @StepScope
     public FlatFileItemReader<Student> reader(@Value("#{jobParameters['csvFile']}") String csvFilePath){
+        if (csvFilePath == null || csvFilePath.isBlank()) {
+            csvFilePath = "src/main/resources/student_enrollment_2025.csv";
+        }
+
         FlatFileItemReader<Student> csvReader = new FlatFileItemReader<>();
         //csvReader.setResource(new FileSystemResource("src/main/resources/student_enrollment_2025.csv"));
         csvReader.setResource(new FileSystemResource(csvFilePath));

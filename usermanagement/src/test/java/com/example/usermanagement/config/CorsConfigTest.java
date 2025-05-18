@@ -35,7 +35,7 @@ public class CorsConfigTest {
         CorsRegistration registration = mock(CorsRegistration.class);
 
         when(registry.addMapping("/**")).thenReturn(registration);
-        when(registration.allowedOrigins("https://wwww.cmrsapp.site")).thenReturn(registration);
+        when(registration.allowedOrigins("https://www.cmrsapp.site")).thenReturn(registration);
         when(registration.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")).thenReturn(registration);
         when(registration.allowedHeaders("*")).thenReturn(registration);
         when(registration.allowCredentials(false)).thenReturn(registration);
@@ -45,7 +45,7 @@ public class CorsConfigTest {
 
         // Assert
         verify(registry).addMapping("/**");
-        verify(registration).allowedOrigins("https://wwww.cmrsapp.site");
+        verify(registration).allowedOrigins("https://www.cmrsapp.site");
         verify(registration).allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
         verify(registration).allowedHeaders("*");
         verify(registration).allowCredentials(false);
